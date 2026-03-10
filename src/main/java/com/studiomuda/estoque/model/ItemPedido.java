@@ -1,0 +1,83 @@
+package com.studiomuda.estoque.model;
+
+public class ItemPedido {
+    private int id;
+    private int pedidoId;
+    private int produtoId;
+    private int quantidade;
+    private String produtoNome; // Campo auxiliar para exibiu00e7u00e3o
+    private double produtoValor; // Campo auxiliar para exibiu00e7u00e3o
+
+    public ItemPedido() {}
+
+    public ItemPedido(int id, int pedidoId, int produtoId, int quantidade) {
+        this.id = id;
+        this.pedidoId = pedidoId;
+        this.produtoId = produtoId;
+        this.quantidade = quantidade;
+    }
+
+    // Getters e Setters
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getPedidoId() {
+        return pedidoId;
+    }
+
+    public void setPedidoId(int pedidoId) {
+        this.pedidoId = pedidoId;
+    }
+
+    public int getProdutoId() {
+        return produtoId;
+    }
+
+    public void setProdutoId(int produtoId) {
+        this.produtoId = produtoId;
+    }
+
+    public int getQuantidade() {
+        return quantidade;
+    }
+
+    public void setQuantidade(int quantidade) {
+        this.quantidade = quantidade;
+    }
+    
+    public String getProdutoNome() {
+        return produtoNome;
+    }
+
+    public void setProdutoNome(String produtoNome) {
+        this.produtoNome = produtoNome;
+    }
+
+    public double getProdutoValor() {
+        return produtoValor;
+    }
+
+    public void setProdutoValor(double produtoValor) {
+        this.produtoValor = produtoValor;
+    }
+    
+    public double getSubtotal() {
+        return quantidade * produtoValor;
+    }
+
+    @Override
+    public String toString() {
+        return "ItemPedido{" +
+                "ID: " + id +
+                ", Pedido ID: " + pedidoId +
+                ", Produto ID: " + produtoId +
+                ", Quantidade: " + quantidade +
+                "}";
+    }
+}

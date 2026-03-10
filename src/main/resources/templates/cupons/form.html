@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+    <div th:replace="layout :: menu"></div>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="page-title">
+                        <i class="bi bi-gift-fill me-3"></i>
+                        <span th:text="${cupom.id == 0 ? 'Novo Cupom' : 'Editar Cupom'}"></span>
+                    </h1>
+                    <p class="page-subtitle">
+                        <span th:if="${cupom.id == 0}">Crie um novo cupom de desconto para o Studio Muda</span>
+                        <span th:unless="${cupom.id == 0}" th:text="'Editando cupom: ' + ${cupom.codigo}"></span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/cupons" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Voltar aos Cupons
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <form th:action="@{/cupons/salvar}" th:object="${cupom}" method="post">
+            <input type="hidden" th:field="*{id}">
+            
+            <div class="row g-4">
+                <!-- Basic Information -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-tag-fill me-2"></i>
+                                Informações do Cupom
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="codigo" class="form-label">Código do Cupom</label>
+                                    <input type="text" class="form-control" id="codigo" th:field="*{codigo}" required 
+                                           placeholder="Ex: VERDE20, PRIMAVERA15..."
+                                           style="text-transform: uppercase;">
+                                    <div class="form-text">Código único que os clientes digitarão</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="valor" class="form-label">Valor do Desconto</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">R$</span>
+                                        <input type="number" class="form-control" id="valor" th:field="*{valor}" 
+                                               step="0.01" min="0" required placeholder="0,00">
+                                    </div>
+                                    <div class="form-text">Valor em reais do desconto</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Preview do Cupom</label>
+                                    <div class="border rounded p-3 bg-light text-center">
+                                        <div class="fw-bold text-primary">🎁 CUPOM STUDIO MUDA</div>
+                                        <div class="fs-5 fw-bold" th:text="${cupom.codigo != null && cupom.codigo != '' ? cupom.codigo : 'CÓDIGO'}"></div>
+                                        <div class="text-success" th:text="${cupom.valor != null ? 'R$ ' + #numbers.formatDecimal(cupom.valor, 1, 2) + ' OFF' : 'R$ 0,00 OFF'}"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Validity Period -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-calendar-range me-2"></i>
+                                Período de Validade
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="dataInicioStr" class="form-label">Data de Início</label>
+                                    <input type="date" class="form-control" id="dataInicioStr" name="dataInicioStr" 
+                                           th:value="${cupom.dataInicio}" required>
+                                    <div class="form-text">Quando o cupom começa a valer</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="validadeStr" class="form-label">Data de Validade</label>
+                                    <input type="date" class="form-control" id="validadeStr" name="validadeStr" 
+                                           th:value="${cupom.validade}" required>
+                                    <div class="form-text">Último dia que o cupom pode ser usado</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong>Dica:</strong> Cupons com datas no passado aparecerão como "Expirados" na lista.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description and Terms -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-file-text me-2"></i>
+                                Descrição e Termos
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label for="descricao" class="form-label">Descrição</label>
+                                    <textarea class="form-control" id="descricao" th:field="*{descricao}" rows="2" 
+                                              placeholder="Ex: Desconto especial para clientes do Studio Muda..."></textarea>
+                                    <div class="form-text">Descrição breve do cupom (aparece na seleção)</div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label for="condicoesUso" class="form-label">Condições de Uso</label>
+                                    <textarea class="form-control" id="condicoesUso" th:field="*{condicoesUso}" rows="4" 
+                                              placeholder="Ex: Válido apenas para plantas preservadas, não cumulativo com outras promoções..."></textarea>
+                                    <div class="form-text">Regras e restrições do cupom</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="/cupons" class="btn btn-outline-secondary btn-lg">
+                                    <i class="bi bi-arrow-left me-2"></i>
+                                    Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-save me-2"></i>
+                                    <span th:text="${cupom.id == 0 ? 'Criar Cupom' : 'Salvar Alterações'}"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <div th:replace="layout :: footer"></div>
+    <div th:replace="layout :: scripts"></div>
+</body>
+</html>

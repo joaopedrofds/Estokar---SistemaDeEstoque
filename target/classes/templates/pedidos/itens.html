@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+    <div th:replace="layout :: menu"></div>
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Itens do Pedido #<span th:text="${pedido.id}"></span></h2>
+            <a href="/pedidos" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Voltar para Pedidos
+            </a>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Detalhes do Pedido</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <p><strong>Cliente:</strong> <span th:text="${pedido.clienteNome}"></span></p>
+                    </div>
+                    <div class="col-md-3">
+                        <p><strong>Funcionário:</strong> <span th:text="${pedido.funcionarioNome != null ? pedido.funcionarioNome + ' (' + pedido.funcionarioCargo + ')' : 'Não definido'}"></span></p>
+                    </div>
+                    <div class="col-md-3">
+                        <p><strong>Data Requisição:</strong> <span th:text="${#dates.format(pedido.dataRequisicao, 'dd/MM/yyyy')}"></span></p>
+                    </div>
+                    <div class="col-md-3">
+                        <p><strong>Data Entrega:</strong> <span th:text="${pedido.dataEntrega != null ? #dates.format(pedido.dataEntrega, 'dd/MM/yyyy') : 'Não definida'}"></span></p>
+                    </div>
+                </div>
+                <div class="row" th:if="${pedido.cupomId != null && pedido.cupomId > 0}">
+                    <div class="col-md-12">
+                        <p class="text-success"><strong>Cupom aplicado:</strong> <span th:text="'Desconto de R$ ' + ${#numbers.formatDecimal(pedido.valorDesconto, 1, 'POINT', 2, 'COMMA')}"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Adicionar Item</h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${mensagemErro}" class="alert alert-danger mb-3">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> <span th:text="${mensagemErro}"></span>
+                </div>
+                <div th:if="${param.erro}" class="alert alert-danger mb-3">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> <span th:text="${param.erro}"></span>
+                </div>
+                <form th:action="@{/pedidos/itens/adicionar}" th:object="${novoItem}" method="post">
+                    <input type="hidden" name="id" th:value="${novoItem.id}">
+                    <input type="hidden" name="pedidoId" th:value="${pedido.id}">
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="produtoId" class="form-label">Produto</label>
+                            <select class="form-select" id="produtoId" name="produtoId" required>
+                                <option value="">Selecione um produto</option>
+                                <option th:each="produto : ${produtos}" 
+                                        th:value="${produto.id}" 
+                                        th:text="${produto.nome + ' - R$ ' + #numbers.formatDecimal(produto.valor, 1, 'POINT', 2, 'COMMA')}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="quantidade" class="form-label">Quantidade</label>
+                            <input type="number" class="form-control" id="quantidade" name="quantidade" th:value="${novoItem.quantidade}" min="1" max="999" required>
+                            <small class="text-muted">Verifique o estoque disponível antes de adicionar.</small>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-plus-circle"></i> Adicionar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">Itens do Pedido</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info" th:if="${itens.empty}">
+                    Nenhum item adicionado ao pedido.
+                </div>
+                
+                <div class="table-responsive" th:if="${!itens.empty}">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Produto</th>
+                                <th>Valor Unitário</th>
+                                <th>Quantidade</th>
+                                <th>Subtotal</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="item : ${itens}">
+                                <td th:text="${item.id}"></td>
+                                <td th:text="${item.produtoNome}"></td>
+                                <td th:text="${'R$ ' + #numbers.formatDecimal(item.produtoValor, 1, 'POINT', 2, 'COMMA')}"></td>
+                                <td th:text="${item.quantidade}"></td>
+                                <td th:text="${'R$ ' + #numbers.formatDecimal(item.subtotal, 1, 'POINT', 2, 'COMMA')}"></td>
+                                <td>
+                                    <button class="btn btn-danger" th:onclick="'excluirItemPedido(' + ${item.id} + ', ' + ${pedido.id} + ')'">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr th:if="${pedido.valorDesconto != null && pedido.valorDesconto > 0}" class="table-secondary">
+                                <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
+                                <td colspan="2"><span th:text="${'R$ ' + #numbers.formatDecimal(valorTotal, 1, 'POINT', 2, 'COMMA')}"></span></td>
+                            </tr>
+                            <tr th:if="${pedido.valorDesconto != null && pedido.valorDesconto > 0}" class="table-success">
+                                <td colspan="4" class="text-end text-success"><strong>Desconto aplicado:</strong></td>
+                                <td colspan="2" class="text-success"><span th:text="${'- R$ ' + #numbers.formatDecimal(pedido.valorDesconto, 1, 'POINT', 2, 'COMMA')}"></span></td>
+                            </tr>
+                            <tr class="table-dark">
+                                <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                <td colspan="2"><strong th:text="${(pedido.valorDesconto != null && pedido.valorDesconto > 0) ? 'R$ ' + #numbers.formatDecimal(valorComDesconto, 1, 'POINT', 2, 'COMMA') : 'R$ ' + #numbers.formatDecimal(valorTotal, 1, 'POINT', 2, 'COMMA')}"></strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="layout :: footer"></div>
+    <div th:replace="layout :: scripts"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const produtoSelect = document.getElementById('produtoId');
+            const quantidadeInput = document.getElementById('quantidade');
+            const estoqueMensagem = document.createElement('div');
+            estoqueMensagem.className = 'mt-2 small';
+            
+            if (produtoSelect && quantidadeInput) {
+                // Inserir o elemento para mostrar o estoque disponível
+                quantidadeInput.parentNode.appendChild(estoqueMensagem);
+                
+                // Função para buscar e mostrar o estoque disponível
+                produtoSelect.addEventListener('change', function() {
+                    const produtoId = this.value;
+                    if (!produtoId) {
+                        estoqueMensagem.textContent = '';
+                        return;
+                    }
+                    
+                    // Buscar produto via API
+                    fetch(`/produtos/api/${produtoId}`)
+                        .then(response => response.json())
+                        .then(produto => {
+                            estoqueMensagem.textContent = `Estoque disponível: ${produto.quantidade} unidades`;
+                            estoqueMensagem.className = 'mt-2 small text-info';
+                            
+                            // Atualizar o máximo permitido no input de quantidade
+                            quantidadeInput.setAttribute('max', produto.quantidade);
+                            
+                            // Se o valor atual for maior que o estoque, ajustar e mostrar aviso
+                            if (parseInt(quantidadeInput.value) > produto.quantidade) {
+                                quantidadeInput.value = produto.quantidade;
+                                estoqueMensagem.textContent = `⚠️ Quantidade ajustada para o máximo disponível: ${produto.quantidade}`;
+                                estoqueMensagem.className = 'mt-2 small text-warning fw-bold';
+                            } else if (produto.quantidade <= 3) {
+                                estoqueMensagem.textContent = `⚠️ Estoque baixo! Disponível: ${produto.quantidade} unidades`;
+                                estoqueMensagem.className = 'mt-2 small text-warning fw-bold';
+                            } else {
+                                estoqueMensagem.textContent = `Estoque disponível: ${produto.quantidade} unidades`;
+                                estoqueMensagem.className = 'mt-2 small text-info';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erro ao buscar produto:', error);
+                            estoqueMensagem.textContent = 'Erro ao verificar estoque disponível';
+                            estoqueMensagem.className = 'mt-2 small text-danger';
+                        });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

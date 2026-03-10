@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: html">
+<body>
+    <div th:fragment="content">
+        <div class="container my-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card error-card error-500 animate__animated animate__fadeIn">
+                        <div class="card-header error-card-header">
+                            <div class="d-flex align-items-center">
+                                <div class="error-icon-container me-3">
+                                    <i class="bi bi-exclamation-circle"></i>
+                                </div>
+                                <div>
+                                    <h4 class="card-title mb-0">Erro interno do servidor</h4>
+                                    <p class="text-muted mb-0">Código 500</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="error-description">
+                                <p class="card-text">Ocorreu um erro interno no servidor. Nossa equipe foi notificada e está trabalhando para resolver o problema.</p>
+                                <p th:if="${requestUri}" class="small text-muted">
+                                    URI solicitada: <code th:text="${requestUri}">uri</code>
+                                </p>
+                            </div>
+                            <hr />
+                            <div class="error-actions">
+                                <a href="/" class="btn btn-outline-primary me-2">
+                                    <i class="bi bi-house"></i> Ir para página inicial
+                                </a>
+                                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Voltar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

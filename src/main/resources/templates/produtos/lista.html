@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+    <div th:replace="layout :: menu"></div>
+    
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="page-title">
+                        <i class="bi bi-box-seam me-3"></i>
+                        Produtos
+                    </h1>
+                    <p class="page-subtitle">Gerencie todos os produtos do seu estoque</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="/produtos/novo" class="btn btn-outline btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>Novo Produto
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <div class="container my-5">
+        <!-- Search and Filters -->
+        <div class="filters-container">
+            <form method="get" action="/produtos" class="row g-3" id="filtrosForm">
+                <div class="col-md-4">
+                    <div class="search-box">
+                        <i class="search-icon bi bi-search"></i>
+                        <input type="text" class="search-input" placeholder="Buscar produtos..." 
+                               id="searchInput" name="nome" th:value="${filtroNome}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="filterTipo" name="tipo">
+                        <option value="">Todos os tipos</option>
+                        <!-- Opções serão preenchidas via JS -->
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" id="filterEstoque" name="estoque">
+                        <option value="">Filtrar por estoque</option>
+                        <!-- Opções serão preenchidas via JS -->
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>Filtrar
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <a href="/produtos" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-x-circle me-1"></i>Limpar
+                    </a>
+                </div>
+            </form>
+        </div>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/produtos/filtros')
+                .then(resp => resp.json())
+                .then(data => {
+                    // Tipos
+                    const tipoSelect = document.getElementById('filterTipo');
+                    if (tipoSelect && data.tipos) {
+                        data.tipos.forEach(tipo => {
+                            const opt = document.createElement('option');
+                            opt.value = tipo;
+                            opt.textContent = tipo.charAt(0) + tipo.slice(1).toLowerCase();
+                            if (tipo === "${filtroTipo}") opt.selected = true;
+                            tipoSelect.appendChild(opt);
+                        });
+                    }
+                    // Estoques
+                    const estoqueSelect = document.getElementById('filterEstoque');
+                    if (estoqueSelect && data.estoques) {
+                        data.estoques.forEach(estoque => {
+                            const opt = document.createElement('option');
+                            opt.value = estoque;
+                            if (estoque === 'disponivel') opt.textContent = 'Em estoque';
+                            else if (estoque === 'baixo') opt.textContent = 'Estoque baixo';
+                            else if (estoque === 'zerado') opt.textContent = 'Sem estoque';
+                            else opt.textContent = estoque;
+                            if (estoque === "${filtroEstoque}") opt.selected = true;
+                            estoqueSelect.appendChild(opt);
+                        });
+                    }
+                });
+        });
+        </script>
+
+        <!-- Actions Toolbar -->
+        <div class="actions-toolbar">
+            <div class="actions-left">
+                <span class="fw-semibold" id="totalCount" th:text="${produtos.size()} + ' produtos encontrados'"></span>
+            </div>
+            <div class="actions-right">
+                <button class="btn btn-secondary btn-sm" onclick="exportData()">
+                    <i class="bi bi-download me-2"></i>Exportar
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="printList()">
+                    <i class="bi bi-printer me-2"></i>Imprimir
+                </button>
+            </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="error-state" th:if="${produtos.empty}">
+            <div class="error-icon">
+                <i class="bi bi-box"></i>
+            </div>
+            <div class="error-message">Nenhum produto cadastrado</div>
+            <p>Comece cadastrando seu primeiro produto clicando no botão acima.</p>
+        </div>
+        
+        <!-- Products Table -->
+        <div class="table-container" th:if="${!produtos.empty}">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th>Quantidade</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="productsTableBody">
+                    <tr th:each="produto : ${produtos}">
+                        <td>
+                            <span class="badge badge-primary">#<span th:text="${produto.id}"></span></span>
+                        </td>
+                        <td>
+                            <div class="fw-semibold" th:text="${produto.nome}"></div>
+                        </td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="${produto.tipo == 'PRODUTO'} ? 'badge-info' : 'badge-warning'"
+                                  th:text="${produto.tipo}"></span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <span th:text="${produto.quantidade}"></span>
+                                <span class="text-muted ms-1">un.</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="fw-semibold text-success" th:text="${#numbers.formatCurrency(produto.valor)}"></span>
+                        </td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="${produto.quantidade > 10} ? 'badge-success' : (${produto.quantidade > 0} ? 'badge-warning' : 'badge-danger')"
+                                  th:text="${produto.quantidade > 10} ? 'Em estoque' : (${produto.quantidade > 0} ? 'Estoque baixo' : 'Sem estoque')"></span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a th:href="@{/produtos/editar/{id}(id=${produto.id})}" 
+                                   class="btn btn-outline-primary" 
+                                   title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{/produtos/excluir/{id}(id=${produto.id})}" 
+                                   class="btn btn-outline-danger"
+                                   title="Excluir"
+                                   onclick="return confirmDelete('produto', this.href)">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+    
+    <div th:replace="layout :: footer"></div>
+    <div th:replace="layout :: scripts"></div>
+</body>
+</html>

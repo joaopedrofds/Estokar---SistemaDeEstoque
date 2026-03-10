@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+    <div th:replace="layout :: menu"></div>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="page-title">
+                        <i class="bi bi-cart-fill me-3"></i>
+                        Gestão de Pedidos
+                    </h1>
+                    <p class="page-subtitle">Acompanhe e gerencie todos os pedidos dos clientes</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/pedidos/novo" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Novo Pedido
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <!-- Search and Filters -->
+        <div class="filters-container">
+            <form method="get" action="/pedidos" class="row g-3" id="filtrosFormPedidos">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" placeholder="Buscar por cliente..." id="clienteInput" name="clienteNome" th:value="${filtroClienteNome}">
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" placeholder="Buscar por funcionário..." id="funcionarioInput" name="funcionarioNome" th:value="${filtroFuncionarioNome}">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" class="form-control" id="dataInicio" name="dataInicio" th:value="${filtroDataInicio}">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" class="form-control" id="dataFim" name="dataFim" th:value="${filtroDataFim}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Warning Message -->
+        <div class="alert alert-warning d-flex align-items-center" th:if="${mensagemAviso != null}">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${mensagemAviso}"></span>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="empty-state" th:if="${pedidos.empty and cpfCnpj == null}">
+            <div class="empty-state-icon">
+                <i class="bi bi-cart"></i>
+            </div>
+            <h3>Nenhum pedido encontrado</h3>
+            <p>Comece criando seu primeiro pedido para ver a lista aqui.</p>
+            <a href="/pedidos/novo" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>
+                Criar Primeiro Pedido
+            </a>
+        </div>
+        
+        <!-- Table Section -->
+        <div class="card" th:if="${!pedidos.empty}">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover modern-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Funcionário</th>
+                                <th>Data Requisição</th>
+                                <th>Data Entrega</th>
+                                <th>Desconto</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="pedido : ${pedidos}">
+                                <td>
+                                    <span class="text-muted small">#</span><span th:text="${pedido.id}"></span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3">
+                                            <i class="bi bi-person-fill"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-medium" th:text="${pedido.clienteNome}"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:if="${pedido.funcionarioNome != null}" th:text="${pedido.funcionarioNome}"></span>
+                                    <small class="text-muted" th:unless="${pedido.funcionarioNome != null}">Não definido</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info" th:text="${#dates.format(pedido.dataRequisicao, 'dd/MM/yyyy')}"></span>
+                                </td>
+                                <td>
+                                    <span th:if="${pedido.dataEntrega != null}" 
+                                          class="badge bg-success" 
+                                          th:text="${#dates.format(pedido.dataEntrega, 'dd/MM/yyyy')}"></span>
+                                    <small class="text-muted" th:unless="${pedido.dataEntrega != null}">Não definida</small>
+                                </td>
+                                <td>
+                                    <span th:if="${pedido.valorDesconto > 0}" 
+                                          class="badge bg-warning text-dark" 
+                                          th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorDesconto, 1, 'POINT', 2, 'COMMA')}"></span>
+                                    <small class="text-muted" th:unless="${pedido.valorDesconto > 0}">Sem cupom</small>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a th:href="@{/pedidos/itens/{id}(id=${pedido.id})}" 
+                                           class="btn btn-sm btn-outline-info" title="Ver Itens">
+                                            <i class="bi bi-list-check"></i>
+                                        </a>
+                                        <a th:href="@{/pedidos/editar/{id}(id=${pedido.id})}" 
+                                           class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger" title="Excluir"
+                                                th:onclick="'excluirPedido(' + ${pedido.id} + ')'">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="layout :: footer"></div>
+    <div th:replace="layout :: scripts"></div>
+</body>
+</html>

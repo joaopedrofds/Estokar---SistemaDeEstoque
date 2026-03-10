@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: html">
+<body>
+    <div th:fragment="content">
+        <div class="alert alert-danger">
+            <h4 class="alert-heading">Erro!</h4>
+            <p th:text="${mensagemErro}">Ocorreu um erro inesperado.</p>
+            <hr>
+            <p class="mb-0">Por favor, tente novamente ou contate o administrador do sistema.</p>
+            <a href="javascript:history.back()" class="btn btn-outline-danger mt-3">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+    </div>
+</body>
+</html>

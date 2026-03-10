@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+    <div th:replace="layout :: menu"></div>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="page-title">
+                        <i class="bi bi-people-fill me-3"></i>
+                        Gestão de Clientes
+                    </h1>
+                    <p class="page-subtitle">Gerencie sua base de clientes de forma eficiente</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/clientes/novo" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Novo Cliente
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <!-- Search and Filter Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" action="/clientes" class="row g-3">
+                    <div class="col-md-4">
+                        <div class="search-box">
+                            <i class="bi bi-search"></i>
+                            <input type="text" class="form-control" placeholder="Buscar clientes..." 
+                                   id="searchInput" name="nome" th:value="${filtroNome}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="tipoFilter" name="tipo">
+                            <option value="">Todos os tipos</option>
+                            <!-- Opções dinâmicas -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="statusFilter" name="status">
+                            <option value="">Todos os status</option>
+                            <!-- Opções dinâmicas -->
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search me-2"></i>Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="empty-state" th:if="${clientes.empty}">
+            <div class="empty-state-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <h3>Nenhum cliente cadastrado</h3>
+            <p>Comece cadastrando seu primeiro cliente para ver a lista aqui.</p>
+            <a href="/clientes/novo" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>
+                Cadastrar Primeiro Cliente
+            </a>
+        </div>
+        
+        <!-- Table Section -->
+        <div class="card" th:if="${!clientes.empty}">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover modern-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Tipo</th>
+                                <th>Documento</th>
+                                <th>Contato</th>
+                                <th>Localização</th>
+                                <th>Status</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="cliente : ${clientes}">
+                                <td>
+                                    <span class="text-muted small">#</span><span th:text="${cliente.id}"></span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3">
+                                            <i class="bi bi-person-fill"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-medium" th:text="${cliente.nome}"></div>
+                                            <small class="text-muted" th:text="${cliente.email}"></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${cliente.tipo == 'PF' ? 'bg-info' : 'bg-warning'}"
+                                          th:text="${cliente.tipo == 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'}"></span>
+                                </td>
+                                <td>
+                                    <code th:text="${cliente.cpfCnpj}"></code>
+                                </td>
+                                <td th:text="${cliente.telefone}"></td>
+                                <td>
+                                    <small class="text-muted" th:text="${cliente.cidade + '/' + cliente.estado}"></small>
+                                </td>
+                                <td>
+                                    <span th:if="${cliente.ativo}" class="status-badge status-active">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Ativo
+                                    </span>
+                                    <span th:unless="${cliente.ativo}" class="status-badge status-inactive">
+                                        <i class="bi bi-x-circle-fill me-1"></i>Inativo
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a th:href="@{/clientes/editar/{id}(id=${cliente.id})}" 
+                                           class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{/clientes/excluir/{id}(id=${cliente.id})}" 
+                                           class="btn btn-sm btn-outline-danger" title="Inativar"
+                                           onclick="return confirm('Tem certeza que deseja inativar este cliente?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="layout :: footer"></div>
+    <div th:replace="layout :: scripts"></div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/clientes/filtros')
+            .then(resp => resp.json())
+            .then(data => {
+                // Tipos
+                const tipoSelect = document.getElementById('tipoFilter');
+                if (tipoSelect && data.tipos) {
+                    data.tipos.forEach(tipo => {
+                        const opt = document.createElement('option');
+                        opt.value = tipo;
+                        opt.textContent = tipo.charAt(0) + tipo.slice(1).toLowerCase();
+                        if (tipo === "${filtroTipo}") opt.selected = true;
+                        tipoSelect.appendChild(opt);
+                    });
+                }
+                // Status
+                const statusSelect = document.getElementById('statusFilter');
+                if (statusSelect && data.status) {
+                    data.status.forEach(status => {
+                        const opt = document.createElement('option');
+                        opt.value = status;
+                        opt.textContent = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+                        if (status === "${filtroStatus}") opt.selected = true;
+                        statusSelect.appendChild(opt);
+                    });
+                }
+            });
+    });
+    </script>
+</body>
+</html>

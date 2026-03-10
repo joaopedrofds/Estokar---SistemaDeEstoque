@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head}"></head>
+<body>
+    <div th:replace="~{layout :: menu}"></div>
+
+    <!-- Hero Section -->
+    <section class="page-header">
+        <div class="container">
+            <div class="row align-items-center min-vh-50">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <div class="fade-in-up">
+                        <h1 class="page-title">
+                            Sistema de Estoque Studio Muda
+                         
+                        </h1>
+                        <p class="page-subtitle mb-4">
+                            Transforme a gestão do seu negócio com nossa plataforma completa e intuitiva. 
+                            Gerencie estoque, clientes, produtos e pedidos com máxima eficiência.
+                        </p>
+                        <div class="d-flex flex-wrap gap-3">
+                            <a href="/dashboard" class="btn btn-primary btn-lg">
+                                <i class="bi bi-graph-up-arrow me-2"></i>DashbSoard
+                            </a>
+                            <a href="/produtos" class="btn btn-outline btn-lg">
+                                <i class="bi bi-box-seam me-2"></i>Ver Produtos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <!-- Espaço reservado para elementos visuais futuros -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+<div class="container my-5">
+    <!-- Stats Overview -->
+    <div class="stats-grid mb-5" style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center;">
+        <div class="stats-card text-center">
+            <div class="stats-icon mb-2">
+                <i class="bi bi-box-seam" style="font-size: 1.5rem;"></i>
+            </div>
+            <div class="stats-value" id="total-produtos">10</div>
+            <div class="stats-label">Produtos Cadastrados</div>
+        </div>
+        <div class="stats-card text-center">
+            <div class="stats-icon mb-2">
+                <i class="bi bi-people-fill" style="font-size: 1.5rem;"></i>
+            </div>
+            <div class="stats-value" id="total-clientes">6</div>
+            <div class="stats-label">Clientes Ativos</div>
+        </div>
+        <div class="stats-card text-center">
+            <div class="stats-icon mb-2">
+                <i class="bi bi-cart-check-fill" style="font-size: 1.5rem;"></i>
+            </div>
+            <div class="stats-value" id="total-pedidos">16</div>
+            <div class="stats-label">Pedidos Realizados</div>
+        </div>
+        <div class="stats-card text-center">
+            <div class="stats-icon mb-2">
+                <i class="bi bi-arrow-repeat" style="font-size: 1.5rem;"></i>
+            </div>
+            <div class="stats-value" id="total-movimentacoes">30</div>
+            <div class="stats-label">Movimentações</div>
+        </div>
+    </div>
+</div>
+
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="card list-card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-3">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <h5 class="card-title">Produtos</h5>
+                        <p class="card-text text-muted">
+                            Cadastre, edite e gerencie todos os produtos do seu estoque com controle completo de categorias e preços.
+                        </p>
+                        <a href="/produtos" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right me-2"></i>Acessar Produtos
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card list-card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-3">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <h5 class="card-title">Clientes</h5>
+                        <p class="card-text text-muted">
+                            Mantenha um cadastro completo dos seus clientes com histórico de pedidos e dados de contato.
+                        </p>
+                        <a href="/clientes" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right me-2"></i>Acessar Clientes
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card list-card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-3">
+                            <i class="bi bi-person-badge-fill"></i>
+                        </div>
+                        <h5 class="card-title">Funcionários</h5>
+                        <p class="card-text text-muted">
+                            Gerencie a equipe, controle acessos e mantenha registro de todos os colaboradores.
+                        </p>
+                        <a href="/funcionarios" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right me-2"></i>Acessar Funcionários
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card list-card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-3">
+                            <i class="bi bi-cart-check-fill"></i>
+                        </div>
+                        <h5 class="card-title">Pedidos</h5>
+                        <p class="card-text text-muted">
+                            Processe pedidos, acompanhe status e mantenha controle total das vendas realizadas.
+                        </p>
+                        <a href="/pedidos" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right me-2"></i>Acessar Pedidos
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card list-card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-3">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </div>
+                        <h5 class="card-title">Movimentações</h5>
+                        <p class="card-text text-muted">
+                            Controle entradas e saídas de estoque com relatórios detalhados de movimentação.
+                        </p>
+                        <a href="/estoque" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right me-2"></i>Acessar Estoque
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 col-md-6">
+                <div class="card list-card h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-3">
+                            <i class="bi bi-ticket-perforated-fill"></i>
+                        </div>
+                        <h5 class="card-title">Cupons</h5>
+                        <p class="card-text text-muted">
+                            Crie e gerencie cupons de desconto para campanhas promocionais e fidelização.
+                        </p>
+                        <a href="/cupons" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-right me-2"></i>Acessar Cupons
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Call to Action Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card bg-glass border-0">
+                    <div class="card-body p-5 text-center">
+                        <div class="stats-icon mb-4">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h3 class="card-title text-gradient mb-3">Pronto para transformar seu negócio?</h3>
+                        <p class="card-text text-muted mb-4 fs-5">
+                            Acesse nosso dashboard completo e tenha visão total do seu estoque, vendas e performance.
+                        </p>
+                        <div class="d-flex flex-wrap justify-content-center gap-3">
+                            <a href="/dashboard" class="btn btn-primary btn-lg">
+                                <i class="bi bi-graph-up-arrow me-2"></i>Ir para Dashboard
+                            </a>
+                            <a href="#" class="btn btn-outline btn-lg">
+                                <i class="bi bi-headset me-2"></i>Precisa de Ajuda?
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+    <div th:replace="~{layout :: scripts}"></div>
+    
+    <!-- Script para carregar estatísticas da home -->
+    <script>
+        // Carregar estatísticas usando os novos KPIs automáticos
+        async function loadHomeStats() {
+            try {
+                // Usar os novos endpoints de KPIs com contadores automáticos
+                const response = await fetch('/api/kpis/dashboard');
+                const dados = await response.json();
+
+                if (dados.erro) {
+                    throw new Error(dados.erro);
+                }
+
+                document.getElementById('total-produtos').textContent = dados.total_produtos || '0';
+                document.getElementById('total-clientes').textContent = dados.total_clientes || '0';
+                document.getElementById('total-pedidos').textContent = dados.total_pedidos || '0';
+                document.getElementById('total-movimentacoes').textContent = dados.total_movimentacoes || '0';
+
+                // Animação de contagem
+                animateCounters();
+
+            } catch (error) {
+                console.log('Carregando estatísticas do backup...');
+                // Fallback para APIs individuais
+                try {
+                    const [produtos, clientes, pedidos, movimentacoes] = await Promise.all([
+                        fetch('/api/produtos/count').then(r => r.json()).catch(() => 0),
+                        fetch('/api/clientes/count').then(r => r.json()).catch(() => 0),
+                        fetch('/api/pedidos/count').then(r => r.json()).catch(() => 0),
+                        fetch('/api/estoque/count').then(r => r.json()).catch(() => 0)
+                    ]);
+
+                    document.getElementById('total-produtos').textContent = produtos || '0';
+                    document.getElementById('total-clientes').textContent = clientes || '0';
+                    document.getElementById('total-pedidos').textContent = pedidos || '0';
+                    document.getElementById('total-movimentacoes').textContent = movimentacoes || '0';
+                    
+                    animateCounters();
+                } catch (fallbackError) {
+                    console.log('Usando valores demo...');
+                    // Valores demo em caso de erro total
+                    document.getElementById('total-produtos').textContent = '150+';
+                    document.getElementById('total-clientes').textContent = '50+';
+                    document.getElementById('total-pedidos').textContent = '300+';
+                    document.getElementById('total-movimentacoes').textContent = '500+';
+                }
+            }
+        }
+
+        // Animação de contagem dos números
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stats-value');
+            
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent) || 0;
+                const increment = target / 50; // 50 steps
+                let current = 0;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        counter.textContent = target;
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current);
+                    }
+                }, 30); // 30ms per step = ~1.5s total
+            });
+        }
+
+        // Auto-refresh dos KPIs a cada 30 segundos
+        function startAutoRefresh() {
+            setInterval(loadHomeStats, 30000); // 30 segundos
+        }
+
+        // Executar quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHomeStats();
+            startAutoRefresh();
+        });
+
+        // Adicionar botão para recalcular contadores (admin)
+        function recalcularContadores() {
+            fetch('/api/kpis/recalcular', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log('✅ Contadores recalculados!');
+                        loadHomeStats(); // Recarregar após recalcular
+                    }
+                })
+                .catch(error => console.log('Erro ao recalcular:', error));
+        }
+
+        // Atalho para admin: Ctrl+Shift+R para recalcular
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+                e.preventDefault();
+                recalcularContadores();
+                console.log('🔄 Recalculando contadores...');
+            }
+        });
+    </script>
+</body>
+</html>

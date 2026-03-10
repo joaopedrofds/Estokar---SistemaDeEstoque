@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="layout :: head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard Studio Muda</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --info-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --dark-gradient: linear-gradient(135deg, #434343 0%, #000000 100%);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-soft: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --shadow-hover: 0 16px 48px rgba(31, 38, 135, 0.5);
+            --border-radius: 24px;
+            --border-radius-small: 16px;
+            --backdrop-blur: blur(20px);
+        }
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .floating-shape:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-shape:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 5s;
+        }
+
+        .floating-shape:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            bottom: 20%;
+            left: 60%;
+            animation-delay: 10s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            25% {
+                transform: translateY(-30px) rotate(90deg);
+            }
+
+            50% {
+                transform: translateY(-60px) rotate(180deg);
+            }
+
+            75% {
+                transform: translateY(-30px) rotate(270deg);
+            }
+        }
+
+        .dashboard-container {
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            margin: 2rem;
+            padding: 3rem;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.05) 50%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+
+        .dashboard-title {
+            font-size: 3.5rem !important;
+            font-weight: 900 !important;
+            color: #222 !important;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            margin-bottom: 1rem;
+            letter-spacing: -2px;
+        }
+
+        .dashboard-subtitle {
+            color: #444 !important;
+            /* antes: rgba(255,255,255,0.9) */
+            font-size: 1.2rem !important;
+            font-weight: 400 !important;
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 2.2rem !important;
+            font-weight: 800 !important;
+            color: #222 !important;
+            /* antes: #fff */
+            margin-bottom: 2.5rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .kpi-label {
+            color: #f1f1f1 !important;
+            /* antes: rgba(255,255,255,0.8) */
+            font-weight: 600 !important;
+            font-size: 1rem !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.5rem;
+        }
+
+        .kpi-value {
+            font-size: 3.2rem !important;
+            font-weight: 800 !important;
+            color: #fff !important;
+            margin: 0.5rem 0;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .alert-glass {
+            background: rgba(220, 53, 69, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            border-radius: var(--border-radius-small);
+            padding: 1.5rem;
+            color: #fff !important;
+            margin-bottom: 2rem;
+        }
+
+        .alert-glass .alert-heading {
+            color: #fff !important;
+            font-weight: 700 !important;
+        }
+
+        .alert-glass strong {
+            color: #fff !important;
+        }
+
+        .chart-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-small);
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chart-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .chart-card:hover::after {
+            left: 100%;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .chart-header {
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .chart-title {
+            color: #222 !important;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .chart-container {
+            min-height: 350px;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .nav-tabs-glass {
+            border: none;
+            margin-bottom: 2rem;
+        }
+
+        .nav-tabs-glass .nav-link {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px 12px 0 0;
+            color: #2c3e50 !important;
+            /* Cor mais escura e legível */
+            font-weight: 600;
+            margin-right: 0.5rem;
+            padding: 1rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs-glass .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .nav-tabs-glass .nav-link.active {
+            background: var(--primary-gradient);
+            color: white !important;
+            border-color: transparent;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .table-glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius-small);
+            overflow: hidden;
+        }
+
+        .table-glass th {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff !important;
+            /* antes: white */
+            font-weight: 600 !important;
+            border: none;
+            padding: 1rem;
+        }
+
+        .table-glass td {
+            background: transparent;
+            color: #fff !important;
+            /* antes: rgba(255,255,255,0.9) */
+            border: none;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table-glass tbody tr:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .metric-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius-small);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .badge {
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            color: #fff !important;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-title {
+            color: #fff !important;
+            font-weight: 700 !important;
+        }
+
+        .modal-body {
+            color: #fff !important;
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            .dashboard-title {
+                font-size: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .kpi-value {
+                font-size: 2.5rem;
+            }
+        }
+
+        .filters-section {
+            position: relative;
+        }
+
+        .form-control-glass,
+        .form-select-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: #fff !important;
+            font-weight: 500;
+        }
+
+        .form-control-glass::placeholder {
+            color: #7a7a7a !important;
+            /* Cor mais escura para melhor legibilidade */
+        }
+
+        .form-control-glass:focus,
+        .form-select-glass:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(102, 126, 234, 0.6);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            color: #fff !important;
+        }
+
+        .form-select-glass option {
+            background: #2a2a2a;
+            color: #fff;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-outline-light {
+            border-color: rgba(255, 255, 255, 0.4);
+            color: #2c3e50;
+            /* Cor mais escura e legível */
+        }
+
+        .btn-outline-light:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.6);
+            color: #fff;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating elements for aesthetic background -->
+    <div class="floating-elements">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <div th:replace="layout :: menu"></div>
+
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="bi bi-graph-up"></i>
+                Dashboard Studio Muda
+            </h1>
+            <p class="dashboard-subtitle">Análise completa e em tempo real do seu negócio</p>
+        </div>
+
+        <!-- Filtros Dinâmicos -->
+        <div class="filters-section mb-5">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title">
+                        <i class="bi bi-funnel"></i>
+                        Filtros Dinâmicos
+                    </h5>
+                    <button type="button" class="btn btn-outline-light btn-sm" id="resetFilters">
+                        <i class="bi bi-arrow-clockwise"></i> Resetar
+                    </button>
+                </div>
+                <div class="chart-container">
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label text-light">Período</label>
+                            <div class="input-group">
+                                <input type="date" class="form-control form-control-glass" id="dataInicio"
+                                    placeholder="Data Início">
+                                <input type="date" class="form-control form-control-glass" id="dataFim"
+                                    placeholder="Data Fim">
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-6">
+                            <label class="form-label text-light">Status do Pedido</label>
+                            <select class="form-select form-control-glass" id="statusPedido">
+                                <option value="">Todos os Status</option>
+                                <option value="PENDENTE">Pendente</option>
+                                <option value="EM_ANDAMENTO">Em Andamento</option>
+                                <option value="ENTREGUE">Entregue</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-6">
+                            <label class="form-label text-light">Categoria</label>
+                            <select class="form-select form-control-glass" id="categoria">
+                                <option value="">Todas as Categorias</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-6">
+                            <label class="form-label text-light">Tipo de Cliente</label>
+                            <select class="form-select form-control-glass" id="tipoCliente">
+                                <option value="">Todos os Tipos</option>
+                                <option value="PESSOA_FISICA">Pessoa Física</option>
+                                <option value="PESSOA_JURIDICA">Pessoa Jurídica</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-6">
+                            <label class="form-label text-light">Cliente</label>
+                            <select class="form-select form-control-glass" id="clienteId">
+                                <option value="">Todos os Clientes</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-1 col-md-6 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary w-100" id="aplicarFiltros">
+                                <i class="bi bi-search"></i> Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPIs Principais -->
+        <h3 class="section-title">
+            <i class="bi bi-speedometer2"></i>
+            Métricas Principais
+        </h3>
+        <div class="row g-4 mb-5">
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="kpi-card">
+                    <i class="bi bi-cart-check kpi-icon"></i>
+                    <div class="kpi-value" id="kpi-total-pedidos">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="kpi-label">Total de Pedidos</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="kpi-card">
+                    <i class="bi bi-people-fill kpi-icon"></i>
+                    <div class="kpi-value" id="kpi-clientes">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="kpi-label">Clientes Ativos</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="kpi-card">
+                    <i class="bi bi-person-badge-fill kpi-icon"></i>
+                    <div class="kpi-value" id="kpi-funcionarios">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="kpi-label">Funcionários</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="kpi-card">
+                    <i class="bi bi-box-seam kpi-icon"></i>
+                    <div class="kpi-value" id="kpi-produtos">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="kpi-label">Produtos</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="kpi-card">
+                    <i class="bi bi-archive kpi-icon"></i>
+                    <div class="kpi-value" id="kpi-produtos-estoque">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="kpi-label">Em Estoque</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="kpi-card">
+                    <i class="bi bi-ticket-perforated kpi-icon"></i>
+                    <div class="kpi-value" id="kpi-cupons">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="kpi-label">Cupons</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <div id="alertas-container" class="mb-5"></div>
+
+        <!-- Gráficos Principais -->
+        <h3 class="section-title">
+            <i class="bi bi-bar-chart-line"></i>
+            Análises e Visualizações
+        </h3>
+
+        <!-- Gráficos em Grid -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-line-chart"></i>
+                            Evolução de Vendas (12 meses)
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="evolucaoVendasChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-person-circle"></i>
+                            Distribuição de Clientes PF/PJ
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="clientesTipoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-clipboard-check"></i>
+                            Pedidos por Status
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="pedidosStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-pie-chart"></i>
+                            Produtos por Categoria
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="produtosCategoriaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Produtos com Estoque Crítico
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="produtosBaixoEstoqueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-trophy"></i>
+                            Top Produtos Mais Vendidos
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="topProdutosChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-star-fill"></i>
+                            Clientes Mais Ativos
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="topClientesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-check-circle"></i>
+                            Pedidos Entregues no Prazo vs. Atrasados
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="entregasPrazoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-clock"></i>
+                            Tempo Médio de Entrega por Mês
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="tempoEntregaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Pedidos Recentes -->
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-clock-history"></i>
+                            Pedidos Recentes
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <div class="table-responsive">
+                            <table class="table table-glass">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Data Pedido</th>
+                                        <th>Valor Total</th>
+                                        <th>Data Entrega</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-pedidos">
+                                    <tr>
+                                        <td colspan="5" class="text-center" style="color: white !important;">
+                                            <div class="loading-spinner"></div>
+                                            <div class="mt-2" style="color: white !important;">Carregando...</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalhes Dinâmico -->
+    <div class="modal fade" id="detalheModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detalheModalLabel">Detalhes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body" id="detalheModalBody">
+                    <!-- Detalhes dinâmicos aqui -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dashboard Principal - Studio Muda - Versão Moderna com Filtros
+        class DashboardStudioMuda {
+            constructor() {
+                this.charts = {};
+                this.filters = {
+                    dataInicio: '',
+                    dataFim: '',
+                    statusPedido: '',
+                    categoria: '',
+                    tipoCliente: '',
+                    clienteId: ''
+                };
+                this.colors = {
+                    primary: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'],
+                    gradients: {
+                        blue: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        purple: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                        cyan: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                        success: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                        warning: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+                    }
+                };
+                this.init();
+            }
+
+            async init() {
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js não está carregado!');
+                    return;
+                }
+
+                console.log('Iniciando Dashboard Studio Muda...');
+                this.setupChartDefaults();
+                this.initializeFilters();
+                await this.loadFilterOptions();
+                await this.loadKPIs();
+                await this.loadAlertas();
+                await this.initializeCharts();
+                await this.loadPedidosRecentes();
+                console.log('Dashboard iniciado com sucesso!');
+            }
+
+            setupChartDefaults() {
+                Chart.defaults.font.family = "'Inter', sans-serif";
+                Chart.defaults.color = '#2c3e50'; // Cor mais escura e legível
+                Chart.defaults.responsive = true;
+                Chart.defaults.maintainAspectRatio = false;
+                Chart.defaults.plugins.legend.labels.color = '#2c3e50'; // Texto legível em fundos claros
+                Chart.defaults.scale.grid.color = 'rgba(44, 62, 80, 0.2)'; // Grid visível mas sutil
+                Chart.defaults.scale.ticks.color = '#2c3e50'; // Ticks legíveis
+            }
+
+            // Inicializar filtros
+            initializeFilters() {
+                // Set default date range (last 12 months)
+                const today = new Date();
+                const lastYear = new Date(today);
+                lastYear.setFullYear(today.getFullYear() - 1);
+
+                document.getElementById('dataInicio').value = lastYear.toISOString().split('T')[0];
+                document.getElementById('dataFim').value = today.toISOString().split('T')[0];
+
+                // Add event listeners
+                document.getElementById('aplicarFiltros').addEventListener('click', () => this.applyFilters());
+                document.getElementById('resetFilters').addEventListener('click', () => this.resetFilters());
+
+                // Auto-apply filters on change
+                ['dataInicio', 'dataFim', 'statusPedido', 'categoria', 'tipoCliente', 'clienteId'].forEach(id => {
+                    document.getElementById(id).addEventListener('change', () => {
+                        this.updateFiltersFromDOM();
+                        this.applyFiltersDebounced();
+                    });
+                });
+            }
+
+            // Carregar opções dos filtros
+            async loadFilterOptions() {
+                try {
+                    // Carregar categorias
+                    const categoriaResponse = await fetch('/dashboard/api/categorias');
+                    const categorias = await categoriaResponse.json();
+                    const categoriaSelect = document.getElementById('categoria');
+                    categorias.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.id;
+                        option.textContent = cat.nome;
+                        categoriaSelect.appendChild(option);
+                    });
+
+                    // Carregar clientes
+                    const clienteResponse = await fetch('/dashboard/api/clientes');
+                    const clientes = await clienteResponse.json();
+                    const clienteSelect = document.getElementById('clienteId');
+                    clientes.forEach(cliente => {
+                        const option = document.createElement('option');
+                        option.value = cliente.id;
+                        option.textContent = cliente.nome;
+                        clienteSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Erro ao carregar opções dos filtros:', error);
+                }
+            }
+
+            // Atualizar filtros do DOM
+            updateFiltersFromDOM() {
+                this.filters = {
+                    dataInicio: document.getElementById('dataInicio').value,
+                    dataFim: document.getElementById('dataFim').value,
+                    statusPedido: document.getElementById('statusPedido').value,
+                    categoria: document.getElementById('categoria').value,
+                    tipoCliente: document.getElementById('tipoCliente').value,
+                    clienteId: document.getElementById('clienteId').value
+                };
+            }
+
+            // Aplicar filtros com debounce
+            applyFiltersDebounced() {
+                clearTimeout(this.filterTimeout);
+                this.filterTimeout = setTimeout(() => this.applyFilters(), 500);
+            }
+
+            // Aplicar filtros
+            async applyFilters() {
+                this.updateFiltersFromDOM();
+                console.log('Aplicando filtros:', this.filters);
+
+                // Show loading indicators
+                this.showLoadingIndicators();
+
+                try {
+                    // Reload all data with filters
+                    await Promise.all([
+                        this.loadKPIs(),
+                        this.loadAlertas(),
+                        this.updateAllCharts(),
+                        this.loadPedidosRecentes()
+                    ]);
+                } catch (error) {
+                    console.error('Erro ao aplicar filtros:', error);
+                }
+            }
+
+            // Resetar filtros
+            async resetFilters() {
+                const today = new Date();
+                const lastYear = new Date(today);
+                lastYear.setFullYear(today.getFullYear() - 1);
+
+                document.getElementById('dataInicio').value = lastYear.toISOString().split('T')[0];
+                document.getElementById('dataFim').value = today.toISOString().split('T')[0];
+                document.getElementById('statusPedido').value = '';
+                document.getElementById('categoria').value = '';
+                document.getElementById('tipoCliente').value = '';
+                document.getElementById('clienteId').value = '';
+
+                await this.applyFilters();
+            }
+
+            // Mostrar indicadores de carregamento
+            showLoadingIndicators() {
+                const chartContainers = document.querySelectorAll('.chart-container canvas');
+                chartContainers.forEach(canvas => {
+                    canvas.style.opacity = '0.5';
+                });
+            }
+
+            // Construir query string dos filtros
+            buildFilterQuery() {
+                const params = new URLSearchParams();
+                Object.entries(this.filters).forEach(([key, value]) => {
+                    if (value) params.append(key, value);
+                });
+                return params.toString();
+            }
+
+            // Atualizar todos os gráficos
+            async updateAllCharts() {
+                const chartMethods = [
+                    this.createEvolucaoVendasChart,
+                    this.createClientesTipoChart,
+                    this.createPedidosStatusChart,
+                    this.createProdutosCategoriaChart,
+                    this.createProdutosBaixoEstoqueChart,
+                    this.createTopProdutosChart,
+                    this.createTopClientesChart,
+                    this.createEntregasPrazoChart,
+                    this.createTempoEntregaChart
+                ];
+
+                for (const method of chartMethods) {
+                    try {
+                        await method.call(this);
+                    } catch (error) {
+                        console.error(`Erro ao atualizar gráfico:`, error);
+                    }
+                }
+            }
+
+            // KPIs com filtros
+            async loadKPIs() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/metricas-principais?${query}`);
+                    const data = await response.json();
+
+                    this.updateKPI('kpi-total-pedidos', data.totalPedidos || 0);
+                    this.updateKPI('kpi-clientes', data.clientesAtivos || 0);
+                    this.updateKPI('kpi-funcionarios', data.funcionariosAtivos || 0);
+                    this.updateKPI('kpi-produtos', data.totalProdutos || 0);
+                    this.updateKPI('kpi-produtos-estoque', data.produtosEstoque || 0);
+                    this.updateKPI('kpi-cupons', data.totalCupons || 0);
+                } catch (error) {
+                    console.error('Erro ao carregar KPIs:', error);
+                    this.showErrorKPIs();
+                }
+            }
+
+            updateKPI(elementId, value) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    const spinner = element.querySelector('.loading-spinner');
+                    if (spinner) spinner.remove();
+                    element.textContent = typeof value === 'number' ? value.toLocaleString('pt-BR') : value;
+                }
+            }
+
+            showErrorKPIs() {
+                ['kpi-total-pedidos', 'kpi-clientes', 'kpi-funcionarios', 'kpi-produtos', 'kpi-produtos-estoque', 'kpi-cupons'].forEach(id => {
+                    this.updateKPI(id, '--');
+                });
+            }
+
+            // Alertas com filtros
+            async loadAlertas() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/alertas?${query}`);
+                    const data = await response.json();
+
+                    const container = document.getElementById('alertas-container');
+                    if (container) {
+                        container.innerHTML = '';
+
+                        if (data.produtosFalta > 0 || data.pedidosPendentes > 0 || data.pedidosAtrasados > 0) {
+                            const alertDiv = document.createElement('div');
+                            alertDiv.className = 'alert-glass';
+                            alertDiv.innerHTML = `
+                        <h6><i class="bi bi-exclamation-triangle"></i> Atenção Necessária</h6>
+                        <div class="row">
+                            ${data.produtosFalta > 0 ? `<div class="col-md-4"><strong>${data.produtosFalta}</strong> produtos em falta</div>` : ''}
+                            ${data.pedidosPendentes > 0 ? `<div class="col-md-4"><strong>${data.pedidosPendentes}</strong>  pedidos em aberto</div>` : ''}
+                        </div>
+                    `;
+                            container.appendChild(alertDiv);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar alertas:', error);
+                }
+            }
+
+            // Inicializar gráficos
+            async initializeCharts() {
+                const chartMethods = [
+                    this.createEvolucaoVendasChart,
+                    this.createClientesTipoChart,
+                    this.createPedidosStatusChart,
+                    this.createProdutosCategoriaChart,
+                    this.createProdutosBaixoEstoqueChart,
+                    this.createTopProdutosChart,
+                    this.createTopClientesChart,
+                    this.createEntregasPrazoChart,
+                    this.createTempoEntregaChart
+                ];
+
+                for (const method of chartMethods) {
+                    try {
+                        await method.call(this);
+                    } catch (error) {
+                        console.error(`Erro ao inicializar gráfico:`, error);
+                    }
+                }
+            }
+
+            // Gráficos individuais
+            async createEvolucaoVendasChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/evolucao-vendas?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('evolucaoVendasChart');
+                    if (!ctx) return;
+
+                    // Destroy existing chart
+                    if (this.charts.evolucaoVendas) {
+                        this.charts.evolucaoVendas.destroy();
+                    }
+
+                    this.charts.evolucaoVendas = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.map(item => `${item.nomeMes}/${item.ano}`),
+                            datasets: [{
+                                label: 'Faturamento (R$)',
+                                data: data.map(item => item.faturamento),
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                yAxisID: 'y'
+                            }, {
+                                label: 'Pedidos',
+                                data: data.map(item => item.pedidos),
+                                borderColor: '#f093fb',
+                                backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                                borderWidth: 3,
+                                fill: false,
+                                tension: 0.4,
+                                yAxisID: 'y1'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false,
+                            },
+                            scales: {
+                                y: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'left',
+                                    title: { display: true, text: 'Faturamento (R$)', color: '#2c3e50' },
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    title: { display: true, text: 'Pedidos', color: '#2c3e50' },
+                                    grid: { drawOnChartArea: false },
+                                    ticks: { color: '#2c3e50' }
+                                },
+                                x: {
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: { color: '#2c3e50' }
+                                }
+                            },
+                            onComplete: () => {
+                                ctx.style.opacity = '1';
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de evolução de vendas:', error);
+                }
+            }
+
+            async createClientesTipoChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/clientes-tipo?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('clientesTipoChart');
+                    if (!ctx) return;
+
+                    if (this.charts.clientesTipo) {
+                        this.charts.clientesTipo.destroy();
+                    }
+
+                    this.charts.clientesTipo = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Pessoa Física', 'Pessoa Jurídica'],
+                            datasets: [{
+                                data: [data.pf, data.pj],
+                                backgroundColor: ['#667eea', '#f093fb'],
+                                borderWidth: 3,
+                                borderColor: 'rgba(255, 255, 255, 0.2)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#2c3e50' }
+                                }
+                            },
+                            onComplete: () => {
+                                ctx.style.opacity = '1';
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de tipos de cliente:', error);
+                }
+            }
+
+            // ...dentro da sua classe DashboardStudioMuda...
+
+            async createPedidosStatusChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/pedidos-status?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('pedidosStatusChart');
+                    if (!ctx) return;
+
+                    // Mapeamento para labels amigáveis
+                    const statusLabelsMap = {
+                        'PENDENTE': 'Pendente',
+                        'EM_ANDAMENTO': 'Em Andamento',
+                        'ENTREGUE': 'Entregue'
+                    };
+
+                    // Descobre se há filtro de status
+                    const statusFiltro = document.getElementById('statusPedido').value;
+
+                    let labels = [];
+                    let valores = [];
+                    let cores = [];
+
+                    if (statusFiltro && statusLabelsMap[statusFiltro]) {
+                        // Só mostra o status filtrado
+                        const item = data.find(i => i.status === statusFiltro);
+                        labels = [statusLabelsMap[statusFiltro]];
+                        valores = [item ? item.total : 0];
+                        // Cor correspondente ao status
+                        cores = statusFiltro === 'PENDENTE' ? ['#b5aaff']
+                            : statusFiltro === 'EM_ANDAMENTO' ? ['#d1a3c7']
+                                : ['#ffb3f7'];
+                    } else {
+                        // Mostra todos os status
+                        labels = Object.values(statusLabelsMap);
+                        valores = [
+                            data.find(i => i.status === 'PENDENTE')?.total || 0,
+                            data.find(i => i.status === 'EM_ANDAMENTO')?.total || 0,
+                            data.find(i => i.status === 'ENTREGUE')?.total || 0
+                        ];
+                        cores = ['#b5aaff', '#d1a3c7', '#ffb3f7'];
+                    }
+
+                    // Destroy existing chart if exists
+                    if (this.charts && this.charts.pedidosStatus) {
+                        this.charts.pedidosStatus.destroy();
+                    }
+
+                    this.charts = this.charts || {};
+                    this.charts.pedidosStatus = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: valores,
+                                backgroundColor: cores,
+                                borderWidth: 3,
+                                borderColor: 'rgba(255, 255, 255, 0.2)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#2c3e50' }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de status dos pedidos:', error);
+                }
+            }
+
+            async createProdutosCategoriaChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/vendas-por-categoria?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('produtosCategoriaChart');
+                    if (!ctx) return;
+
+                    // Destroy existing chart
+                    if (this.charts.produtosCategoria) {
+                        this.charts.produtosCategoria.destroy();
+                    }
+
+                    this.charts.produtosCategoria = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.map(item => item.categoria),
+                            datasets: [{
+                                data: data.map(item => item.quantidadeTotal),
+                                backgroundColor: this.colors.primary,
+                                borderWidth: 3,
+                                borderColor: 'rgba(255, 255, 255, 0.2)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#2c3e50' }
+                                }
+                            },
+                            onComplete: () => {
+                                ctx.style.opacity = '1';
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de produtos por categoria:', error);
+                }
+            }
+
+            async createProdutosBaixoEstoqueChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/produtos-baixo-estoque?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('produtosBaixoEstoqueChart');
+                    if (!ctx) return;
+
+                    const limitedData = data.slice(0, 10);
+
+                    // Destroy existing chart
+                    if (this.charts.produtosBaixoEstoque) {
+                        this.charts.produtosBaixoEstoque.destroy();
+                    }
+
+                    this.charts.produtosBaixoEstoque = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: limitedData.map(item => item.nome),
+                            datasets: [{
+                                label: 'Quantidade em Estoque',
+                                data: limitedData.map(item => item.quantidade),
+                                backgroundColor: limitedData.map(item => {
+                                    if (item.quantidade === 0) return '#dc3545';
+                                    if (item.quantidade <= 5) return '#fd7e14';
+                                    return '#ffc107';
+                                }),
+                                borderWidth: 2,
+                                borderColor: 'rgba(255, 255, 255, 0.2)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            indexAxis: 'y',
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: {
+                                    title: { display: true, text: 'Quantidade', color: '#2c3e50' },
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                },
+                                y: {
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de baixo estoque:', error);
+                }
+            }
+
+            async createTopProdutosChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/top-produtos?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('topProdutosChart');
+                    if (!ctx) return;
+
+                    // Destroy existing chart
+                    if (this.charts.topProdutos) {
+                        this.charts.topProdutos.destroy();
+                    }
+
+                    this.charts.topProdutos = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(item => item.produtoNome),
+                            datasets: [{
+                                label: 'Quantidade Vendida',
+                                data: data.map(item => item.quantidadeVendida),
+                                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                                borderColor: '#667eea',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            indexAxis: 'y',
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: {
+                                    title: { display: true, text: 'Quantidade Vendida', color: '#2c3e50' },
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                },
+                                y: {
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de top produtos:', error);
+                }
+            }
+
+            // ...dentro da sua classe DashboardStudioMuda...
+
+            async createTopClientesChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/top-clientes?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('topClientesChart');
+                    if (!ctx) return;
+
+                    // Destroy existing chart
+                    if (this.charts.topClientes) {
+                        this.charts.topClientes.destroy();
+                    }
+
+                    this.charts.topClientes = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(item => item.nome),
+                            datasets: [{
+                                label: 'Total de Pedidos',
+                                data: data.map(item => item.pedidos), // <-- CORRIGIDO AQUI
+                                backgroundColor: 'rgba(240, 147, 251, 0.8)',
+                                borderColor: '#f093fb',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    title: { display: true, text: 'Pedidos', color: '#2c3e50' },
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                },
+                                x: {
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de top clientes:', error);
+                }
+            }
+
+            async createEntregasPrazoChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    console.log('Carregando Entregas Prazo - Query:', query);
+                    const response = await fetch(`/dashboard/api/entregas-prazo?${query}`);
+                    console.log('Entregas Prazo Response status:', response.status);
+                    const data = await response.json();
+                    console.log('Entregas Prazo Data:', data);
+
+                    const ctx = document.getElementById('entregasPrazoChart');
+                    console.log('Entregas Prazo Canvas encontrado:', !!ctx);
+                    if (!ctx) {
+                        console.error('Canvas entregasPrazoChart não encontrado!');
+                        return;
+                    }
+
+                    // Destroy existing chart
+                    if (this.charts.entregasPrazo) {
+                        this.charts.entregasPrazo.destroy();
+                    }
+
+                    this.charts.entregasPrazo = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['No Prazo', 'Atrasadas'],
+                            datasets: [{
+                                data: [data.noPrazo, data.atrasados],
+                                backgroundColor: ['#43e97b', '#fa709a'],
+                                borderWidth: 3,
+                                borderColor: 'rgba(255, 255, 255, 0.2)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#2c3e50' }
+                                }
+                            },
+                            onComplete: () => {
+                                ctx.style.opacity = '1';
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de entregas no prazo:', error);
+                }
+            }
+
+            async createTempoEntregaChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    console.log('Carregando Tempo Entrega - Query:', query);
+                    const response = await fetch(`/dashboard/api/tempo-entrega-mes?${query}`);
+                    console.log('Tempo Entrega Response status:', response.status);
+                    const data = await response.json();
+                    console.log('Tempo Entrega Data:', data);
+
+                    const ctx = document.getElementById('tempoEntregaChart');
+                    console.log('Tempo Entrega Canvas encontrado:', !!ctx);
+                    if (!ctx) {
+                        console.error('Canvas tempoEntregaChart não encontrado!');
+                        return;
+                    }
+
+                    // Destroy existing chart
+                    if (this.charts.tempoEntrega) {
+                        this.charts.tempoEntrega.destroy();
+                    }
+
+                    this.charts.tempoEntrega = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.map(item => `${item.mes}/${item.ano}`),
+                            datasets: [{
+                                label: 'Tempo Médio (dias)',
+                                data: data.map(item => item.tempoMedio),
+                                borderColor: '#4facfe',
+                                backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    title: { display: true, text: 'Dias', color: '#2c3e50' },
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                },
+                                x: {
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de tempo de entrega:', error);
+                }
+            }
+
+            // Pedidos recentes com filtros
+            async loadPedidosRecentes() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/recentes-pedidos?${query}`);
+                    const data = await response.json();
+
+                    const tbody = document.getElementById('tabela-pedidos');
+                    if (tbody) {
+                        tbody.innerHTML = '';
+
+                        if (data && data.length > 0) {
+                            data.forEach(pedido => {
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = `
+                            <td><strong>#${pedido.id}</strong></td>
+                            <td>${pedido.clienteNome}</td>
+                            <td>${new Date(pedido.dataRequisicao).toLocaleDateString('pt-BR')}</td>
+                            <td>R$ ${pedido.valorTotal ? pedido.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
+                            <td>${pedido.dataEntrega ? new Date(pedido.dataEntrega).toLocaleDateString('pt-BR') : 'Não definida'}</td>
+                        `;
+                                tbody.appendChild(tr);
+                            });
+                        } else {
+                            tbody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum pedido encontrado para os filtros aplicados</td></tr>';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar pedidos recentes:', error);
+                    const tbody = document.getElementById('tabela-pedidos');
+                    if (tbody) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Erro ao carregar dados</td></tr>';
+                    }
+                }
+            }
+
+            // Modal
+            showModal(title, content) {
+                const modalTitle = document.getElementById('detalheModalLabel');
+                const modalBody = document.getElementById('detalheModalBody');
+
+                if (modalTitle && modalBody) {
+                    modalTitle.textContent = title;
+                    modalBody.innerHTML = content;
+                    const modal = new bootstrap.Modal(document.getElementById('detalheModal'));
+                    modal.show();
+                }
+            }
+        }
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM carregado, inicializando dashboard...');
+
+            // Função para tentar inicializar o dashboard
+            function initDashboard() {
+                if (typeof Chart !== 'undefined') {
+                    console.log('Chart.js v' + Chart.version + ' disponível, iniciando dashboard...');
+                    new DashboardStudioMuda();
+                    return true;
+                }
+                return false;
+            }
+
+            // Tentar inicializar imediatamente
+            if (!initDashboard()) {
+                // Se não funcionou, aguardar um pouco mais
+                console.log('Aguardando Chart.js carregar...');
+                setTimeout(() => {
+                    if (!initDashboard()) {
+                        console.error('Chart.js não pôde ser carregado após múltiplas tentativas');
+                    }
+                }, 500);
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+    <div th:replace="layout :: menu"></div>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="page-title">
+                        <i class="bi bi-basket3-fill me-3"></i>
+                        <span th:text="${pedido.id == 0 ? 'Novo Pedido' : 'Editar Pedido'}"></span>
+                    </h1>
+                    <p class="page-subtitle">
+                        <span th:if="${pedido.id == 0}">Crie um novo pedido de plantas preservadas</span>
+                        <span th:unless="${pedido.id == 0}" th:text="'Editando pedido #' + ${pedido.id}"></span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/pedidos" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-arrow-left me-2"></i>
+                        Voltar aos Pedidos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <form th:action="@{/pedidos/salvar}" th:object="${pedido}" method="post">
+            <input type="hidden" name="id" th:value="${pedido.id}">
+            
+            <div class="row g-4">
+                <!-- Customer and Staff Information -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-people-fill me-2"></i>
+                                Cliente e Responsável
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="clienteId" class="form-label">Cliente</label>
+                                    <select class="form-select" id="clienteId" name="clienteId" required>
+                                        <option value="">Selecione um cliente...</option>
+                                        <option th:each="cliente : ${clientes}" 
+                                                th:value="${cliente.id}" 
+                                                th:text="${cliente.nome + ' - ' + cliente.cpfCnpj}"
+                                                th:selected="${cliente.id == pedido.clienteId}"></option>
+                                    </select>
+                                    <div class="form-text">Cliente que está realizando o pedido</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="funcionarioId" class="form-label">Funcionário Responsável</label>
+                                    <select class="form-select" id="funcionarioId" name="funcionarioId" required>
+                                        <option value="">Selecione o funcionário...</option>
+                                        <option th:each="funcionario : ${funcionarios}" 
+                                                th:value="${funcionario.id}" 
+                                                th:text="${funcionario.nome + ' (' + funcionario.cargo + ')'}"
+                                                th:selected="${funcionario.id == pedido.funcionarioId}"></option>
+                                    </select>
+                                    <div class="form-text">Funcionário que atenderá o pedido</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dates -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-calendar3 me-2"></i>
+                                Datas do Pedido
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="dataRequisicao" class="form-label">Data de Requisição</label>
+                                    <input type="date" class="form-control" id="dataRequisicao" name="dataRequisicaoStr" 
+                                           th:value="${pedido.dataRequisicao != null ? #dates.format(pedido.dataRequisicao, 'yyyy-MM-dd') : #dates.format(#dates.createNow(), 'yyyy-MM-dd')}" 
+                                           required>
+                                    <div class="form-text">Data em que o pedido foi solicitado</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="dataEntrega" class="form-label">Data de Entrega Prevista</label>
+                                    <input type="date" class="form-control" id="dataEntrega" name="dataEntregaStr" 
+                                           th:value="${pedido.dataEntrega != null ? #dates.format(pedido.dataEntrega, 'yyyy-MM-dd') : ''}">
+                                    <div class="form-text">Quando o pedido deve ser entregue (opcional)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Discount and Promotions -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-gift-fill me-2"></i>
+                                Promoções e Descontos
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <label for="cupomId" class="form-label">Cupom de Desconto</label>
+                                    <select class="form-select" id="cupomId" name="cupomId">
+                                        <option value="0">Sem cupom aplicado</option>
+                                        <option th:each="cupom : ${cupons}" 
+                                                th:value="${cupom.id}" 
+                                                th:text="${cupom.codigo + ' - Desconto: R$ ' + #numbers.formatDecimal(cupom.valor, 1, 'POINT', 2, 'COMMA') + ' (' + cupom.descricao + ')'}"
+                                                th:selected="${cupom.id == pedido.cupomId}"
+                                                th:disabled="${!cupom.valido}"></option>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Cupons vencidos aparecem desabilitados
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Status do Desconto</label>
+                                    <div class="d-flex align-items-center mt-2">
+                                        <span class="badge bg-info" th:if="${pedido.cupomId != null && pedido.cupomId > 0}">
+                                            <i class="bi bi-percent me-1"></i>Desconto Aplicado
+                                        </span>
+                                        <span class="badge bg-secondary" th:unless="${pedido.cupomId != null && pedido.cupomId > 0}">
+                                            <i class="bi bi-dash-circle me-1"></i>Sem Desconto
+                                        </span>
+                                    </div>
+                                    <div class="form-text">Status atual do desconto</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="/pedidos" class="btn btn-outline-secondary btn-lg">
+                                    <i class="bi bi-arrow-left me-2"></i>
+                                    Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-save me-2"></i>
+                                    <span th:text="${pedido.id == 0 ? 'Criar Pedido' : 'Salvar Alterações'}"></span>
+                                </button>
+                            </div>
+                            <div class="row mt-3" th:if="${pedido.id == 0}">
+                                <div class="col-12">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-lightbulb me-2"></i>
+                                        <strong>Próximo passo:</strong> Após salvar, você poderá adicionar produtos ao pedido.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <div th:replace="layout :: footer"></div>
+    <div th:replace="layout :: scripts"></div>
+</body>
+</html>
