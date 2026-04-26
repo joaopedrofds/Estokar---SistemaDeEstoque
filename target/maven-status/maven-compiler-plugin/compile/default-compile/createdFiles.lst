@@ -6,8 +6,8 @@ com/studiomuda/estoque/controller/CupomController.class
 com/studiomuda/estoque/controller/DashboardController.class
 com/studiomuda/estoque/dao/ProdutoDAO.class
 com/studiomuda/estoque/controller/EstoqueController.class
-com/studiomuda/estoque/controller/ClienteController.class
 com/studiomuda/estoque/dao/ItemPedidoDAO.class
+com/studiomuda/estoque/controller/ClienteController.class
 com/studiomuda/estoque/config/LoggingConfig.class
 com/studiomuda/estoque/EstoqueApplication.class
 com/studiomuda/estoque/dto/DashboardDTO$ClienteAtivo.class
@@ -16,14 +16,14 @@ com/studiomuda/estoque/dto/DashboardDTO.class
 conexao/Conexao.class
 com/studiomuda/estoque/dao/ClienteDAO.class
 com/studiomuda/estoque/controller/CustomErrorController.class
-com/studiomuda/estoque/controller/ExemploApiController.class
 com/studiomuda/estoque/dao/FuncionarioDAO.class
+com/studiomuda/estoque/controller/ExemploApiController.class
 com/studiomuda/estoque/config/SecurityConfig.class
 com/studiomuda/estoque/controller/ClienteApiController.class
 com/studiomuda/estoque/controller/PedidoController.class
 com/studiomuda/estoque/model/MovimentacaoEstoque.class
-com/studiomuda/estoque/conexao/Conexao.class
 com/studiomuda/estoque/controller/EstoqueApiController.class
+com/studiomuda/estoque/conexao/Conexao.class
 com/studiomuda/estoque/config/WebConfig.class
 com/studiomuda/estoque/model/Cliente.class
 com/studiomuda/estoque/dto/DashboardDTO$ClienteResumo.class
