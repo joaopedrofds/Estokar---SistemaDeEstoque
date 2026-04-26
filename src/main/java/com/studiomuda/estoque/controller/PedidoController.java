@@ -28,13 +28,28 @@ import java.util.Map;
 @Controller
 @RequestMapping("/pedidos")
 public class PedidoController {
+    private static final int DIAS_LIMITE_INADIMPLENCIA = 45;
 
-    private final PedidoDAO pedidoDAO = new PedidoDAO();
-    private final ItemPedidoDAO itemPedidoDAO = new ItemPedidoDAO();
-    private final ClienteDAO clienteDAO = new ClienteDAO();
-    private final ProdutoDAO produtoDAO = new ProdutoDAO();
-    private final FuncionarioDAO funcionarioDAO = new FuncionarioDAO();
-    private final CupomDAO cupomDAO = new CupomDAO();
+    private final PedidoDAO pedidoDAO;
+    private final ItemPedidoDAO itemPedidoDAO;
+    private final ClienteDAO clienteDAO;
+    private final ProdutoDAO produtoDAO;
+    private final FuncionarioDAO funcionarioDAO;
+    private final CupomDAO cupomDAO;
+
+    public PedidoController() {
+        this(new PedidoDAO(), new ItemPedidoDAO(), new ClienteDAO(), new ProdutoDAO(), new FuncionarioDAO(), new CupomDAO());
+    }
+
+    PedidoController(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO, ClienteDAO clienteDAO,
+                     ProdutoDAO produtoDAO, FuncionarioDAO funcionarioDAO, CupomDAO cupomDAO) {
+        this.pedidoDAO = pedidoDAO;
+        this.itemPedidoDAO = itemPedidoDAO;
+        this.clienteDAO = clienteDAO;
+        this.produtoDAO = produtoDAO;
+        this.funcionarioDAO = funcionarioDAO;
+        this.cupomDAO = cupomDAO;
+    }
 
     @GetMapping
     public String listarPedidos(@RequestParam(value = "cpfCnpj", required = false) String cpfCnpj, Model model) {
@@ -83,11 +98,8 @@ public class PedidoController {
         try {
             Pedido pedido = new Pedido();
             pedido.setDataRequisicao(Date.valueOf(LocalDate.now()));
-            
-            model.addAttribute("pedido", pedido);
-            model.addAttribute("clientes", clienteDAO.listarAtivos());
-            model.addAttribute("funcionarios", funcionarioDAO.listar());
-            model.addAttribute("cupons", cupomDAO.listar());
+            pedido.setStatusPagamento("PENDENTE");
+            carregarDadosFormularioPedido(model, pedido);
             return "pedidos/form";
         } catch (SQLException e) {
             model.addAttribute("mensagemErro", "Erro ao preparar formulário: " + e.getMessage());
@@ -99,7 +111,9 @@ public class PedidoController {
     public String salvarPedido(@ModelAttribute Pedido pedido, 
                               @RequestParam(value = "dataRequisicaoStr", required = false) String dataRequisicaoStr,
                               @RequestParam(value = "dataEntregaStr", required = false) String dataEntregaStr,
-                              @RequestParam(value = "cupomId", required = false) Integer cupomId) {
+                              @RequestParam(value = "dataPagamentoStr", required = false) String dataPagamentoStr,
+                              @RequestParam(value = "cupomId", required = false) Integer cupomId,
+                              Model model) {
         try {
             // Converter strings de data para Date
             if (dataRequisicaoStr != null && !dataRequisicaoStr.isEmpty()) {
@@ -108,6 +122,23 @@ public class PedidoController {
             
             if (dataEntregaStr != null && !dataEntregaStr.isEmpty()) {
                 pedido.setDataEntrega(Date.valueOf(dataEntregaStr));
+            }
+
+            if (dataPagamentoStr != null && !dataPagamentoStr.isEmpty()) {
+                pedido.setDataPagamento(Date.valueOf(dataPagamentoStr));
+            } else {
+                pedido.setDataPagamento(null);
+            }
+
+            if (pedido.getStatusPagamento() == null || pedido.getStatusPagamento().trim().isEmpty()) {
+                pedido.setStatusPagamento("PENDENTE");
+            } else if (!"PAGO".equalsIgnoreCase(pedido.getStatusPagamento())) {
+                pedido.setStatusPagamento("PENDENTE");
+            }
+            if (!"PAGO".equalsIgnoreCase(pedido.getStatusPagamento())) {
+                pedido.setDataPagamento(null);
+            } else if (pedido.getDataPagamento() == null) {
+                pedido.setDataPagamento(Date.valueOf(LocalDate.now()));
             }
             
             // Verificar e aplicar cupom se existir
@@ -126,14 +157,40 @@ public class PedidoController {
             }
             
             if (pedido.getId() == 0) {
+                PedidoDAO.InadimplenciaInfo inadimplenciaInfo = pedidoDAO.verificarInadimplenciaCliente(
+                        pedido.getClienteId(),
+                        DIAS_LIMITE_INADIMPLENCIA
+                );
+                if (inadimplenciaInfo.isBloqueado()) {
+                    clienteDAO.bloquearPorInadimplencia(pedido.getClienteId());
+                    String alertaFinanceiro = "Cliente bloqueado automaticamente por inadimplência. " +
+                            "Existe pendência com " + inadimplenciaInfo.getDiasAtraso() + " dias de atraso " +
+                            "(pedido #" + inadimplenciaInfo.getPedidoPendenteId() + ").";
+                    pedidoDAO.registrarAlertaFinanceiro(
+                            pedido.getClienteId(),
+                            inadimplenciaInfo.getPedidoPendenteId(),
+                            inadimplenciaInfo.getDiasAtraso(),
+                            alertaFinanceiro
+                    );
+
+                    carregarDadosFormularioPedido(model, pedido);
+                    model.addAttribute("mensagemErro", alertaFinanceiro);
+                    model.addAttribute("mensagemAviso", "Alerta enviado para o Gestor Financeiro.");
+                    return "pedidos/form";
+                }
                 pedidoDAO.inserir(pedido);
             } else {
                 pedidoDAO.atualizar(pedido);
             }
             return "redirect:/pedidos/itens/" + pedido.getId();
         } catch (Exception e) {
-            e.printStackTrace();
-            return "redirect:/erro?mensagem=" + e.getMessage();
+            try {
+                carregarDadosFormularioPedido(model, pedido);
+            } catch (SQLException ex) {
+                return "redirect:/erro?mensagem=" + ex.getMessage();
+            }
+            model.addAttribute("mensagemErro", "Erro ao salvar pedido: " + e.getMessage());
+            return "pedidos/form";
         }
     }
     
@@ -141,6 +198,15 @@ public class PedidoController {
     @ResponseBody
     public ResponseEntity<?> salvarPedidoApi(@RequestBody Pedido pedido) {
         try {
+            if (pedido.getStatusPagamento() == null || pedido.getStatusPagamento().trim().isEmpty()) {
+                pedido.setStatusPagamento("PENDENTE");
+            }
+            if (!"PAGO".equalsIgnoreCase(pedido.getStatusPagamento())) {
+                pedido.setDataPagamento(null);
+            } else if (pedido.getDataPagamento() == null) {
+                pedido.setDataPagamento(Date.valueOf(LocalDate.now()));
+            }
+
             // Verificar e aplicar cupom se existir
             if (pedido.getCupomId() > 0) {
                 Cupom cupom = cupomDAO.buscarPorId(pedido.getCupomId());
@@ -156,6 +222,27 @@ public class PedidoController {
             }
             
             if (pedido.getId() == 0) {
+                PedidoDAO.InadimplenciaInfo inadimplenciaInfo = pedidoDAO.verificarInadimplenciaCliente(
+                        pedido.getClienteId(),
+                        DIAS_LIMITE_INADIMPLENCIA
+                );
+                if (inadimplenciaInfo.isBloqueado()) {
+                    clienteDAO.bloquearPorInadimplencia(pedido.getClienteId());
+                    String mensagem = "Venda bloqueada por inadimplência. Pedido pendente #" +
+                            inadimplenciaInfo.getPedidoPendenteId() + " com " +
+                            inadimplenciaInfo.getDiasAtraso() + " dias de atraso.";
+                    pedidoDAO.registrarAlertaFinanceiro(
+                            pedido.getClienteId(),
+                            inadimplenciaInfo.getPedidoPendenteId(),
+                            inadimplenciaInfo.getDiasAtraso(),
+                            mensagem
+                    );
+                    Map<String, Object> error = new HashMap<>();
+                    error.put("erro", mensagem);
+                    error.put("codigo", "CLIENTE_BLOQUEADO_INADIMPLENCIA");
+                    error.put("diasAtraso", inadimplenciaInfo.getDiasAtraso());
+                    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
+                }
                 pedidoDAO.inserir(pedido);
             } else {
                 pedidoDAO.atualizar(pedido);
@@ -173,10 +260,7 @@ public class PedidoController {
         try {
             Pedido pedido = pedidoDAO.buscarPorId(id);
             if (pedido != null) {
-                model.addAttribute("pedido", pedido);
-                model.addAttribute("clientes", clienteDAO.listarAtivos());
-                model.addAttribute("funcionarios", funcionarioDAO.listar());
-                model.addAttribute("cupons", cupomDAO.listar());
+                carregarDadosFormularioPedido(model, pedido);
                 return "pedidos/form";
             } else {
                 return "redirect:/pedidos";
@@ -206,6 +290,9 @@ public class PedidoController {
                 pedidoMap.put("funcionarioNome", pedido.getFuncionarioNome());
                 pedidoMap.put("funcionarioCargo", pedido.getFuncionarioCargo());
                 pedidoMap.put("valorDesconto", pedido.getValorDesconto());
+                pedidoMap.put("statusPagamento", pedido.getStatusPagamento());
+                pedidoMap.put("dataPagamento", pedido.getDataPagamento());
+                pedidoMap.put("diasAtrasoPagamento", pedido.getDiasAtrasoPagamento());
                 pedidoMap.put("itens", itens);
                 return ResponseEntity.ok(pedidoMap);
             } else {
@@ -461,6 +548,13 @@ public class PedidoController {
             error.put("erro", "Erro ao excluir item do pedido: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
+    }
+
+    private void carregarDadosFormularioPedido(Model model, Pedido pedido) throws SQLException {
+        model.addAttribute("pedido", pedido);
+        model.addAttribute("clientes", clienteDAO.listarAtivos());
+        model.addAttribute("funcionarios", funcionarioDAO.listar());
+        model.addAttribute("cupons", cupomDAO.listar());
     }
     
     @GetMapping("/filtros")

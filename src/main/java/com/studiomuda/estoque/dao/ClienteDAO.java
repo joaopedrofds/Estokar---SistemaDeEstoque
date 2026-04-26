@@ -4,10 +4,21 @@ import com.studiomuda.estoque.conexao.Conexao;
 import com.studiomuda.estoque.model.Cliente;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ClienteDAO {
+    private final PedidoDAO pedidoDAO;
+
+    public ClienteDAO() {
+        this(new PedidoDAO());
+    }
+
+    ClienteDAO(PedidoDAO pedidoDAO) {
+        this.pedidoDAO = pedidoDAO;
+    }
 
     public void inserir(Cliente c) throws SQLException {
         String sql = "INSERT INTO cliente (nome, cpf_cnpj, telefone, email, cep, rua, numero, bairro, cidade, estado, tipo, ativo, dataNascimento) "
@@ -125,6 +136,15 @@ public class ClienteDAO {
         }
     }
 
+    public void bloquearPorInadimplencia(int id) throws SQLException {
+        String sql = "UPDATE cliente SET ativo = false WHERE id = ?";
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        }
+    }
+
     public List<Cliente> listar() throws SQLException {
         List<Cliente> lista = new ArrayList<>();
         String sql = "SELECT * FROM cliente";
@@ -151,7 +171,7 @@ public class ClienteDAO {
                 lista.add(c);
             }
         }
-
+        aplicarAnaliseFrequencia(lista);
         return lista;
     }
 
@@ -191,7 +211,7 @@ public class ClienteDAO {
                 lista.add(c);
             }
         }
-
+        aplicarAnaliseFrequencia(lista);
         return lista;
     }
 
@@ -229,19 +249,64 @@ public class ClienteDAO {
                         rs.getString("cpf_cnpj"),
                         rs.getString("telefone"),
                         rs.getString("email"),
+                        rs.getString("tipo"),
                         rs.getString("cep"),
                         rs.getString("rua"),
                         rs.getString("numero"),
                         rs.getString("bairro"),
                         rs.getString("cidade"),
                         rs.getString("estado"),
-                        rs.getString("tipo"),
                         rs.getBoolean("ativo"),
                         rs.getDate("dataNascimento") != null ? rs.getDate("dataNascimento").toLocalDate() : null
                 );
                 lista.add(c);
             }
         }
+        aplicarAnaliseFrequencia(lista);
         return lista;
+    }
+
+    private void aplicarAnaliseFrequencia(List<Cliente> clientes) throws SQLException {
+        for (Cliente cliente : clientes) {
+            List<LocalDate> datasCompra = pedidoDAO.listarDatasCompraPorCliente(cliente.getId());
+            cliente.setTotalPedidos(datasCompra.size());
+
+            if (datasCompra.isEmpty()) {
+                cliente.setMediaDiasEntreCompras(null);
+                cliente.setClassificacaoFrequencia("Sem Compras");
+                continue;
+            }
+
+            double mediaDias = calcularMediaDiasEntreCompras(datasCompra, LocalDate.now());
+
+            cliente.setMediaDiasEntreCompras(Math.round(mediaDias * 100.0) / 100.0);
+            cliente.setClassificacaoFrequencia(classificarFrequencia(mediaDias));
+        }
+    }
+
+    double calcularMediaDiasEntreCompras(List<LocalDate> datasCompra, LocalDate dataReferencia) {
+        if (datasCompra == null || datasCompra.isEmpty()) {
+            return 0.0;
+        }
+
+        if (datasCompra.size() == 1) {
+            return ChronoUnit.DAYS.between(datasCompra.get(0), dataReferencia);
+        }
+
+        long somaIntervalos = 0L;
+        for (int i = 1; i < datasCompra.size(); i++) {
+            somaIntervalos += ChronoUnit.DAYS.between(datasCompra.get(i - 1), datasCompra.get(i));
+        }
+        return (double) somaIntervalos / (datasCompra.size() - 1);
+    }
+
+    String classificarFrequencia(double mediaDias) {
+        if (mediaDias < 15) {
+            return "Cliente VIP";
+        }
+        if (mediaDias <= 30) {
+            return "Regular";
+        }
+        return "Em Risco/Inativo";
     }
 }

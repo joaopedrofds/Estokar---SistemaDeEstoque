@@ -803,6 +803,19 @@ public class DashboardController {
                 }
             }
 
+            // Alertas financeiros não resolvidos (inadimplência)
+            String sqlAlertasFinanceiros = "SELECT COUNT(*) as total FROM alerta_financeiro WHERE resolvido = false";
+            try (Connection conn = Conexao.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sqlAlertasFinanceiros);
+                 ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    alertas.put("alertasFinanceiros", rs.getInt("total"));
+                }
+            } catch (SQLException e) {
+                // Mantém retrocompatibilidade para bancos sem a tabela nova.
+                alertas.put("alertasFinanceiros", 0);
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

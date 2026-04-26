@@ -69,6 +69,8 @@ CREATE TABLE pedido (
     funcionario_id INT,                                -- Funcionário associado à venda
     cupom_id INT,                                      -- Cupom de desconto aplicado
     valor_desconto DECIMAL(10,2) DEFAULT 0.00,         -- Valor do desconto aplicado
+    status_pagamento VARCHAR(20) NOT NULL DEFAULT 'PENDENTE', -- PENDENTE ou PAGO
+    data_pagamento DATE,                               -- Data de quitação
     FOREIGN KEY (cupom_id) REFERENCES cupom(id),
     FOREIGN KEY (funcionario_id) REFERENCES funcionario(id)
 );
@@ -76,6 +78,7 @@ CREATE TABLE pedido (
 -- Criar índices para melhorar a performance das consultas em pedidos
 CREATE INDEX idx_pedido_funcionario ON pedido(funcionario_id);
 CREATE INDEX idx_pedido_cupom ON pedido(cupom_id);
+CREATE INDEX idx_pedido_cliente_pagamento ON pedido(cliente_id, status_pagamento, data_requisicao);
 
 -- Tabela de movimentações de estoque
 CREATE TABLE movimentacao_estoque (
@@ -106,6 +109,21 @@ CREATE TABLE item_pedido (
     FOREIGN KEY (id_pedido) REFERENCES pedido(id),
     FOREIGN KEY (id_produto) REFERENCES produto(id)
 );
+
+-- Tabela de alertas financeiros por inadimplência
+CREATE TABLE alerta_financeiro (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    pedido_id INT,
+    dias_atraso INT NOT NULL,
+    mensagem TEXT NOT NULL,
+    resolvido BOOLEAN DEFAULT FALSE,
+    data_alerta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (cliente_id) REFERENCES cliente(id),
+    FOREIGN KEY (pedido_id) REFERENCES pedido(id)
+);
+
+CREATE INDEX idx_alerta_financeiro_resolvido ON alerta_financeiro(resolvido, data_alerta);
 
 -- Tabela de histórico de alterações no funcionário
 CREATE TABLE historico_funcionario (

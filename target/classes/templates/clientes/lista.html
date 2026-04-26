@@ -85,6 +85,8 @@
                                 <th>Contato</th>
                                 <th>Localização</th>
                                 <th>Status</th>
+                                <th>Frequência</th>
+                                <th>Média entre compras</th>
                                 <th class="text-center">Ações</th>
                             </tr>
                         </thead>
@@ -123,6 +125,24 @@
                                     <span th:unless="${cliente.ativo}" class="status-badge status-inactive">
                                         <i class="bi bi-x-circle-fill me-1"></i>Inativo
                                     </span>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${
+                                              cliente.classificacaoFrequencia == 'Cliente VIP' ? 'bg-success' :
+                                              (cliente.classificacaoFrequencia == 'Regular' ? 'bg-primary' :
+                                              (cliente.classificacaoFrequencia == 'Em Risco/Inativo' ? 'bg-warning text-dark' : 'bg-secondary'))
+                                          }"
+                                          th:text="${cliente.classificacaoFrequencia}"></span>
+                                    <small class="text-muted d-block"
+                                           th:text="${(cliente.totalPedidos != null ? cliente.totalPedidos : 0) + ' pedidos'}"></small>
+                                </td>
+                                <td>
+                                    <span th:if="${cliente.mediaDiasEntreCompras != null}"
+                                          th:text="${#numbers.formatDecimal(cliente.mediaDiasEntreCompras, 1, 'POINT', 1, 'COMMA') + ' dias'}"></span>
+                                    <small class="text-muted" th:unless="${cliente.mediaDiasEntreCompras != null}">
+                                        Sem histórico suficiente
+                                    </small>
                                 </td>
                                 <td>
                                     <div class="action-buttons">

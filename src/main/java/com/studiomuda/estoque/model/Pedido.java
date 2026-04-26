@@ -16,8 +16,13 @@ public class Pedido {
     private String status; // Novo campo para status do pedido
     private String clienteCpfCnpj; // Campo auxiliar para exibição do CPF/CNPJ do cliente
     private String cupomCodigo;    // Campo auxiliar para exibição do código do cupom
+    private String statusPagamento; // PENDENTE ou PAGO
+    private Date dataPagamento;
+    private Integer diasAtrasoPagamento; // Campo auxiliar para exibição
 
-    public Pedido() {}
+    public Pedido() {
+        this.statusPagamento = "PENDENTE";
+    }
 
     public Pedido(int id, Date dataRequisicao, Date dataEntrega, int clienteId, int cupomId, int funcionarioId, double valorDesconto) {
         this.id = id;
@@ -27,6 +32,7 @@ public class Pedido {
         this.cupomId = cupomId;
         this.funcionarioId = funcionarioId;
         this.valorDesconto = valorDesconto;
+        this.statusPagamento = "PENDENTE";
     }
 
     public int getId() {
@@ -133,6 +139,30 @@ public class Pedido {
         this.cupomCodigo = cupomCodigo;
     }
 
+    public String getStatusPagamento() {
+        return statusPagamento;
+    }
+
+    public void setStatusPagamento(String statusPagamento) {
+        this.statusPagamento = statusPagamento;
+    }
+
+    public Date getDataPagamento() {
+        return dataPagamento;
+    }
+
+    public void setDataPagamento(Date dataPagamento) {
+        this.dataPagamento = dataPagamento;
+    }
+
+    public Integer getDiasAtrasoPagamento() {
+        return diasAtrasoPagamento;
+    }
+
+    public void setDiasAtrasoPagamento(Integer diasAtrasoPagamento) {
+        this.diasAtrasoPagamento = diasAtrasoPagamento;
+    }
+
     @Override
     public String toString() {
         return "Pedido #" + id +
@@ -141,6 +171,7 @@ public class Pedido {
                 " | Cliente ID: " + clienteId +
                 " | Funcionário ID: " + funcionarioId +
                 " | Cupom ID: " + cupomId +
-                " | Status: " + status;
+                " | Status: " + status +
+                " | Pagamento: " + statusPagamento;
     }
 }

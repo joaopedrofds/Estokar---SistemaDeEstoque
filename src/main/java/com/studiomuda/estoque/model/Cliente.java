@@ -17,8 +17,14 @@ public class Cliente {
     private String estado;
     private boolean ativo;
     private LocalDate dataNascimento;
+    private Integer totalPedidos;
+    private Double mediaDiasEntreCompras;
+    private String classificacaoFrequencia;
 
     public Cliente() {
+        this.totalPedidos = 0;
+        this.mediaDiasEntreCompras = null;
+        this.classificacaoFrequencia = "Sem Compras";
     }
 
     public Cliente(int id, String nome, String cpfCnpj, String telefone, String email, String tipo,
@@ -38,12 +44,16 @@ public class Cliente {
         this.estado = estado;
         this.ativo = ativo;
         this.dataNascimento = dataNascimento;
+        this.totalPedidos = 0;
+        this.mediaDiasEntreCompras = null;
+        this.classificacaoFrequencia = "Sem Compras";
     }
 
     public Cliente(int int1, String string, String string2, String string3, String string4, String string5,
             String string6, String string7, String string8, String string9, String string10, String string11,
             boolean boolean1, Object object) {
-        // TODO Auto-generated constructor stub
+        this(int1, string, string2, string3, string4, string5, string6, string7, string8, string9, string10, string11,
+                boolean1, object instanceof LocalDate ? (LocalDate) object : null);
     }
 
     // Getters e Setters
@@ -157,6 +167,30 @@ public class Cliente {
 
     public void setDataNascimento(LocalDate dataNascimento) {
         this.dataNascimento = dataNascimento;
+    }
+
+    public Integer getTotalPedidos() {
+        return totalPedidos;
+    }
+
+    public void setTotalPedidos(Integer totalPedidos) {
+        this.totalPedidos = totalPedidos;
+    }
+
+    public Double getMediaDiasEntreCompras() {
+        return mediaDiasEntreCompras;
+    }
+
+    public void setMediaDiasEntreCompras(Double mediaDiasEntreCompras) {
+        this.mediaDiasEntreCompras = mediaDiasEntreCompras;
+    }
+
+    public String getClassificacaoFrequencia() {
+        return classificacaoFrequencia;
+    }
+
+    public void setClassificacaoFrequencia(String classificacaoFrequencia) {
+        this.classificacaoFrequencia = classificacaoFrequencia;
     }
 
     @Override

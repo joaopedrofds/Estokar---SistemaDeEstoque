@@ -240,6 +240,24 @@ INSERT INTO pedido (data_requisicao, data_entrega, cliente_id, funcionario_id, c
 ('2024-12-15', '2024-12-20', 8, 2, NULL, 0),   -- Carlos Eduardo Diretor
 ('2024-12-22', '2025-01-05', 9, 3, NULL, 0);   -- Fernanda Silva Gerente
 
+-- Situação financeira dos pedidos (para regra de inadimplência)
+-- Pedidos entregues são considerados pagos por padrão.
+UPDATE pedido
+SET status_pagamento = 'PAGO',
+    data_pagamento = COALESCE(data_entrega, data_requisicao);
+
+-- Pedidos sem entrega permanecem pendentes.
+UPDATE pedido
+SET status_pagamento = 'PENDENTE',
+    data_pagamento = NULL
+WHERE data_entrega IS NULL;
+
+-- Casos críticos para validação de bloqueio automático por inadimplência.
+UPDATE pedido
+SET status_pagamento = 'PENDENTE',
+    data_pagamento = NULL
+WHERE id IN (24, 25);
+
 -- Inserir itens dos pedidos - Quantidades realistas e variadas
 -- Pedidos 1-3 (Janeiro 2024 - NO PRAZO)
 INSERT INTO item_pedido (id_pedido, id_produto, quantidade) VALUES 

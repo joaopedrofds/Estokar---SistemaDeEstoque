@@ -81,6 +81,7 @@
                                 <th>Data Requisição</th>
                                 <th>Data Entrega</th>
                                 <th>Desconto</th>
+                                <th>Pagamento</th>
                                 <th class="text-center">Ações</th>
                             </tr>
                         </thead>
@@ -117,6 +118,16 @@
                                           class="badge bg-warning text-dark" 
                                           th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorDesconto, 1, 'POINT', 2, 'COMMA')}"></span>
                                     <small class="text-muted" th:unless="${pedido.valorDesconto > 0}">Sem cupom</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success" th:if="${pedido.statusPagamento == 'PAGO'}">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Pago
+                                    </span>
+                                    <span class="badge bg-danger" th:unless="${pedido.statusPagamento == 'PAGO'}">
+                                        <i class="bi bi-exclamation-circle-fill me-1"></i>
+                                        Pendente
+                                        <span th:if="${pedido.diasAtrasoPagamento != null}" th:text="${' (' + pedido.diasAtrasoPagamento + ' dias)'}"></span>
+                                    </span>
                                 </td>
                                 <td>
                                     <div class="action-buttons">

@@ -29,6 +29,17 @@
     </div>
 
     <div class="container py-4">
+        <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${mensagemErro}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${mensagemAviso}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>
+            <span th:text="${mensagemAviso}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
         <form th:action="@{/pedidos/salvar}" th:object="${pedido}" method="post">
             <input type="hidden" name="id" th:value="${pedido.id}">
             
@@ -94,6 +105,36 @@
                                     <input type="date" class="form-control" id="dataEntrega" name="dataEntregaStr" 
                                            th:value="${pedido.dataEntrega != null ? #dates.format(pedido.dataEntrega, 'yyyy-MM-dd') : ''}">
                                     <div class="form-text">Quando o pedido deve ser entregue (opcional)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Status -->
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-cash-coin me-2"></i>
+                                Status Financeiro
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="statusPagamento" class="form-label">Situação do Pagamento</label>
+                                    <select class="form-select" id="statusPagamento" name="statusPagamento">
+                                        <option value="PENDENTE" th:selected="${pedido.statusPagamento == null || pedido.statusPagamento == 'PENDENTE'}">Pendente</option>
+                                        <option value="PAGO" th:selected="${pedido.statusPagamento == 'PAGO'}">Pago</option>
+                                    </select>
+                                    <div class="form-text">Pedidos pendentes com mais de 45 dias bloqueiam novas vendas automaticamente.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="dataPagamento" class="form-label">Data do Pagamento</label>
+                                    <input type="date" class="form-control" id="dataPagamento" name="dataPagamentoStr"
+                                           th:value="${pedido.dataPagamento != null ? #dates.format(pedido.dataPagamento, 'yyyy-MM-dd') : ''}">
+                                    <div class="form-text">Obrigatória apenas quando o status estiver como pago.</div>
                                 </div>
                             </div>
                         </div>
@@ -174,5 +215,27 @@
     
     <div th:replace="layout :: footer"></div>
     <div th:replace="layout :: scripts"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const statusPagamento = document.getElementById('statusPagamento');
+            const dataPagamento = document.getElementById('dataPagamento');
+
+            const atualizarCampoDataPagamento = function () {
+                const pago = statusPagamento && statusPagamento.value === 'PAGO';
+                if (dataPagamento) {
+                    dataPagamento.required = pago;
+                    dataPagamento.disabled = !pago;
+                    if (!pago) {
+                        dataPagamento.value = '';
+                    }
+                }
+            };
+
+            if (statusPagamento) {
+                statusPagamento.addEventListener('change', atualizarCampoDataPagamento);
+                atualizarCampoDataPagamento();
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1056,7 +1056,7 @@
                     if (container) {
                         container.innerHTML = '';
 
-                        if (data.produtosFalta > 0 || data.pedidosPendentes > 0 || data.pedidosAtrasados > 0) {
+                        if (data.produtosFalta > 0 || data.pedidosPendentes > 0 || data.pedidosAtrasados > 0 || data.alertasFinanceiros > 0) {
                             const alertDiv = document.createElement('div');
                             alertDiv.className = 'alert-glass';
                             alertDiv.innerHTML = `
@@ -1064,6 +1064,8 @@
                         <div class="row">
                             ${data.produtosFalta > 0 ? `<div class="col-md-4"><strong>${data.produtosFalta}</strong> produtos em falta</div>` : ''}
                             ${data.pedidosPendentes > 0 ? `<div class="col-md-4"><strong>${data.pedidosPendentes}</strong>  pedidos em aberto</div>` : ''}
+                            ${data.pedidosAtrasados > 0 ? `<div class="col-md-4"><strong>${data.pedidosAtrasados}</strong> pedidos atrasados</div>` : ''}
+                            ${data.alertasFinanceiros > 0 ? `<div class="col-md-4"><strong>${data.alertasFinanceiros}</strong> alertas de inadimplência</div>` : ''}
                         </div>
                     `;
                             container.appendChild(alertDiv);
