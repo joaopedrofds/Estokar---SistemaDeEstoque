@@ -7,16 +7,32 @@ ContextMap EstokarMap {
     contains EstoqueContext
     contains ClienteContext
     contains RHContext
+    
+    contains SuprimentosContext
+    contains LogisticaContext
+    contains DistribuidoraContext
 
-    // Relações entre os Contextos (Upstream -> Downstream)
+    // =========================================================
+    // RELAÇÕES ENTRE OS CONTEXTOS (Upstream -> Downstream)
+    // =========================================================
+    
     // Vendas precisa consultar Estoque para saber se há produto
     EstoqueContext [U] -> [D] VendasContext
 
-    // Vendas precisa consultar Cliente para saber se ele está bloqueado por inadimplência (Sua funcionalidade)
+    // Vendas precisa consultar Cliente para saber se ele está bloqueado por inadimplência
     ClienteContext [U] -> [D] VendasContext
 
     // Vendas precisa saber qual funcionário fez o registro
     RHContext [U] -> [D] VendasContext
+
+    // Suprimentos precisa monitorar o volume do Estoque fixo para acionar o Ponto de Pedido
+    EstoqueContext [U] -> [D] SuprimentosContext
+
+    // Logística precisa dos dados do Estoque para planejar a transferência física de mercadorias
+    EstoqueContext [U] -> [D] LogisticaContext
+
+    // Logística precisa das informações e prioridades das Distribuidoras para calcular rotas e resolver conflitos
+    DistribuidoraContext [U] -> [D] LogisticaContext
 }
 
 /* =========================================================
@@ -24,7 +40,7 @@ ContextMap EstokarMap {
    ========================================================= */
 
 BoundedContext EstoqueContext {
-    domainVisionStatement = "Subdomínio Core: Gerencia o catálogo de produtos e a movimentação de entrada e saída do estoque."
+    domainVisionStatement = "Subdomínio Core: Gerencia o catálogo de produtos e a movimentação de entrada e saída do estoque fixo central."
     
     Aggregate EstoqueAggregate {
         Entity Produto
@@ -47,7 +63,7 @@ BoundedContext ClienteContext {
     
     Aggregate ClienteAggregate {
         Entity Cliente
-        // Aqui entram as regras de negócio de Henrique Tefile:
+        // Regras de negócio de Henrique Tefile:
         // - Bloqueio por Inadimplência
         // - Análise de Frequência de Compras
     }
@@ -58,5 +74,39 @@ BoundedContext RHContext {
     
     Aggregate FuncionarioAggregate {
         Entity Funcionario
+    }
+}
+
+    
+BoundedContext SuprimentosContext {
+    domainVisionStatement = "Subdomínio de Apoio: Responsável pelo Controle Inteligente de Reposição. Intercepta a necessidade do estoque central, avalia lead time e gera Ordens de Compra otimizadas."
+    
+    Aggregate OrdemCompraAggregate {
+        Entity OrdemCompra
+        Entity Fornecedor
+        // Regras de negócio da Funcionalidade 9:
+        // - Cálculo dinâmico de Ponto de Pedido (baseado em lead time)
+        // - Seleção automatizada do melhor fornecedor (custo/prazo)
+    }
+}
+
+BoundedContext LogisticaContext {
+    domainVisionStatement = "Subdomínio de Apoio: Gerencia a roteirização, capacidade física das docas e resolução de conflitos de agendamento de remessas."
+    
+    Aggregate AgendamentoAggregate {
+        Entity AgendamentoRemessa
+        Entity Doca
+        // Regras de negócio da Funcionalidade 10:
+        // - Verificação de sobreposição de horários e volume nas docas
+        // - Sugestão automática de 3 janelas de horários viáveis
+    }
+}
+
+BoundedContext DistribuidoraContext {
+    domainVisionStatement = "Subdomínio Core: Gerencia os dados, localizações e níveis de prioridade das múltiplas distribuidoras parceiras que são abastecidas pelo estoque fixo."
+    
+    Aggregate DistribuidoraAggregate {
+        Entity Distribuidora
+        Entity NivelPrioridade
     }
 }
