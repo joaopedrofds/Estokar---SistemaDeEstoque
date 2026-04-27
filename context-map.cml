@@ -40,7 +40,8 @@ ContextMap EstokarMap {
    ========================================================= */
 
 BoundedContext EstoqueContext {
-    domainVisionStatement = "Subdomínio Core: Gerencia o catálogo de produtos e a movimentação de entrada e saída do estoque fixo central."
+    domainVisionStatement = "Subdomínio Core: Gerencia o catálogo de produtos e a 
+    movimentação de entrada e saída do estoque fixo central."
     
     Aggregate EstoqueAggregate {
         Entity Produto
@@ -49,7 +50,8 @@ BoundedContext EstoqueContext {
 }
 
 BoundedContext VendasContext {
-    domainVisionStatement = "Subdomínio Core: Gerencia o ciclo de vida dos pedidos, faturamento e aplicação de cupons promocionais."
+    domainVisionStatement = "Subdomínio Core: Gerencia o ciclo de vida 
+    dos pedidos, faturamento e aplicação de cupons promocionais."
     
     Aggregate PedidoAggregate {
         Entity Pedido
@@ -59,7 +61,8 @@ BoundedContext VendasContext {
 }
 
 BoundedContext ClienteContext {
-    domainVisionStatement = "Subdomínio de Suporte: Gerencia os perfis dos clientes, métricas de fidelização (frequência) e bloqueio de devedores."
+    domainVisionStatement = "Subdomínio de Suporte: Gerencia os perfis dos 
+    clientes, métricas de fidelização (frequência) e bloqueio de devedores."
     
     Aggregate ClienteAggregate {
         Entity Cliente
@@ -70,7 +73,8 @@ BoundedContext ClienteContext {
 }
 
 BoundedContext RHContext {
-    domainVisionStatement = "Subdomínio Genérico: Gerencia o cadastro de funcionários, papéis e segurança/login do sistema."
+    domainVisionStatement = "Subdomínio Genérico: Gerencia o cadastro de 
+    funcionários, papéis e segurança/login do sistema."
     
     Aggregate FuncionarioAggregate {
         Entity Funcionario
@@ -79,7 +83,9 @@ BoundedContext RHContext {
 
     
 BoundedContext SuprimentosContext {
-    domainVisionStatement = "Subdomínio de Apoio: Responsável pelo Controle Inteligente de Reposição. Intercepta a necessidade do estoque central, avalia lead time e gera Ordens de Compra otimizadas."
+    domainVisionStatement = "Subdomínio de Apoio: Responsável pelo Controle 
+    Inteligente de Reposição. Intercepta a necessidade do estoque central, 
+    avalia lead time e gera Ordens de Compra otimizadas."
     
     Aggregate OrdemCompraAggregate {
         Entity OrdemCompra
@@ -91,7 +97,8 @@ BoundedContext SuprimentosContext {
 }
 
 BoundedContext LogisticaContext {
-    domainVisionStatement = "Subdomínio de Apoio: Gerencia a roteirização, capacidade física das docas e resolução de conflitos de agendamento de remessas."
+    domainVisionStatement = "Subdomínio de Apoio: Gerencia a roteirização, 
+    capacidade física das docas e resolução de conflitos de agendamento de remessas."
     
     Aggregate AgendamentoAggregate {
         Entity AgendamentoRemessa
@@ -103,7 +110,9 @@ BoundedContext LogisticaContext {
 }
 
 BoundedContext DistribuidoraContext {
-    domainVisionStatement = "Subdomínio Core: Gerencia os dados, localizações e níveis de prioridade das múltiplas distribuidoras parceiras que são abastecidas pelo estoque fixo."
+    domainVisionStatement = "Subdomínio Core: Gerencia os dados, 
+    localizações e níveis de prioridade das múltiplas distribuidoras 
+    parceiras que são abastecidas pelo estoque fixo."
     
     Aggregate DistribuidoraAggregate {
         Entity Distribuidora
