@@ -1,0 +1,62 @@
+ContextMap EstokarMap {
+    type = SYSTEM_LANDSCAPE
+    state = AS_IS
+
+    // Declaração dos Contextos do Sistema
+    contains VendasContext
+    contains EstoqueContext
+    contains ClienteContext
+    contains RHContext
+
+    // Relações entre os Contextos (Upstream -> Downstream)
+    // Vendas precisa consultar Estoque para saber se há produto
+    EstoqueContext [U] -> [D] VendasContext
+
+    // Vendas precisa consultar Cliente para saber se ele está bloqueado por inadimplência (Sua funcionalidade)
+    ClienteContext [U] -> [D] VendasContext
+
+    // Vendas precisa saber qual funcionário fez o registro
+    RHContext [U] -> [D] VendasContext
+}
+
+/* =========================================================
+   DEFINIÇÃO DOS BOUNDED CONTEXTS (SUBDOMÍNIOS)
+   ========================================================= */
+
+BoundedContext EstoqueContext {
+    domainVisionStatement = "Subdomínio Core: Gerencia o catálogo de produtos e a movimentação de entrada e saída do estoque."
+    
+    Aggregate EstoqueAggregate {
+        Entity Produto
+        Entity MovimentacaoEstoque
+    }
+}
+
+BoundedContext VendasContext {
+    domainVisionStatement = "Subdomínio Core: Gerencia o ciclo de vida dos pedidos, faturamento e aplicação de cupons promocionais."
+    
+    Aggregate PedidoAggregate {
+        Entity Pedido
+        Entity ItemPedido
+        Entity Cupom
+    }
+}
+
+BoundedContext ClienteContext {
+    domainVisionStatement = "Subdomínio de Suporte: Gerencia os perfis dos clientes, métricas de fidelização (frequência) e bloqueio de devedores."
+    
+    Aggregate ClienteAggregate {
+        Entity Cliente
+        // Aqui entram as regras de negócio de Henrique Tefile:
+        // - Bloqueio por Inadimplência
+        // - Análise de Frequência de Compras
+    }
+}
+
+BoundedContext RHContext {
+    domainVisionStatement = "Subdomínio Genérico: Gerencia o cadastro de funcionários, papéis e segurança/login do sistema."
+    
+    Aggregate FuncionarioAggregate {
+        Entity Funcionario
+    }
+}
