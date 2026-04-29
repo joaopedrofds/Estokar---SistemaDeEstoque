@@ -1,22 +1,25 @@
 package com.studiomuda.estoque.infrastructure.persistence.cliente;
 
 import com.studiomuda.estoque.application.cliente.ports.FuncionarioCpfCheckPort;
-import com.studiomuda.estoque.dao.FuncionarioDAO;
-import com.studiomuda.estoque.domain.cliente.CpfCnpj;
+import com.studiomuda.estoque.domain.funcionario.Cpf;
+import com.studiomuda.estoque.domain.funcionario.FuncionarioRepository;
 import org.springframework.stereotype.Component;
-
-import java.sql.SQLException;
 
 @Component
 public class FuncionarioCpfCheckAdapter implements FuncionarioCpfCheckPort {
-    private final FuncionarioDAO funcionarioDAO = new FuncionarioDAO();
+    private final FuncionarioRepository funcionarioRepository;
+
+    public FuncionarioCpfCheckAdapter(FuncionarioRepository funcionarioRepository) {
+        this.funcionarioRepository = funcionarioRepository;
+    }
 
     @Override
-    public boolean existeFuncionarioComCpf(CpfCnpj cpfCnpj) {
+    public boolean existeFuncionarioComCpf(String digitos) {
+        if (digitos == null) return false;
         try {
-            return funcionarioDAO.buscarPorCpf(cpfCnpj.digitos()) != null;
-        } catch (SQLException e) {
-            throw new RuntimeException("Erro ao verificar CPF de funcionário: " + e.getMessage(), e);
+            return funcionarioRepository.buscarPorCpf(Cpf.of(digitos)).isPresent();
+        } catch (IllegalArgumentException e) {
+            return false;
         }
     }
 }

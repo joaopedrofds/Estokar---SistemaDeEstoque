@@ -33,7 +33,7 @@ public class AtualizarClienteUseCase {
 
         Optional<Cliente> outro = clienteRepository.buscarPorCpfCnpj(cpfCnpj);
         boolean conflitoCliente = outro.isPresent() && outro.get().id() != cmd.id();
-        if (conflitoCliente || funcionarioCpfCheck.existeFuncionarioComCpf(cpfCnpj)) {
+        if (conflitoCliente || funcionarioCpfCheck.existeFuncionarioComCpf(cpfCnpj.digitos())) {
             throw new ClienteJaExisteException(
                     "Já existe um cliente ou funcionário com esse CPF/CNPJ cadastrado.");
         }

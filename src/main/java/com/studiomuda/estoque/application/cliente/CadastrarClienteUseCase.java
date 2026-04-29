@@ -26,7 +26,7 @@ public class CadastrarClienteUseCase {
         CpfCnpj cpfCnpj = CpfCnpj.of(cmd.cpfCnpj(), tipo);
 
         if (clienteRepository.buscarPorCpfCnpj(cpfCnpj).isPresent()
-                || funcionarioCpfCheck.existeFuncionarioComCpf(cpfCnpj)) {
+                || funcionarioCpfCheck.existeFuncionarioComCpf(cpfCnpj.digitos())) {
             throw new ClienteJaExisteException(
                     "Já existe um cliente ou funcionário com esse CPF/CNPJ cadastrado.");
         }
