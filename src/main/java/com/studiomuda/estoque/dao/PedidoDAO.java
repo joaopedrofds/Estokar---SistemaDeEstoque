@@ -468,4 +468,46 @@ public class PedidoDAO {
                 || "42S02".equals(e.getSQLState())
                 || (e.getMessage() != null && e.getMessage().toLowerCase().contains("doesn't exist"));
     }
+
+    public static class ResumoFinanceiroPedido {
+        private final double receitaTotal;
+        private final int quantidadePedidos;
+
+        public ResumoFinanceiroPedido(double receitaTotal, int quantidadePedidos) {
+            this.receitaTotal = receitaTotal;
+            this.quantidadePedidos = quantidadePedidos;
+        }
+
+        public double getReceitaTotal() {
+            return receitaTotal;
+        }
+
+        public int getQuantidadePedidos() {
+            return quantidadePedidos;
+        }
+    }
+
+    public ResumoFinanceiroPedido resumirReceitaPaga(java.sql.Date inicio, java.sql.Date fim) throws SQLException {
+        String sql = "SELECT COALESCE(SUM(subtotal), 0) AS receita, COUNT(*) AS qtd FROM (" +
+                "SELECT p.id, COALESCE(SUM(ip.quantidade * pr.valor), 0) - COALESCE(p.valor_desconto, 0) AS subtotal " +
+                "FROM pedido p " +
+                "JOIN item_pedido ip ON ip.id_pedido = p.id " +
+                "JOIN produto pr ON pr.id = ip.id_produto " +
+                "WHERE p.status_pagamento = 'PAGO' " +
+                "AND COALESCE(p.data_pagamento, p.data_requisicao) BETWEEN ? AND ? " +
+                "GROUP BY p.id" +
+                ") t";
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDate(1, inicio);
+            stmt.setDate(2, fim);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new ResumoFinanceiroPedido(rs.getDouble("receita"), rs.getInt("qtd"));
+                }
+            }
+        }
+        return new ResumoFinanceiroPedido(0, 0);
+    }
 }

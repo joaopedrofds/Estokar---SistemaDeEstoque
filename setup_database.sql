@@ -199,6 +199,153 @@ CREATE TABLE alerta_financeiro (
 
 CREATE INDEX idx_alerta_financeiro_resolvido ON alerta_financeiro(resolvido, data_alerta);
 
+-- Tabelas de controle de acesso por perfil
+CREATE TABLE perfil_acesso (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(80) NOT NULL UNIQUE,
+    descricao VARCHAR(255),
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE usuario_acesso (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(60) NOT NULL UNIQUE,
+    nome VARCHAR(120) NOT NULL,
+    senha VARCHAR(255) NOT NULL,
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE usuario_perfil (
+    usuario_id INT NOT NULL,
+    perfil_id INT NOT NULL,
+    PRIMARY KEY (usuario_id, perfil_id),
+    FOREIGN KEY (usuario_id) REFERENCES usuario_acesso(id),
+    FOREIGN KEY (perfil_id) REFERENCES perfil_acesso(id)
+);
+
+CREATE TABLE permissao_perfil (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    perfil_id INT NOT NULL,
+    recurso VARCHAR(50) NOT NULL,
+    operacao VARCHAR(20) NOT NULL,
+    permitido BOOLEAN DEFAULT TRUE,
+    UNIQUE KEY uq_permissao_perfil (perfil_id, recurso, operacao),
+    FOREIGN KEY (perfil_id) REFERENCES perfil_acesso(id)
+);
+
+CREATE TABLE log_acesso (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT NULL,
+    username VARCHAR(60),
+    recurso VARCHAR(50) NOT NULL,
+    operacao VARCHAR(20) NOT NULL,
+    resultado VARCHAR(20) NOT NULL,
+    detalhe VARCHAR(255),
+    data_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuario_acesso(id)
+);
+
+CREATE INDEX idx_permissao_perfil_lookup ON permissao_perfil(perfil_id, recurso, operacao, permitido);
+CREATE INDEX idx_log_acesso_data ON log_acesso(data_hora, resultado);
+
+-- Módulo: Relatório Financeiro por Período
+CREATE TABLE categoria_financeira (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(120) NOT NULL UNIQUE,
+    tipo VARCHAR(10) NOT NULL,
+    origem_sistema VARCHAR(40),
+    descricao VARCHAR(255),
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE template_relatorio (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(120) NOT NULL UNIQUE,
+    descricao VARCHAR(255),
+    periodo_padrao VARCHAR(10) NOT NULL DEFAULT 'MES',
+    agrupamento VARCHAR(10) NOT NULL DEFAULT 'MES',
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE template_categoria (
+    template_id INT NOT NULL,
+    categoria_id INT NOT NULL,
+    PRIMARY KEY (template_id, categoria_id),
+    FOREIGN KEY (template_id) REFERENCES template_relatorio(id),
+    FOREIGN KEY (categoria_id) REFERENCES categoria_financeira(id)
+);
+
+CREATE TABLE template_indicador (
+    template_id INT NOT NULL,
+    indicador VARCHAR(40) NOT NULL,
+    PRIMARY KEY (template_id, indicador),
+    FOREIGN KEY (template_id) REFERENCES template_relatorio(id)
+);
+
+CREATE TABLE relatorio_gerado (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    template_id INT NOT NULL,
+    template_nome VARCHAR(120) NOT NULL,
+    data_inicio DATE NOT NULL,
+    data_fim DATE NOT NULL,
+    data_inicio_anterior DATE NOT NULL,
+    data_fim_anterior DATE NOT NULL,
+    gerado_por_usuario_id INT NULL,
+    gerado_por_username VARCHAR(60) NOT NULL,
+    data_geracao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    receita_operacional DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+    custo_operacional DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+    resultado_operacional DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+    total_ajustes_receita DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+    total_ajustes_despesa DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+    resultado_consolidado DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+    quantidade_pedidos INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (template_id) REFERENCES template_relatorio(id),
+    FOREIGN KEY (gerado_por_usuario_id) REFERENCES usuario_acesso(id)
+);
+
+CREATE TABLE relatorio_categoria_linha (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    relatorio_id INT NOT NULL,
+    categoria_id INT NOT NULL,
+    categoria_nome VARCHAR(120) NOT NULL,
+    tipo_categoria VARCHAR(10) NOT NULL,
+    valor_periodo DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+    valor_periodo_anterior DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+    variacao_percentual DECIMAL(8,2) NULL,
+    origem_rastreio VARCHAR(255),
+    ajuste_manual BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (relatorio_id) REFERENCES relatorio_gerado(id),
+    FOREIGN KEY (categoria_id) REFERENCES categoria_financeira(id)
+);
+
+CREATE TABLE relatorio_indicador_linha (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    relatorio_id INT NOT NULL,
+    indicador VARCHAR(40) NOT NULL,
+    valor DECIMAL(14,4) NOT NULL DEFAULT 0.0000,
+    valor_anterior DECIMAL(14,4) NULL,
+    variacao_percentual DECIMAL(8,2) NULL,
+    formula_descricao VARCHAR(255),
+    FOREIGN KEY (relatorio_id) REFERENCES relatorio_gerado(id)
+);
+
+CREATE TABLE lancamento_ajuste (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    categoria_id INT NOT NULL,
+    data_lancamento DATE NOT NULL,
+    valor DECIMAL(14,2) NOT NULL,
+    descricao VARCHAR(255) NOT NULL,
+    usuario_id INT NULL,
+    username VARCHAR(60) NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (categoria_id) REFERENCES categoria_financeira(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuario_acesso(id)
+);
+
+CREATE INDEX idx_relatorio_gerado_periodo ON relatorio_gerado(data_inicio, data_fim, data_geracao);
+CREATE INDEX idx_lancamento_ajuste_data ON lancamento_ajuste(data_lancamento, categoria_id);
+
 -- Tabela de histórico de alterações no funcionário
 CREATE TABLE historico_funcionario (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -337,3 +484,116 @@ BEGIN
     SELECT * FROM cliente WHERE cpf_cnpj = p_cpf_cnpj;
 END$$
 DELIMITER ;
+
+-- Dados iniciais do RBAC (Controle de Acesso por Perfil)
+INSERT INTO perfil_acesso (nome, descricao, ativo) VALUES
+('ADMINISTRADOR', 'Perfil responsável por governança completa de acessos e cadastros.', TRUE),
+('GERENTE_OPERACIONAL', 'Perfil com operação supervisionada e permissões de aprovação.', TRUE),
+('OPERADOR_VENDEDOR', 'Perfil de execução diária com permissões restritas.', TRUE);
+
+INSERT INTO usuario_acesso (username, nome, senha, ativo) VALUES
+('admin', 'Administrador do Sistema', '{noop}Admin@123', TRUE),
+('gerente', 'Gerente Operacional', '{noop}Gerente@123', TRUE),
+('operador', 'Operador de Vendas', '{noop}Operador@123', TRUE);
+
+INSERT INTO usuario_perfil (usuario_id, perfil_id) VALUES
+(1, 1),
+(2, 2),
+(3, 3);
+
+INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido)
+SELECT 1, recurso_base.recurso, operacao_base.operacao, TRUE
+FROM (
+    SELECT 'PRODUTO' AS recurso UNION ALL
+    SELECT 'CUPOM' UNION ALL
+    SELECT 'PEDIDO' UNION ALL
+    SELECT 'ESTOQUE' UNION ALL
+    SELECT 'SUPRIMENTO' UNION ALL
+    SELECT 'REMESSA' UNION ALL
+    SELECT 'CLIENTE' UNION ALL
+    SELECT 'FUNCIONARIO' UNION ALL
+    SELECT 'DASHBOARD' UNION ALL
+    SELECT 'KPI' UNION ALL
+    SELECT 'FINANCEIRO' UNION ALL
+    SELECT 'ACESSO' UNION ALL
+    SELECT 'API' UNION ALL
+    SELECT 'HOME'
+) AS recurso_base
+CROSS JOIN (
+    SELECT 'LEITURA' AS operacao UNION ALL
+    SELECT 'ESCRITA' UNION ALL
+    SELECT 'APROVACAO'
+) AS operacao_base;
+
+INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
+(2, 'PRODUTO', 'LEITURA', TRUE),
+(2, 'PRODUTO', 'ESCRITA', TRUE),
+(2, 'CUPOM', 'LEITURA', TRUE),
+(2, 'CUPOM', 'ESCRITA', TRUE),
+(2, 'PEDIDO', 'LEITURA', TRUE),
+(2, 'PEDIDO', 'ESCRITA', TRUE),
+(2, 'PEDIDO', 'APROVACAO', TRUE),
+(2, 'ESTOQUE', 'LEITURA', TRUE),
+(2, 'ESTOQUE', 'ESCRITA', TRUE),
+(2, 'SUPRIMENTO', 'LEITURA', TRUE),
+(2, 'SUPRIMENTO', 'ESCRITA', TRUE),
+(2, 'SUPRIMENTO', 'APROVACAO', TRUE),
+(2, 'REMESSA', 'LEITURA', TRUE),
+(2, 'REMESSA', 'ESCRITA', TRUE),
+(2, 'REMESSA', 'APROVACAO', TRUE),
+(2, 'CLIENTE', 'LEITURA', TRUE),
+(2, 'CLIENTE', 'ESCRITA', TRUE),
+(2, 'FUNCIONARIO', 'LEITURA', TRUE),
+(2, 'DASHBOARD', 'LEITURA', TRUE),
+(2, 'KPI', 'LEITURA', TRUE),
+(2, 'FINANCEIRO', 'LEITURA', TRUE),
+(2, 'FINANCEIRO', 'ESCRITA', TRUE),
+(2, 'API', 'LEITURA', TRUE),
+(2, 'API', 'ESCRITA', TRUE),
+(2, 'HOME', 'LEITURA', TRUE);
+
+INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
+(3, 'PRODUTO', 'LEITURA', TRUE),
+(3, 'CUPOM', 'LEITURA', TRUE),
+(3, 'PEDIDO', 'LEITURA', TRUE),
+(3, 'PEDIDO', 'ESCRITA', TRUE),
+(3, 'ESTOQUE', 'LEITURA', TRUE),
+(3, 'CLIENTE', 'LEITURA', TRUE),
+(3, 'CLIENTE', 'ESCRITA', TRUE),
+(3, 'DASHBOARD', 'LEITURA', TRUE),
+(3, 'API', 'LEITURA', TRUE),
+(3, 'HOME', 'LEITURA', TRUE);
+
+-- Dados iniciais do módulo financeiro
+INSERT INTO categoria_financeira (nome, tipo, origem_sistema, descricao, ativo) VALUES
+('Venda de Produto', 'RECEITA', 'PEDIDO_PAGO', 'Receita consolidada de pedidos pagos no período.', TRUE),
+('Devolução', 'DESPESA', 'MOVIMENTACAO_ENTRADA_DEVOLUCAO', 'Estornos e devoluções registradas via movimentação de entrada.', TRUE),
+('Custo de Reposição', 'DESPESA', 'MOVIMENTACAO_SAIDA', 'Custo estimado de saídas de estoque no período.', TRUE),
+('Ajuste Manual', 'RECEITA', 'LANCAMENTO_AJUSTE', 'Lançamentos manuais de correção vinculados ao plano de contas.', TRUE);
+
+INSERT INTO template_relatorio (nome, descricao, periodo_padrao, agrupamento, ativo) VALUES
+('Demonstrativo Mensal', 'Consolidação padrão mensal com margem e ticket médio.', 'MES', 'MES', TRUE),
+('Fechamento Semanal', 'Visão semanal para acompanhamento operacional.', 'SEMANA', 'SEMANA', TRUE);
+
+INSERT INTO template_categoria (template_id, categoria_id)
+SELECT t.id, c.id
+FROM template_relatorio t
+CROSS JOIN categoria_financeira c
+WHERE t.nome = 'Demonstrativo Mensal';
+
+INSERT INTO template_categoria (template_id, categoria_id)
+SELECT t.id, c.id
+FROM template_relatorio t
+JOIN categoria_financeira c ON c.nome IN ('Venda de Produto', 'Custo de Reposição', 'Ajuste Manual')
+WHERE t.nome = 'Fechamento Semanal';
+
+INSERT INTO template_indicador (template_id, indicador)
+SELECT id, 'MARGEM_BRUTA' FROM template_relatorio WHERE nome = 'Demonstrativo Mensal'
+UNION ALL
+SELECT id, 'TICKET_MEDIO' FROM template_relatorio WHERE nome = 'Demonstrativo Mensal'
+UNION ALL
+SELECT id, 'RESULTADO_LIQUIDO' FROM template_relatorio WHERE nome = 'Demonstrativo Mensal'
+UNION ALL
+SELECT id, 'MARGEM_BRUTA' FROM template_relatorio WHERE nome = 'Fechamento Semanal'
+UNION ALL
+SELECT id, 'TICKET_MEDIO' FROM template_relatorio WHERE nome = 'Fechamento Semanal';

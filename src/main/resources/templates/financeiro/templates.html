@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: menu"></div>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="bi bi-layout-text-window-reverse me-3"></i>Templates de Relatório</h1>
+        <p class="page-subtitle">Modelos reutilizáveis com período, categorias obrigatórias e indicadores.</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div th:if="${mensagem}" class="alert alert-success" th:text="${mensagem}"></div>
+    <div th:if="${mensagemErro}" class="alert alert-danger" th:text="${mensagemErro}"></div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0" th:text="${templateForm.id == 0 ? 'Novo Template' : 'Editar Template'}"></h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/financeiro/templates/salvar}" method="post">
+                        <input type="hidden" name="id" th:value="${templateForm.id}">
+                        <div class="mb-3">
+                            <label class="form-label" for="nome">Nome</label>
+                            <input id="nome" name="nome" class="form-control" th:value="${templateForm.nome}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="descricao">Descrição</label>
+                            <textarea id="descricao" name="descricao" class="form-control" rows="2"
+                                      th:text="${templateForm.descricao}"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="periodoPadrao">Período padrão</label>
+                                <select id="periodoPadrao" name="periodoPadrao" class="form-select">
+                                    <option th:each="p : ${periodos}" th:value="${p}" th:text="${p}"
+                                            th:selected="${p == templateForm.periodoPadrao}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="agrupamento">Agrupamento</label>
+                                <select id="agrupamento" name="agrupamento" class="form-select">
+                                    <option th:each="p : ${periodos}" th:value="${p}" th:text="${p}"
+                                            th:selected="${p == templateForm.agrupamento}"></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Categorias obrigatórias</label>
+                            <div th:each="cat : ${categorias}" class="form-check">
+                                <input class="form-check-input" type="checkbox" name="categoriaIds"
+                                       th:id="${'cat-' + cat.id}" th:value="${cat.id}"
+                                       th:checked="${templateForm.categoriaIds.contains(cat.id)}">
+                                <label class="form-check-label" th:for="${'cat-' + cat.id}"
+                                       th:text="${cat.nome + ' (' + cat.tipo + ')'}"></label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Indicadores calculados</label>
+                            <div th:each="ind : ${indicadoresDisponiveis}" class="form-check">
+                                <input class="form-check-input" type="checkbox" name="indicadores"
+                                       th:id="${'ind-' + ind}" th:value="${ind}"
+                                       th:checked="${templateForm.indicadores.contains(ind)}">
+                                <label class="form-check-label" th:for="${'ind-' + ind}" th:text="${ind}"></label>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="ativo" name="ativo"
+                                   th:checked="${templateForm.ativo}">
+                            <label class="form-check-label" for="ativo">Template ativo</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Salvar Template</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover modern-table mb-0">
+                            <thead>
+                            <tr>
+                                <th>Template</th>
+                                <th>Período</th>
+                                <th>Categorias</th>
+                                <th>Indicadores</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="tpl : ${templates}">
+                                <td>
+                                    <div class="fw-semibold" th:text="${tpl.nome}"></div>
+                                    <small class="text-muted" th:text="${tpl.descricao}"></small>
+                                </td>
+                                <td th:text="${tpl.periodoPadrao + ' / ' + tpl.agrupamento}"></td>
+                                <td th:text="${#lists.size(tpl.categoriaIds)}"></td>
+                                <td th:text="${#lists.size(tpl.indicadores)}"></td>
+                                <td class="text-center">
+                                    <a th:href="@{/financeiro/templates(editarId=${tpl.id})}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a th:if="${tpl.ativo}" th:href="@{/financeiro/templates/inativar/{id}(id=${tpl.id})}"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Inativar template?')">
+                                        <i class="bi bi-x-circle"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="layout :: footer"></div>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

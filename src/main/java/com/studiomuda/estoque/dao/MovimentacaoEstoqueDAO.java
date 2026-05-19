@@ -199,4 +199,44 @@ public class MovimentacaoEstoqueDAO {
         }
         return lista;
     }
+
+    public double somarCustoSaida(java.sql.Date inicio, java.sql.Date fim) throws SQLException {
+        String sql = "SELECT COALESCE(SUM(me.quantidade * p.valor), 0) AS total " +
+                "FROM movimentacao_estoque me " +
+                "JOIN produto p ON p.id = me.id_produto " +
+                "WHERE LOWER(me.tipo) = 'saida' AND me.data BETWEEN ? AND ?";
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDate(1, inicio);
+            stmt.setDate(2, fim);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("total");
+                }
+            }
+        }
+        return 0;
+    }
+
+    public double somarDevolucoes(java.sql.Date inicio, java.sql.Date fim) throws SQLException {
+        String sql = "SELECT COALESCE(SUM(me.quantidade * p.valor), 0) AS total " +
+                "FROM movimentacao_estoque me " +
+                "JOIN produto p ON p.id = me.id_produto " +
+                "WHERE LOWER(me.tipo) = 'entrada' " +
+                "AND (LOWER(me.motivo) LIKE '%devolu%' OR LOWER(me.motivo) LIKE '%estorno%') " +
+                "AND me.data BETWEEN ? AND ?";
+
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDate(1, inicio);
+            stmt.setDate(2, fim);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("total");
+                }
+            }
+        }
+        return 0;
+    }
 }

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: menu"></div>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="bi bi-file-earmark-bar-graph me-3"></i>Relatórios Financeiros</h1>
+        <p class="page-subtitle">Gere demonstrativos parametrizáveis e consulte o histórico de snapshots.</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div th:if="${mensagem}" class="alert alert-success" th:text="${mensagem}"></div>
+    <div th:if="${mensagemErro}" class="alert alert-danger" th:text="${mensagemErro}"></div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Gerar novo relatório</h5></div>
+                <div class="card-body">
+                    <form th:action="@{/financeiro/relatorios/gerar}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label" for="templateId">Template</label>
+                            <select id="templateId" name="templateId" class="form-select" required>
+                                <option value="">Selecione...</option>
+                                <option th:each="tpl : ${templates}" th:value="${tpl.id}" th:text="${tpl.nome}"
+                                        th:selected="${tpl.id == templateSelecionado}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="dataInicio">Data início</label>
+                            <input type="date" id="dataInicio" name="dataInicio" class="form-control"
+                                   th:value="${dataInicioPadrao}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="dataFim">Data fim</label>
+                            <input type="date" id="dataFim" name="dataFim" class="form-control"
+                                   th:value="${dataFimPadrao}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-play-fill me-1"></i>Consolidar e gerar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Histórico de relatórios gerados</h5></div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover modern-table mb-0">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Template</th>
+                                <th>Período</th>
+                                <th>Gerado por</th>
+                                <th>Data</th>
+                                <th>Resultado</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:if="${historico.empty}">
+                                <td colspan="7" class="text-center py-4 text-muted">Nenhum relatório gerado ainda.</td>
+                            </tr>
+                            <tr th:each="rel : ${historico}">
+                                <td th:text="${rel.id}"></td>
+                                <td th:text="${rel.templateNome}"></td>
+                                <td th:text="${#dates.format(rel.dataInicio, 'dd/MM/yyyy') + ' - ' + #dates.format(rel.dataFim, 'dd/MM/yyyy')}"></td>
+                                <td th:text="${rel.geradoPorUsername}"></td>
+                                <td th:text="${#dates.format(rel.dataGeracao, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${'R$ ' + #numbers.formatDecimal(rel.resultadoConsolidado, 1, 'POINT', 2, 'COMMA')}"></td>
+                                <td class="text-center">
+                                    <a th:href="@{/financeiro/relatorios/{id}(id=${rel.id})}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="layout :: footer"></div>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

@@ -18,6 +18,11 @@ DELETE FROM doca;
 DELETE FROM historico_estoque;
 DELETE FROM historico_cliente;
 DELETE FROM historico_funcionario;
+DELETE FROM log_acesso;
+DELETE FROM usuario_perfil;
+DELETE FROM permissao_perfil;
+DELETE FROM usuario_acesso;
+DELETE FROM perfil_acesso;
 DELETE FROM produto;
 DELETE FROM cliente;
 DELETE FROM funcionario;
@@ -39,6 +44,86 @@ ALTER TABLE cupom AUTO_INCREMENT = 1;
 ALTER TABLE pedido AUTO_INCREMENT = 1;
 ALTER TABLE item_pedido AUTO_INCREMENT = 1;
 ALTER TABLE movimentacao_estoque AUTO_INCREMENT = 1;
+ALTER TABLE perfil_acesso AUTO_INCREMENT = 1;
+ALTER TABLE usuario_acesso AUTO_INCREMENT = 1;
+ALTER TABLE permissao_perfil AUTO_INCREMENT = 1;
+ALTER TABLE log_acesso AUTO_INCREMENT = 1;
+
+-- Perfis, usuários e permissões de acesso
+INSERT INTO perfil_acesso (nome, descricao, ativo) VALUES
+('ADMINISTRADOR', 'Perfil responsável por governança completa de acessos e cadastros.', TRUE),
+('GERENTE_OPERACIONAL', 'Perfil com operação supervisionada e permissões de aprovação.', TRUE),
+('OPERADOR_VENDEDOR', 'Perfil de execução diária com permissões restritas.', TRUE);
+
+INSERT INTO usuario_acesso (username, nome, senha, ativo) VALUES
+('admin', 'Administrador do Sistema', '{noop}Admin@123', TRUE),
+('gerente', 'Gerente Operacional', '{noop}Gerente@123', TRUE),
+('operador', 'Operador de Vendas', '{noop}Operador@123', TRUE);
+
+INSERT INTO usuario_perfil (usuario_id, perfil_id) VALUES
+(1, 1),
+(2, 2),
+(3, 3);
+
+INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido)
+SELECT 1, recurso_base.recurso, operacao_base.operacao, TRUE
+FROM (
+    SELECT 'PRODUTO' AS recurso UNION ALL
+    SELECT 'CUPOM' UNION ALL
+    SELECT 'PEDIDO' UNION ALL
+    SELECT 'ESTOQUE' UNION ALL
+    SELECT 'SUPRIMENTO' UNION ALL
+    SELECT 'REMESSA' UNION ALL
+    SELECT 'CLIENTE' UNION ALL
+    SELECT 'FUNCIONARIO' UNION ALL
+    SELECT 'DASHBOARD' UNION ALL
+    SELECT 'KPI' UNION ALL
+    SELECT 'ACESSO' UNION ALL
+    SELECT 'API' UNION ALL
+    SELECT 'HOME'
+) AS recurso_base
+CROSS JOIN (
+    SELECT 'LEITURA' AS operacao UNION ALL
+    SELECT 'ESCRITA' UNION ALL
+    SELECT 'APROVACAO'
+) AS operacao_base;
+
+INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
+(2, 'PRODUTO', 'LEITURA', TRUE),
+(2, 'PRODUTO', 'ESCRITA', TRUE),
+(2, 'CUPOM', 'LEITURA', TRUE),
+(2, 'CUPOM', 'ESCRITA', TRUE),
+(2, 'PEDIDO', 'LEITURA', TRUE),
+(2, 'PEDIDO', 'ESCRITA', TRUE),
+(2, 'PEDIDO', 'APROVACAO', TRUE),
+(2, 'ESTOQUE', 'LEITURA', TRUE),
+(2, 'ESTOQUE', 'ESCRITA', TRUE),
+(2, 'SUPRIMENTO', 'LEITURA', TRUE),
+(2, 'SUPRIMENTO', 'ESCRITA', TRUE),
+(2, 'SUPRIMENTO', 'APROVACAO', TRUE),
+(2, 'REMESSA', 'LEITURA', TRUE),
+(2, 'REMESSA', 'ESCRITA', TRUE),
+(2, 'REMESSA', 'APROVACAO', TRUE),
+(2, 'CLIENTE', 'LEITURA', TRUE),
+(2, 'CLIENTE', 'ESCRITA', TRUE),
+(2, 'FUNCIONARIO', 'LEITURA', TRUE),
+(2, 'DASHBOARD', 'LEITURA', TRUE),
+(2, 'KPI', 'LEITURA', TRUE),
+(2, 'API', 'LEITURA', TRUE),
+(2, 'API', 'ESCRITA', TRUE),
+(2, 'HOME', 'LEITURA', TRUE);
+
+INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
+(3, 'PRODUTO', 'LEITURA', TRUE),
+(3, 'CUPOM', 'LEITURA', TRUE),
+(3, 'PEDIDO', 'LEITURA', TRUE),
+(3, 'PEDIDO', 'ESCRITA', TRUE),
+(3, 'ESTOQUE', 'LEITURA', TRUE),
+(3, 'CLIENTE', 'LEITURA', TRUE),
+(3, 'CLIENTE', 'ESCRITA', TRUE),
+(3, 'DASHBOARD', 'LEITURA', TRUE),
+(3, 'API', 'LEITURA', TRUE),
+(3, 'HOME', 'LEITURA', TRUE);
 
 -- Inserir produtos VARIADOS para teste completo do dashboard
 INSERT INTO produto (nome, descricao, tipo, quantidade, valor) VALUES 
