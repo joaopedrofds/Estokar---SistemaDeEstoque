@@ -1,0 +1,65 @@
+/* Estilos para as páginas de erro */
+.error-card {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  border-top: 5px solid var(--primary-color);
+}
+
+.error-card-header {
+  background-color: rgba(163, 201, 168, 0.1);
+  border-bottom: 1px solid rgba(163, 201, 168, 0.2);
+  padding: 1.5rem;
+}
+
+.error-icon-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error-icon-container i {
+  font-size: 24px;
+  color: white;
+}
+
+.error-description {
+  padding: 1rem 0;
+}
+
+.error-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Variações por tipo de erro */
+.error-card.error-404 .error-icon-container {
+  background-color: var(--earth-color);
+}
+
+.error-card.error-500 .error-icon-container {
+  background-color: var(--danger-color);
+}
+
+.error-card.error-403 .error-icon-container {
+  background-color: var(--warning-color);
+}
+
+/* Animação de fadeIn mais suave */
+.animate__fadeIn {
+  animation-duration: 0.8s;
+}
+
+/* Estilo para o código da URI */
+.error-description code {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: var(--primary-color);
+  font-size: 0.85em;
+}

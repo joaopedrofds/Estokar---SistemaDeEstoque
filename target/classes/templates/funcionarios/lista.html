@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+    <div th:replace="layout :: menu"></div>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="page-title">
+                        <i class="bi bi-person-badge-fill me-3"></i>
+                        Gestão de Funcionários
+                    </h1>
+                    <p class="page-subtitle">Gerencie sua equipe e organize os colaboradores</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/funcionarios/novo" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Novo Funcionário
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <!-- Search and Filter Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3" id="filtrosFormFuncionarios">
+                    <div class="col-md-4">
+                        <div class="search-box">
+                            <i class="bi bi-search"></i>
+                            <input type="text" class="form-control" placeholder="Buscar funcionários..." id="searchInput" name="nome" th:value="${filtroNome}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="cargoFilter" name="cargo">
+                            <option value="">Todos os cargos</option>
+                            <!-- Opções dinâmicas via AJAX -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="statusFilter" name="status">
+                            <option value="">Todos</option>
+                            <option value="ativo" th:selected="${filtroStatus == 'ativo'}">Ativo</option>
+                            <option value="inativo" th:selected="${filtroStatus == 'inativo'}">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="empty-state" th:if="${funcionarios.empty}">
+            <div class="empty-state-icon">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <h3>Nenhum funcionário cadastrado</h3>
+            <p>Comece cadastrando seu primeiro funcionário para ver a lista aqui.</p>
+            <a href="/funcionarios/novo" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>
+                Cadastrar Primeiro Funcionário
+            </a>
+        </div>
+        
+        <!-- Table Section -->
+        <div class="card" th:if="${!funcionarios.empty}">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover modern-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Funcionário</th>
+                                <th>CPF</th>
+                                <th>Cargo</th>
+                                <th>Data Nasc.</th>
+                                <th>Localização</th>
+                                <th>Status</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="funcionario : ${funcionarios}">
+                                <td>
+                                    <span class="text-muted small">#</span><span th:text="${funcionario.id}"></span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle me-3">
+                                            <i class="bi bi-person-fill"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-medium" th:text="${funcionario.nome}"></div>
+                                            <small class="text-muted" th:text="${funcionario.telefone}"></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <code th:text="${funcionario.cpf}"></code>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${funcionario.cargo}"></span>
+                                </td>
+                                <td>
+                                    <small class="text-muted" th:text="${funcionario.data_nasc}"></small>
+                                </td>
+                                <td>
+                                    <small class="text-muted" th:text="${funcionario.cidade + '/' + funcionario.estado}"></small>
+                                </td>
+                                <td>
+                                    <span th:if="${funcionario.ativo}" class="status-badge status-active">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Ativo
+                                    </span>
+                                    <span th:unless="${funcionario.ativo}" class="status-badge status-inactive">
+                                        <i class="bi bi-x-circle-fill me-1"></i>Inativo
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a th:href="@{/funcionarios/editar/{id}(id=${funcionario.id})}" 
+                                           class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-danger" title="Excluir"
+                                                th:onclick="'excluirFuncionario(' + ${funcionario.id} + ')'">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="layout :: footer"></div>
+    <div th:replace="layout :: scripts"></div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/funcionarios/filtros')
+            .then(resp => resp.json())
+            .then(data => {
+                // Cargos
+                const cargoSelect = document.getElementById('cargoFilter');
+                if (cargoSelect && data.cargos) {
+                    // Limpar opções existentes exceto a primeira (placeholder)
+                    while (cargoSelect.options.length > 1) {
+                        cargoSelect.remove(1);
+                    }
+                    
+                    // Adicionar apenas os cargos que existem no banco de dados
+                    data.cargos.forEach(cargo => {
+                        const opt = document.createElement('option');
+                        opt.value = cargo;
+                        opt.textContent = cargo;
+                        
+                        // Verificar se o cargo atual deve ser selecionado
+                        const filtroCargo = "[[${filtroCargo}]]";
+                        if (filtroCargo && cargo === filtroCargo) {
+                            opt.selected = true;
+                        }
+                        
+                        cargoSelect.appendChild(opt);
+                    });
+                    
+                    console.log('Cargos carregados do banco:', data.cargos);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar filtros:', error);
+            });
+    });
+    </script>
+</body>
+</html>

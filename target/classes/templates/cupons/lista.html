@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+    <div th:replace="layout :: menu"></div>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="page-title">
+                        <i class="bi bi-percent me-3"></i>
+                        <span th:text="${apenasValidos != null && apenasValidos ? 'Cupons Válidos' : 'Gestão de Cupons'}"></span>
+                    </h1>
+                    <p class="page-subtitle">Gerencie cupons de desconto e promoções</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="btn-group me-2">
+                        <a th:if="${apenasValidos == null || !apenasValidos}" 
+                           href="/cupons/validos" class="btn btn-outline-success">
+                            <i class="bi bi-check-circle me-2"></i>Ver Válidos
+                        </a>
+                        <a th:if="${apenasValidos != null && apenasValidos}" 
+                           href="/cupons" class="btn btn-outline-secondary">
+                            <i class="bi bi-list me-2"></i>Ver Todos
+                        </a>
+                    </div>
+                    <a href="/cupons/novo" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Novo Cupom
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <!-- Search and Filter Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="search-box">
+                            <i class="bi bi-search"></i>
+                            <input type="text" class="form-control" placeholder="Buscar cupons..." id="searchInput">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">Todos os status</option>
+                            <option value="valido">Válidos</option>
+                            <option value="expirado">Expirados</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="date" class="form-control" placeholder="Data de validade" id="dateFilter">
+                    </div>
+                    <div class="col-md-2">
+                        <div class="btn-group w-100">
+                            <button class="btn btn-outline-secondary" title="Exportar">
+                                <i class="bi bi-download"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" title="Imprimir">
+                                <i class="bi bi-printer"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="empty-state" th:if="${cupons.empty}">
+            <div class="empty-state-icon">
+                <i class="bi bi-percent"></i>
+            </div>
+            <h3>Nenhum cupom encontrado</h3>
+            <p>Crie cupons de desconto para atrair mais clientes.</p>
+            <a href="/cupons/novo" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>
+                Criar Primeiro Cupom
+            </a>
+        </div>
+        
+        <!-- Table Section -->
+        <div class="card" th:if="${!cupons.empty}">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover modern-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cupom</th>
+                                <th>Valor</th>
+                                <th>Vigência</th>
+                                <th>Status</th>
+                                <th>Descrição</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="cupom : ${cupons}">
+                                <td>
+                                    <span class="text-muted small">#</span><span th:text="${cupom.id}"></span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="coupon-icon me-3">
+                                            <i class="bi bi-tag-fill"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-primary" th:text="${cupom.codigo}"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success fs-6" th:text="${'R$ ' + #numbers.formatDecimal(cupom.valor, 1, 2)}"></span>
+                                </td>
+                                <td>
+                                    <div>
+                                        <small class="text-muted">Início:</small>
+                                        <div th:text="${cupom.dataInicio}"></div>
+                                        <small class="text-muted">Válido até:</small>
+                                        <div th:text="${cupom.validade}"></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:if="${cupom.valido}" class="status-badge status-active">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Válido
+                                    </span>
+                                    <span th:unless="${cupom.valido}" class="status-badge status-inactive">
+                                        <i class="bi bi-x-circle-fill me-1"></i>Expirado
+                                    </span>
+                                </td>
+                                <td>
+                                    <span th:if="${cupom.descricao != null && !cupom.descricao.empty}" 
+                                          th:text="${cupom.descricao}"></span>
+                                    <small class="text-muted" th:unless="${cupom.descricao != null && !cupom.descricao.empty}">
+                                        Sem descrição
+                                    </small>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a th:href="@{/cupons/editar/{id}(id=${cupom.id})}" 
+                                           class="btn btn-sm btn-outline-primary" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a th:href="@{/cupons/excluir/{id}(id=${cupom.id})}" 
+                                           class="btn btn-sm btn-outline-danger" title="Excluir"
+                                           onclick="return confirm('Tem certeza que deseja excluir este cupom?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div th:replace="layout :: footer"></div>
+    <div th:replace="layout :: scripts"></div>
+    
+    <!-- Search and Filters -->
+    <div class="filters-container">
+        <form method="get" action="/cupons" class="row g-3" id="filtrosFormCupons">
+            <div class="col-md-4">
+                <div class="search-box">
+                    <i class="search-icon bi bi-search"></i>
+                    <input type="text" class="search-input" placeholder="Buscar cupons..." id="searchInput" name="codigo" th:value="${filtroCodigo}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" id="statusFilter" name="status">
+                    <option value="">Todos</option>
+                    <option value="valido" th:selected="${filtroStatus == 'valido'}">Válido</option>
+                    <option value="expirado" th:selected="${filtroStatus == 'expirado'}">Expirado</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/cupons/filtros')
+            .then(resp => resp.json())
+            .then(data => {
+                // Status
+                const statusSelect = document.getElementById('statusFilter');
+                if (statusSelect && data.status) {
+                    data.status.forEach(status => {
+                        const opt = document.createElement('option');
+                        opt.value = status;
+                        opt.textContent = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+                        if (status === "${filtroStatus}") opt.selected = true;
+                        statusSelect.appendChild(opt);
+                    });
+                }
+            });
+    });
+    </script>
+</body>
+</html>

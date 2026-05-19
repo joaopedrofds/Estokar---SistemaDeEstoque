@@ -1,6 +1,6 @@
 # Estokar - Sistema de Estoque
 
-Sistema web para gerenciamento completo de estoque, desenvolvido com Java e Spring Boot. Permite o controle de produtos, pedidos, clientes, funcionários e todas as movimentações de estoque em uma interface web moderna e intuitiva.
+Sistema web para gerenciamento completo de estoque, desenvolvido com Java e Spring Boot. Permite o controle de produtos, pedidos,clientes, funcionários e todas as movimentações de estoque em uma interface web moderna e intuitiva.
 
 ---
 
