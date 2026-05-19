@@ -52,7 +52,7 @@ public class SecurityConfig {
                 .antMatchers("/login", "/error", "/erro", "/css/**", "/js/**", "/favicon.ico").permitAll()
                 .antMatchers("/funcionarios/**", "/cupons/**").hasRole("DIRETOR")
                 .antMatchers("/dashboard/**", "/clientes/**", "/pedidos/**").hasAnyRole("DIRETOR", "AUXILIAR")
-                .antMatchers("/estoque/**").hasAnyRole("DIRETOR", "ESTOQUISTA")
+                .antMatchers("/estoque/**", "/suprimentos/**").hasAnyRole("DIRETOR", "ESTOQUISTA")
                 .antMatchers("/produtos/**").hasAnyRole("DIRETOR", "AUXILIAR", "ESTOQUISTA")
                 .antMatchers("/api/kpis/recalcular").hasRole("DIRETOR")
                 .antMatchers("/api/**").authenticated()

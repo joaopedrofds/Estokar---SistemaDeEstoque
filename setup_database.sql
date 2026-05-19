@@ -13,6 +13,43 @@ CREATE TABLE produto (
     valor DECIMAL(10,2) NOT NULL DEFAULT 0.00          -- Valor unitário
 );
 
+-- Tabelas de suprimentos e reposicao inteligente
+CREATE TABLE fornecedor (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(120) NOT NULL,
+    lead_time_dias INT NOT NULL DEFAULT 1,
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE parametro_estoque (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    produto_id INT NOT NULL UNIQUE,
+    fornecedor_id INT NOT NULL,
+    margem_seguranca INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (produto_id) REFERENCES produto(id),
+    FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(id)
+);
+
+CREATE TABLE ordem_compra (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fornecedor_id INT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'RASCUNHO',
+    valor_total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    data_criacao DATE NOT NULL,
+    data_aprovacao DATE NULL,
+    FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(id)
+);
+
+CREATE TABLE item_ordem_compra (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ordem_compra_id INT NOT NULL,
+    produto_id INT NOT NULL,
+    quantidade INT NOT NULL,
+    valor_unitario DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    FOREIGN KEY (ordem_compra_id) REFERENCES ordem_compra(id),
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
+);
+
 -- Tabela de funcionários
 CREATE TABLE funcionario (
     id INT AUTO_INCREMENT PRIMARY KEY,

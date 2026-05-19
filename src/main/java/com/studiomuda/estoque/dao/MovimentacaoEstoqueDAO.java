@@ -2,12 +2,14 @@ package com.studiomuda.estoque.dao;
 
 import com.studiomuda.estoque.conexao.Conexao;
 import com.studiomuda.estoque.model.MovimentacaoEstoque;
+import com.studiomuda.estoque.service.SuprimentoService;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MovimentacaoEstoqueDAO {
+    private final SuprimentoService suprimentoService = new SuprimentoService();
 
     public void registrar(MovimentacaoEstoque mov) throws SQLException {
         String sqlMov = "INSERT INTO movimentacao_estoque (id_produto, tipo, quantidade, motivo, data) VALUES (?, ?, ?, ?, ?)";
@@ -37,6 +39,10 @@ public class MovimentacaoEstoqueDAO {
             stmtEstoque.executeUpdate();
 
             conn.commit();
+
+            if (mov.getTipo().equalsIgnoreCase("saida")) {
+                suprimentoService.gerarRascunhoSeNecessario(mov.getIdProduto());
+            }
         } catch (SQLException e) {
             try (Connection conn = Conexao.getConnection()) {
                 conn.rollback();

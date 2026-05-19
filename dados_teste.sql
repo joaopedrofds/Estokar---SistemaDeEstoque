@@ -7,6 +7,10 @@ SET SQL_SAFE_UPDATES = 0;
 DELETE FROM item_pedido;
 DELETE FROM pedido;
 DELETE FROM movimentacao_estoque;
+DELETE FROM item_ordem_compra;
+DELETE FROM ordem_compra;
+DELETE FROM parametro_estoque;
+DELETE FROM fornecedor;
 DELETE FROM historico_estoque;
 DELETE FROM historico_cliente;
 DELETE FROM historico_funcionario;
@@ -19,6 +23,10 @@ DELETE FROM cupom;
 ALTER TABLE funcionario AUTO_INCREMENT = 1;
 ALTER TABLE cliente AUTO_INCREMENT = 1;
 ALTER TABLE produto AUTO_INCREMENT = 1;
+ALTER TABLE fornecedor AUTO_INCREMENT = 1;
+ALTER TABLE parametro_estoque AUTO_INCREMENT = 1;
+ALTER TABLE ordem_compra AUTO_INCREMENT = 1;
+ALTER TABLE item_ordem_compra AUTO_INCREMENT = 1;
 ALTER TABLE cupom AUTO_INCREMENT = 1;
 ALTER TABLE pedido AUTO_INCREMENT = 1;
 ALTER TABLE item_pedido AUTO_INCREMENT = 1;
@@ -68,6 +76,19 @@ INSERT INTO produto (nome, descricao, tipo, quantidade, valor) VALUES
 -- Produtos sem estoque (para teste de ruptura)
 ('Adubo Especial Orquídeas', 'Adubo específico para orquídeas', 'Materiais', 0, 35.90),
 ('Cortador de Cerca Viva', 'Cortador elétrico para cerca viva', 'Equipamentos', 0, 590.00);
+
+-- Parametros iniciais de suprimentos para testar reposicao inteligente
+INSERT INTO fornecedor (nome, lead_time_dias, ativo) VALUES
+('Viveiro Central Studio Muda', 4, true),
+('Distribuidora Jardim Pro', 7, true),
+('Equipamentos Verde Sul', 10, true);
+
+INSERT INTO parametro_estoque (produto_id, fornecedor_id, margem_seguranca) VALUES
+(27, 2, 8),
+(28, 3, 3),
+(29, 2, 5),
+(30, 1, 6),
+(31, 3, 2);
 
 -- Inserir funcionários DIVERSOS para teste completo (diferentes cargos e desempenhos)
 INSERT INTO funcionario (nome, cpf, cargo, data_nasc, telefone, cep, rua, numero, bairro, cidade, estado, ativo) VALUES 
