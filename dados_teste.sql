@@ -2,6 +2,7 @@
 -- Este arquivo contém dados variados e realistas para testar todas as funcionalidades do dashboard
 USE studiomuda;
 
+SET SQL_SAFE_UPDATES = 0;
 -- Limpar dados existentes (opcional - remova se quiser preservar dados atuais)
 DELETE FROM item_pedido;
 DELETE FROM pedido;
@@ -806,3 +807,5 @@ SELECT 'Dashboard está pronto para teste com dados abrangentes e realistas!' AS
 -- - 100+ Itens de pedido (quantidades realistas)
 -- - 80+ Movimentações de estoque (entradas/saídas/ajustes)
 -- ============================================================================
+
+SET SQL_SAFE_UPDATES = 1;
