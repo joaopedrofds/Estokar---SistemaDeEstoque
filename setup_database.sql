@@ -50,6 +50,43 @@ CREATE TABLE item_ordem_compra (
     FOREIGN KEY (produto_id) REFERENCES produto(id)
 );
 
+-- Tabelas de roteirizacao de remessas
+CREATE TABLE doca (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    capacidade_paletes_diaria INT NOT NULL,
+    ativa BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE distribuidora (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(120) NOT NULL,
+    nivel_prioridade VARCHAR(10) NOT NULL DEFAULT 'MEDIA',
+    ativa BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE calendario_excecao (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    data DATE NOT NULL,
+    motivo VARCHAR(180) NOT NULL,
+    ativa BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE agendamento_remessa (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    doca_id INT NOT NULL,
+    distribuidora_id INT NOT NULL,
+    data DATE NOT NULL,
+    horario VARCHAR(5) NOT NULL,
+    volume_paletes INT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'CONFIRMADO',
+    FOREIGN KEY (doca_id) REFERENCES doca(id),
+    FOREIGN KEY (distribuidora_id) REFERENCES distribuidora(id)
+);
+
+CREATE INDEX idx_agendamento_remessa_doca_data ON agendamento_remessa(doca_id, data, horario, status);
+CREATE INDEX idx_calendario_excecao_data ON calendario_excecao(data, ativa);
+
 -- Tabela de funcionários
 CREATE TABLE funcionario (
     id INT AUTO_INCREMENT PRIMARY KEY,

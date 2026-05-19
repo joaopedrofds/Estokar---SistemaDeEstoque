@@ -11,6 +11,10 @@ DELETE FROM item_ordem_compra;
 DELETE FROM ordem_compra;
 DELETE FROM parametro_estoque;
 DELETE FROM fornecedor;
+DELETE FROM agendamento_remessa;
+DELETE FROM calendario_excecao;
+DELETE FROM distribuidora;
+DELETE FROM doca;
 DELETE FROM historico_estoque;
 DELETE FROM historico_cliente;
 DELETE FROM historico_funcionario;
@@ -27,6 +31,10 @@ ALTER TABLE fornecedor AUTO_INCREMENT = 1;
 ALTER TABLE parametro_estoque AUTO_INCREMENT = 1;
 ALTER TABLE ordem_compra AUTO_INCREMENT = 1;
 ALTER TABLE item_ordem_compra AUTO_INCREMENT = 1;
+ALTER TABLE doca AUTO_INCREMENT = 1;
+ALTER TABLE distribuidora AUTO_INCREMENT = 1;
+ALTER TABLE calendario_excecao AUTO_INCREMENT = 1;
+ALTER TABLE agendamento_remessa AUTO_INCREMENT = 1;
 ALTER TABLE cupom AUTO_INCREMENT = 1;
 ALTER TABLE pedido AUTO_INCREMENT = 1;
 ALTER TABLE item_pedido AUTO_INCREMENT = 1;
@@ -89,6 +97,25 @@ INSERT INTO parametro_estoque (produto_id, fornecedor_id, margem_seguranca) VALU
 (29, 2, 5),
 (30, 1, 6),
 (31, 3, 2);
+
+-- Dados iniciais de remessas para testar roteirizacao e conflitos de docas
+INSERT INTO doca (nome, capacidade_paletes_diaria, ativa) VALUES
+('Doca Norte', 18, true),
+('Doca Sul', 12, true),
+('Doca Express', 8, true);
+
+INSERT INTO distribuidora (nome, nivel_prioridade, ativa) VALUES
+('Verde Express', 'ALTA', true),
+('Jardim Log', 'MEDIA', true),
+('Rota Paisagismo', 'BAIXA', true);
+
+INSERT INTO calendario_excecao (data, motivo, ativa) VALUES
+('2026-06-12', 'Manutencao preventiva nas docas', true);
+
+INSERT INTO agendamento_remessa (doca_id, distribuidora_id, data, horario, volume_paletes, status) VALUES
+(1, 1, '2026-06-10', '08:00', 6, 'CONFIRMADO'),
+(1, 2, '2026-06-10', '10:00', 8, 'CONFIRMADO'),
+(2, 3, '2026-06-10', '13:00', 4, 'CONFIRMADO');
 
 -- Inserir funcionários DIVERSOS para teste completo (diferentes cargos e desempenhos)
 INSERT INTO funcionario (nome, cpf, cargo, data_nasc, telefone, cep, rua, numero, bairro, cidade, estado, ativo) VALUES 
