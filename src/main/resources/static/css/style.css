@@ -225,6 +225,146 @@ body::before {
   box-shadow: var(--shadow-glow);
 }
 
+/* === HUD / MENU PRINCIPAL === */
+.app-navbar {
+  min-height: 86px;
+}
+
+.app-navbar .container-fluid {
+  gap: var(--space-lg);
+}
+
+.app-navbar .studio-muda-brand {
+  flex: 0 0 auto;
+  margin-right: var(--space-lg);
+}
+
+.app-navbar .brand-logo {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  margin-right: 0;
+}
+
+.app-nav {
+  gap: 6px;
+  min-width: 0;
+}
+
+.app-nav .nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.app-nav .dropdown-toggle::after {
+  margin-left: 0.45rem;
+  vertical-align: middle;
+}
+
+.app-nav .dropdown-menu {
+  min-width: 220px;
+  padding: 8px;
+  margin-top: 10px;
+  border: 1px solid rgba(17, 153, 142, 0.16);
+  border-radius: 8px;
+  box-shadow: var(--shadow-strong);
+}
+
+.app-nav .dropdown-item,
+.app-nav .dropdown-item-text {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  border-radius: 6px;
+  color: var(--neutral-gray-700);
+  font-weight: 500;
+}
+
+.app-nav .dropdown-item:hover,
+.app-nav .dropdown-item:focus {
+  background: var(--neutral-gray-100);
+  color: var(--evolution-teal);
+}
+
+.app-nav .dropdown-item button,
+.app-nav form.dropdown-item,
+.account-menu form {
+  margin: 0;
+}
+
+.account-toggle {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.account-menu .dropdown-header {
+  color: var(--neutral-gray-500);
+  font-weight: 600;
+  padding: 8px 12px 2px;
+}
+
+.account-menu button.dropdown-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.2);
+}
+
+.navbar-toggler-icon {
+  filter: invert(1) grayscale(1) brightness(2);
+}
+
+@media (max-width: 1199.98px) {
+  .app-nav .nav-link {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .app-navbar {
+    min-height: auto;
+  }
+
+  .app-navbar .container-fluid {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .app-navbar .brand-logo {
+    height: 44px;
+  }
+
+  .app-nav {
+    align-items: stretch !important;
+    gap: 4px;
+    padding-top: 14px;
+  }
+
+  .app-nav .nav-link {
+    justify-content: flex-start;
+    width: 100%;
+    margin: 0;
+  }
+
+  .app-nav .dropdown-menu {
+    margin-top: 4px;
+    box-shadow: none;
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+}
+
 /* === CARDS MODERNOS === */
 .card {
   border: none;
