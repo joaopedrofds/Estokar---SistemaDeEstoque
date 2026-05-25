@@ -1,0 +1,12 @@
+-------------------------------------------------------------------------------
+Test set: com.studiomuda.estoque.config.SecurityConfigTest
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 1.176 s <<< FAILURE! - in com.studiomuda.estoque.config.SecurityConfigTest
+deveBloquearAcessoDashboardParaEstoquista  Time elapsed: 0.016 s  <<< FAILURE!
+java.lang.AssertionError: Status expected:<403> but was:<200>
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoDashboardParaEstoquista(SecurityConfigTest.java:41)
+
+deveBloquearAcessoCuponsParaAuxiliar  Time elapsed: 0.223 s  <<< FAILURE!
+java.lang.AssertionError: Status expected:<403> but was:<200>
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoCuponsParaAuxiliar(SecurityConfigTest.java:48)
+
