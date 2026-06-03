@@ -1,0 +1,1696 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="com.studiomuda.estoque.config.SecurityConfigTest" time="18.764" tests="4" errors="1" skipped="0" failures="1">
+  <properties>
+    <property name="java.specification.version" value="24"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.class.path" value="D:\projects\Estokar---SistemaDeEstoque\target\test-classes;D:\projects\Estokar---SistemaDeEstoque\target\classes;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-thymeleaf\2.7.9\spring-boot-starter-thymeleaf-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter\2.7.9\spring-boot-starter-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-logging\2.7.9\spring-boot-starter-logging-2.7.9.jar;C:\Users\rique\.m2\repository\ch\qos\logback\logback-classic\1.2.11\logback-classic-1.2.11.jar;C:\Users\rique\.m2\repository\ch\qos\logback\logback-core\1.2.11\logback-core-1.2.11.jar;C:\Users\rique\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.17.2\log4j-to-slf4j-2.17.2.jar;C:\Users\rique\.m2\repository\org\apache\logging\log4j\log4j-api\2.17.2\log4j-api-2.17.2.jar;C:\Users\rique\.m2\repository\org\slf4j\jul-to-slf4j\1.7.36\jul-to-slf4j-1.7.36.jar;C:\Users\rique\.m2\repository\jakarta\annotation\jakarta.annotation-api\1.3.5\jakarta.annotation-api-1.3.5.jar;C:\Users\rique\.m2\repository\org\yaml\snakeyaml\1.30\snakeyaml-1.30.jar;C:\Users\rique\.m2\repository\org\thymeleaf\thymeleaf-spring5\3.0.15.RELEASE\thymeleaf-spring5-3.0.15.RELEASE.jar;C:\Users\rique\.m2\repository\org\thymeleaf\thymeleaf\3.0.15.RELEASE\thymeleaf-3.0.15.RELEASE.jar;C:\Users\rique\.m2\repository\org\attoparser\attoparser\2.0.5.RELEASE\attoparser-2.0.5.RELEASE.jar;C:\Users\rique\.m2\repository\org\unbescape\unbescape\1.1.6.RELEASE\unbescape-1.1.6.RELEASE.jar;C:\Users\rique\.m2\repository\org\slf4j\slf4j-api\1.7.36\slf4j-api-1.7.36.jar;C:\Users\rique\.m2\repository\org\thymeleaf\extras\thymeleaf-extras-java8time\3.0.4.RELEASE\thymeleaf-extras-java8time-3.0.4.RELEASE.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-web\2.7.9\spring-boot-starter-web-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-json\2.7.9\spring-boot-starter-json-2.7.9.jar;C:\Users\rique\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.13.5\jackson-databind-2.13.5.jar;C:\Users\rique\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.13.5\jackson-annotations-2.13.5.jar;C:\Users\rique\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.13.5\jackson-core-2.13.5.jar;C:\Users\rique\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.13.5\jackson-datatype-jdk8-2.13.5.jar;C:\Users\rique\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.13.5\jackson-datatype-jsr310-2.13.5.jar;C:\Users\rique\.m2\repository\com\fasterxml\jackson\module\jackson-module-parameter-names\2.13.5\jackson-module-parameter-names-2.13.5.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-tomcat\2.7.9\spring-boot-starter-tomcat-2.7.9.jar;C:\Users\rique\.m2\repository\org\apache\tomcat\embed\tomcat-embed-core\9.0.71\tomcat-embed-core-9.0.71.jar;C:\Users\rique\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\9.0.71\tomcat-embed-el-9.0.71.jar;C:\Users\rique\.m2\repository\org\apache\tomcat\embed\tomcat-embed-websocket\9.0.71\tomcat-embed-websocket-9.0.71.jar;C:\Users\rique\.m2\repository\org\springframework\spring-web\5.3.25\spring-web-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\spring-beans\5.3.25\spring-beans-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\spring-webmvc\5.3.25\spring-webmvc-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\spring-context\5.3.25\spring-context-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\spring-expression\5.3.25\spring-expression-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-security\2.7.9\spring-boot-starter-security-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\spring-aop\5.3.25\spring-aop-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\security\spring-security-config\5.7.7\spring-security-config-5.7.7.jar;C:\Users\rique\.m2\repository\org\springframework\security\spring-security-web\5.7.7\spring-security-web-5.7.7.jar;C:\Users\rique\.m2\repository\mysql\mysql-connector-java\8.0.28\mysql-connector-java-8.0.28.jar;C:\Users\rique\.m2\repository\com\google\protobuf\protobuf-java\3.11.4\protobuf-java-3.11.4.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-devtools\2.7.9\spring-boot-devtools-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot\2.7.9\spring-boot-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\2.7.9\spring-boot-autoconfigure-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-test\2.7.9\spring-boot-starter-test-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-test\2.7.9\spring-boot-test-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\2.7.9\spring-boot-test-autoconfigure-2.7.9.jar;C:\Users\rique\.m2\repository\com\jayway\jsonpath\json-path\2.7.0\json-path-2.7.0.jar;C:\Users\rique\.m2\repository\net\minidev\json-smart\2.4.8\json-smart-2.4.8.jar;C:\Users\rique\.m2\repository\net\minidev\accessors-smart\2.4.8\accessors-smart-2.4.8.jar;C:\Users\rique\.m2\repository\org\ow2\asm\asm\9.1\asm-9.1.jar;C:\Users\rique\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\2.3.3\jakarta.xml.bind-api-2.3.3.jar;C:\Users\rique\.m2\repository\jakarta\activation\jakarta.activation-api\1.2.2\jakarta.activation-api-1.2.2.jar;C:\Users\rique\.m2\repository\org\assertj\assertj-core\3.22.0\assertj-core-3.22.0.jar;C:\Users\rique\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\rique\.m2\repository\org\junit\jupiter\junit-jupiter\5.8.2\junit-jupiter-5.8.2.jar;C:\Users\rique\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.8.2\junit-jupiter-api-5.8.2.jar;C:\Users\rique\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.8.2\junit-jupiter-params-5.8.2.jar;C:\Users\rique\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.8.2\junit-jupiter-engine-5.8.2.jar;C:\Users\rique\.m2\repository\org\mockito\mockito-core\4.5.1\mockito-core-4.5.1.jar;C:\Users\rique\.m2\repository\net\bytebuddy\byte-buddy\1.12.23\byte-buddy-1.12.23.jar;C:\Users\rique\.m2\repository\net\bytebuddy\byte-buddy-agent\1.12.23\byte-buddy-agent-1.12.23.jar;C:\Users\rique\.m2\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;C:\Users\rique\.m2\repository\org\mockito\mockito-junit-jupiter\4.5.1\mockito-junit-jupiter-4.5.1.jar;C:\Users\rique\.m2\repository\org\skyscreamer\jsonassert\1.5.1\jsonassert-1.5.1.jar;C:\Users\rique\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\rique\.m2\repository\org\springframework\spring-core\5.3.25\spring-core-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\spring-jcl\5.3.25\spring-jcl-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\spring-test\5.3.25\spring-test-5.3.25.jar;C:\Users\rique\.m2\repository\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;C:\Users\rique\.m2\repository\org\springframework\security\spring-security-test\5.7.7\spring-security-test-5.7.7.jar;C:\Users\rique\.m2\repository\org\springframework\security\spring-security-core\5.7.7\spring-security-core-5.7.7.jar;C:\Users\rique\.m2\repository\org\springframework\security\spring-security-crypto\5.7.7\spring-security-crypto-5.7.7.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-java\7.15.0\cucumber-java-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-core\7.15.0\cucumber-core-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-gherkin\7.15.0\cucumber-gherkin-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-gherkin-messages\7.15.0\cucumber-gherkin-messages-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\gherkin\26.2.0\gherkin-26.2.0.jar;C:\Users\rique\.m2\repository\io\cucumber\messages\22.0.0\messages-22.0.0.jar;C:\Users\rique\.m2\repository\io\cucumber\tag-expressions\6.0.0\tag-expressions-6.0.0.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-expressions\17.0.1\cucumber-expressions-17.0.1.jar;C:\Users\rique\.m2\repository\io\cucumber\datatable\7.15.0\datatable-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-plugin\7.15.0\cucumber-plugin-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\docstring\7.15.0\docstring-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\html-formatter\20.4.0\html-formatter-20.4.0.jar;C:\Users\rique\.m2\repository\io\cucumber\junit-xml-formatter\0.2.0\junit-xml-formatter-0.2.0.jar;C:\Users\rique\.m2\repository\io\cucumber\ci-environment\10.0.0\ci-environment-10.0.0.jar;C:\Users\rique\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-spring\7.15.0\cucumber-spring-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-junit-platform-engine\7.15.0\cucumber-junit-platform-engine-7.15.0.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-engine\1.8.2\junit-platform-engine-1.8.2.jar;C:\Users\rique\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-commons\1.8.2\junit-platform-commons-1.8.2.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-suite\1.8.2\junit-platform-suite-1.8.2.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-suite-api\1.8.2\junit-platform-suite-api-1.8.2.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-suite-engine\1.8.2\junit-platform-suite-engine-1.8.2.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-suite-commons\1.8.2\junit-platform-suite-commons-1.8.2.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-launcher\1.8.2\junit-platform-launcher-1.8.2.jar;"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="user.timezone" value="America/Fortaleza"/>
+    <property name="os.name" value="Windows 11"/>
+    <property name="java.vm.specification.version" value="24"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="BR"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-24\bin"/>
+    <property name="sun.java.command" value="C:\Users\rique\AppData\Local\Temp\surefire10988149491458723758\surefirebooter17265787639255291397.jar C:\Users\rique\AppData\Local\Temp\surefire10988149491458723758 2026-05-25T14-46-09_522-jvmRun1 surefire384464252727645641tmp surefire_016196357776034437898tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="D:\projects\Estokar---SistemaDeEstoque\target\test-classes;D:\projects\Estokar---SistemaDeEstoque\target\classes;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-thymeleaf\2.7.9\spring-boot-starter-thymeleaf-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter\2.7.9\spring-boot-starter-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-logging\2.7.9\spring-boot-starter-logging-2.7.9.jar;C:\Users\rique\.m2\repository\ch\qos\logback\logback-classic\1.2.11\logback-classic-1.2.11.jar;C:\Users\rique\.m2\repository\ch\qos\logback\logback-core\1.2.11\logback-core-1.2.11.jar;C:\Users\rique\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.17.2\log4j-to-slf4j-2.17.2.jar;C:\Users\rique\.m2\repository\org\apache\logging\log4j\log4j-api\2.17.2\log4j-api-2.17.2.jar;C:\Users\rique\.m2\repository\org\slf4j\jul-to-slf4j\1.7.36\jul-to-slf4j-1.7.36.jar;C:\Users\rique\.m2\repository\jakarta\annotation\jakarta.annotation-api\1.3.5\jakarta.annotation-api-1.3.5.jar;C:\Users\rique\.m2\repository\org\yaml\snakeyaml\1.30\snakeyaml-1.30.jar;C:\Users\rique\.m2\repository\org\thymeleaf\thymeleaf-spring5\3.0.15.RELEASE\thymeleaf-spring5-3.0.15.RELEASE.jar;C:\Users\rique\.m2\repository\org\thymeleaf\thymeleaf\3.0.15.RELEASE\thymeleaf-3.0.15.RELEASE.jar;C:\Users\rique\.m2\repository\org\attoparser\attoparser\2.0.5.RELEASE\attoparser-2.0.5.RELEASE.jar;C:\Users\rique\.m2\repository\org\unbescape\unbescape\1.1.6.RELEASE\unbescape-1.1.6.RELEASE.jar;C:\Users\rique\.m2\repository\org\slf4j\slf4j-api\1.7.36\slf4j-api-1.7.36.jar;C:\Users\rique\.m2\repository\org\thymeleaf\extras\thymeleaf-extras-java8time\3.0.4.RELEASE\thymeleaf-extras-java8time-3.0.4.RELEASE.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-web\2.7.9\spring-boot-starter-web-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-json\2.7.9\spring-boot-starter-json-2.7.9.jar;C:\Users\rique\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.13.5\jackson-databind-2.13.5.jar;C:\Users\rique\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.13.5\jackson-annotations-2.13.5.jar;C:\Users\rique\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.13.5\jackson-core-2.13.5.jar;C:\Users\rique\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.13.5\jackson-datatype-jdk8-2.13.5.jar;C:\Users\rique\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.13.5\jackson-datatype-jsr310-2.13.5.jar;C:\Users\rique\.m2\repository\com\fasterxml\jackson\module\jackson-module-parameter-names\2.13.5\jackson-module-parameter-names-2.13.5.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-tomcat\2.7.9\spring-boot-starter-tomcat-2.7.9.jar;C:\Users\rique\.m2\repository\org\apache\tomcat\embed\tomcat-embed-core\9.0.71\tomcat-embed-core-9.0.71.jar;C:\Users\rique\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\9.0.71\tomcat-embed-el-9.0.71.jar;C:\Users\rique\.m2\repository\org\apache\tomcat\embed\tomcat-embed-websocket\9.0.71\tomcat-embed-websocket-9.0.71.jar;C:\Users\rique\.m2\repository\org\springframework\spring-web\5.3.25\spring-web-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\spring-beans\5.3.25\spring-beans-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\spring-webmvc\5.3.25\spring-webmvc-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\spring-context\5.3.25\spring-context-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\spring-expression\5.3.25\spring-expression-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-security\2.7.9\spring-boot-starter-security-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\spring-aop\5.3.25\spring-aop-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\security\spring-security-config\5.7.7\spring-security-config-5.7.7.jar;C:\Users\rique\.m2\repository\org\springframework\security\spring-security-web\5.7.7\spring-security-web-5.7.7.jar;C:\Users\rique\.m2\repository\mysql\mysql-connector-java\8.0.28\mysql-connector-java-8.0.28.jar;C:\Users\rique\.m2\repository\com\google\protobuf\protobuf-java\3.11.4\protobuf-java-3.11.4.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-devtools\2.7.9\spring-boot-devtools-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot\2.7.9\spring-boot-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\2.7.9\spring-boot-autoconfigure-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-starter-test\2.7.9\spring-boot-starter-test-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-test\2.7.9\spring-boot-test-2.7.9.jar;C:\Users\rique\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\2.7.9\spring-boot-test-autoconfigure-2.7.9.jar;C:\Users\rique\.m2\repository\com\jayway\jsonpath\json-path\2.7.0\json-path-2.7.0.jar;C:\Users\rique\.m2\repository\net\minidev\json-smart\2.4.8\json-smart-2.4.8.jar;C:\Users\rique\.m2\repository\net\minidev\accessors-smart\2.4.8\accessors-smart-2.4.8.jar;C:\Users\rique\.m2\repository\org\ow2\asm\asm\9.1\asm-9.1.jar;C:\Users\rique\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\2.3.3\jakarta.xml.bind-api-2.3.3.jar;C:\Users\rique\.m2\repository\jakarta\activation\jakarta.activation-api\1.2.2\jakarta.activation-api-1.2.2.jar;C:\Users\rique\.m2\repository\org\assertj\assertj-core\3.22.0\assertj-core-3.22.0.jar;C:\Users\rique\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\rique\.m2\repository\org\junit\jupiter\junit-jupiter\5.8.2\junit-jupiter-5.8.2.jar;C:\Users\rique\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.8.2\junit-jupiter-api-5.8.2.jar;C:\Users\rique\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.8.2\junit-jupiter-params-5.8.2.jar;C:\Users\rique\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.8.2\junit-jupiter-engine-5.8.2.jar;C:\Users\rique\.m2\repository\org\mockito\mockito-core\4.5.1\mockito-core-4.5.1.jar;C:\Users\rique\.m2\repository\net\bytebuddy\byte-buddy\1.12.23\byte-buddy-1.12.23.jar;C:\Users\rique\.m2\repository\net\bytebuddy\byte-buddy-agent\1.12.23\byte-buddy-agent-1.12.23.jar;C:\Users\rique\.m2\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;C:\Users\rique\.m2\repository\org\mockito\mockito-junit-jupiter\4.5.1\mockito-junit-jupiter-4.5.1.jar;C:\Users\rique\.m2\repository\org\skyscreamer\jsonassert\1.5.1\jsonassert-1.5.1.jar;C:\Users\rique\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\rique\.m2\repository\org\springframework\spring-core\5.3.25\spring-core-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\spring-jcl\5.3.25\spring-jcl-5.3.25.jar;C:\Users\rique\.m2\repository\org\springframework\spring-test\5.3.25\spring-test-5.3.25.jar;C:\Users\rique\.m2\repository\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;C:\Users\rique\.m2\repository\org\springframework\security\spring-security-test\5.7.7\spring-security-test-5.7.7.jar;C:\Users\rique\.m2\repository\org\springframework\security\spring-security-core\5.7.7\spring-security-core-5.7.7.jar;C:\Users\rique\.m2\repository\org\springframework\security\spring-security-crypto\5.7.7\spring-security-crypto-5.7.7.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-java\7.15.0\cucumber-java-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-core\7.15.0\cucumber-core-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-gherkin\7.15.0\cucumber-gherkin-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-gherkin-messages\7.15.0\cucumber-gherkin-messages-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\gherkin\26.2.0\gherkin-26.2.0.jar;C:\Users\rique\.m2\repository\io\cucumber\messages\22.0.0\messages-22.0.0.jar;C:\Users\rique\.m2\repository\io\cucumber\tag-expressions\6.0.0\tag-expressions-6.0.0.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-expressions\17.0.1\cucumber-expressions-17.0.1.jar;C:\Users\rique\.m2\repository\io\cucumber\datatable\7.15.0\datatable-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-plugin\7.15.0\cucumber-plugin-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\docstring\7.15.0\docstring-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\html-formatter\20.4.0\html-formatter-20.4.0.jar;C:\Users\rique\.m2\repository\io\cucumber\junit-xml-formatter\0.2.0\junit-xml-formatter-0.2.0.jar;C:\Users\rique\.m2\repository\io\cucumber\ci-environment\10.0.0\ci-environment-10.0.0.jar;C:\Users\rique\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-spring\7.15.0\cucumber-spring-7.15.0.jar;C:\Users\rique\.m2\repository\io\cucumber\cucumber-junit-platform-engine\7.15.0\cucumber-junit-platform-engine-7.15.0.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-engine\1.8.2\junit-platform-engine-1.8.2.jar;C:\Users\rique\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-commons\1.8.2\junit-platform-commons-1.8.2.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-suite\1.8.2\junit-platform-suite-1.8.2.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-suite-api\1.8.2\junit-platform-suite-api-1.8.2.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-suite-engine\1.8.2\junit-platform-suite-engine-1.8.2.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-suite-commons\1.8.2\junit-platform-suite-commons-1.8.2.jar;C:\Users\rique\.m2\repository\org\junit\platform\junit-platform-launcher\1.8.2\junit-platform-launcher-1.8.2.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\rique"/>
+    <property name="user.language" value="pt"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-03-18"/>
+    <property name="java.home" value="C:\Program Files\Java\jdk-24"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="D:\projects\Estokar---SistemaDeEstoque"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="C:\Users\rique\AppData\Local\Temp\surefire10988149491458723758\surefirebooter17265787639255291397.jar"/>
+    <property name="user.script" value=""/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="24+36-3646"/>
+    <property name="user.name" value="rique"/>
+    <property name="stdout.encoding" value="Cp1252"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="C:\Users\rique\.m2\repository"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="C:\Users\rique\AppData\Local\Temp\"/>
+    <property name="java.version" value="24"/>
+    <property name="user.dir" value="D:\projects\Estokar---SistemaDeEstoque"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="native.encoding" value="Cp1252"/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk-24\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;c:\Users\rique\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\debugCommand;c:\Users\rique\AppData\Roaming\Code\User\globalStorage\github.copilot-chat\copilotCli;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\windows\System32\OpenSSH\;C:\ProgramData\UNIVALI\Portugol Studio;C:\Program Files\HP\HP One Agent;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\nodejs\;C:\Program Files\Go\bin;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Cloudflare\Cloudflare WARP\;C:\Program Files\MySQL\MySQL Shell 8.0\bin\;C:\Users\rique\AppData\Local\Programs\Python\Python313\Scripts\;C:\Users\rique\AppData\Local\Programs\Python\Python313\;C:\Users\rique\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\rique\AppData\Local\Programs\Python\Python311\;C:\Users\rique\AppData\Local\Microsoft\WindowsApps;C:\Users\rique\AppData\Local\GitHubDesktop\bin;C:\Users\rique\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\rique\AppData\Roaming\npm;C:\Program Files\MongoDB\Server\8.0\bin;C:\Users\rique\AppData\Local\JetBrains\Toolbox\scripts;C:\Program Files\Apache\apache-maven-3.9.9\bin;C:\raylib\w64devkit\bin;C:\Users\rique\.dotnet\tools;C:\Users\rique\AppData\Local\Microsoft\WindowsApps;C:\Users\rique\go\bin;c:\Users\rique\.vscode\extensions\vscjava.vscode-java-debug-0.59.0\bundled\scripts\noConfigScripts;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="Cp1252"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="24+36-3646"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="68.0"/>
+  </properties>
+  <testcase name="devePermitirAcessoDashboardParaDiretor" classname="com.studiomuda.estoque.config.SecurityConfigTest" time="3.072"/>
+  <testcase name="deveBloquearAcessoDashboardParaEstoquista" classname="com.studiomuda.estoque.config.SecurityConfigTest" time="1.172">
+    <failure message="Status expected:&lt;403&gt; but was:&lt;200&gt;" type="java.lang.AssertionError"><![CDATA[java.lang.AssertionError: Status expected:<403> but was:<200>
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoDashboardParaEstoquista(SecurityConfigTest.java:41)
+]]></failure>
+    <system-out><![CDATA[
+MockHttpServletRequest:
+      HTTP Method = GET
+      Request URI = /dashboard
+       Parameters = {}
+          Headers = []
+             Body = null
+    Session Attrs = {SPRING_SECURITY_CONTEXT=SecurityContextImpl [Authentication=UsernamePasswordAuthenticationToken [Principal=org.springframework.security.core.userdetails.User [Username=user, Password=[PROTECTED], Enabled=true, AccountNonExpired=true, credentialsNonExpired=true, AccountNonLocked=true, Granted Authorities=[ROLE_ESTOQUISTA]], Credentials=[PROTECTED], Authenticated=true, Details=null, Granted Authorities=[ROLE_ESTOQUISTA]]]}
+
+Handler:
+             Type = com.studiomuda.estoque.controller.DashboardController
+           Method = com.studiomuda.estoque.controller.DashboardController#dashboard(Model)
+
+Async:
+    Async started = false
+     Async result = null
+
+Resolved Exception:
+             Type = null
+
+ModelAndView:
+        View name = dashboard
+             View = null
+            Model = null
+
+FlashMap:
+       Attributes = null
+
+MockHttpServletResponse:
+           Status = 200
+    Error message = null
+          Headers = [Content-Language:"en", Content-Type:"text/html;charset=UTF-8", X-Content-Type-Options:"nosniff", X-XSS-Protection:"1; mode=block", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
+     Content type = text/html;charset=UTF-8
+             Body = <!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão - Studio Muda | Paisagismo & Plantas Preservadas</title>
+    <meta name="description" content="Sistema de gestão para Studio Muda - Especialistas em paisagismo e plantas preservadas que não morrem">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</head>
+
+<body>
+    <!-- Floating elements for aesthetic background -->
+    <div class="floating-elements">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg app-navbar">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand studio-muda-brand" href="/">
+                <img src="/css/muda 10.png" alt="Studio Muda - & Plantas Preservadas" class="brand-logo">
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav app-nav ms-auto align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="bi bi-house-heart-fill me-2"></i>Home</a>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="catalogoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-grid-3x3-gap-fill me-2"></i>Catálogo
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="catalogoDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/produtos">
+                                    <i class="bi bi-flower2 me-2"></i>Produtos
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/cupons">
+                                    <i class="bi bi-gift-fill me-2"></i>Cupons
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="operacaoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-boxes me-2"></i>Operação
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="operacaoDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/pedidos">
+                                    <i class="bi bi-basket3-fill me-2"></i>Pedidos
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/estoque">
+                                    <i class="bi bi-arrow-repeat me-2"></i>Estoque
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/suprimentos">
+                                    <i class="bi bi-truck-front-fill me-2"></i>Suprimentos
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/remessas">
+                                    <i class="bi bi-signpost-split-fill me-2"></i>Remessas
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="pessoasDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-people-fill me-2"></i>Pessoas
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="pessoasDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/clientes">
+                                    <i class="bi bi-people-fill me-2"></i>Clientes
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/funcionarios">
+                                    <i class="bi bi-person-badge-fill me-2"></i>Equipe
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="financeiroDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-cash-stack me-2"></i>Financeiro
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="financeiroDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/financeiro/relatorios">
+                                    <i class="bi bi-file-earmark-bar-graph me-2"></i>Relatórios
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/financeiro/templates">
+                                    <i class="bi bi-layout-text-window-reverse me-2"></i>Templates
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/financeiro/categorias">
+                                    <i class="bi bi-tags me-2"></i>Categorias
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/financeiro/ajustes">
+                                    <i class="bi bi-pencil-square me-2"></i>Ajustes Manuais
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="acessoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-shield-lock-fill me-2"></i>Segurança
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="acessoDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/acesso/perfis">
+                                    <i class="bi bi-person-badge-fill me-2"></i>Perfis
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/acesso/permissoes">
+                                    <i class="bi bi-grid-3x3-gap-fill me-2"></i>Permissões
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/acesso/usuarios">
+                                    <i class="bi bi-person-lock me-2"></i>Usuários
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/acesso/logs">
+                                    <i class="bi bi-journal-text me-2"></i>Logs de acesso
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link dashboard-link" href="/dashboard">
+                            <i class="bi bi-graph-up-arrow me-2"></i>Dashboard
+                        </a>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle account-toggle" href="#" id="contaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-2"></i>
+                            <span>user</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end account-menu" aria-labelledby="contaDropdown">
+                            <li>
+                                <span class="dropdown-header">
+                                    <i class="bi bi-shield-check me-2"></i>Conta ativa
+                                </span>
+                            </li>
+                            <li>
+                                <span class="dropdown-item-text fw-semibold">user</span>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form action="/logout" method="post">
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="bi bi-arrow-repeat me-2"></i>Trocar conta
+                                    </button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="/logout" method="post">
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Sair
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+
+                    
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="bi bi-graph-up"></i>
+                Dashboard Studio Muda
+            </h1>
+            <p class="dashboard-subtitle">Análise completa e em tempo real do seu negócio</p>
+        </div>
+
+        <!-- Filtros Dinâmicos -->
+        <div class="filters-section mb-5">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="chart-title">
+                        <i class="bi bi-funnel"></i>
+                        Filtros Dinâmicos
+                    </h5>
+                    <button type="button" class="btn btn-outline-light btn-sm" id="resetFilters">
+                        <i class="bi bi-arrow-clockwise"></i> Resetar
+                    </button>
+                </div>
+                <div class="chart-container">
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-6">
+                            <label class="form-label text-light">Período</label>
+                            <div class="input-group">
+                                <input type="date" class="form-control form-control-glass" id="dataInicio"
+                                    placeholder="Data Início">
+                                <input type="date" class="form-control form-control-glass" id="dataFim"
+                                    placeholder="Data Fim">
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-6">
+                            <label class="form-label text-light">Status do Pedido</label>
+                            <select class="form-select form-control-glass" id="statusPedido">
+                                <option value="">Todos os Status</option>
+                                <option value="PENDENTE">Pendente</option>
+                                <option value="EM_ANDAMENTO">Em Andamento</option>
+                                <option value="ENTREGUE">Entregue</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-6">
+                            <label class="form-label text-light">Categoria</label>
+                            <select class="form-select form-control-glass" id="categoria">
+                                <option value="">Todas as Categorias</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-6">
+                            <label class="form-label text-light">Tipo de Cliente</label>
+                            <select class="form-select form-control-glass" id="tipoCliente">
+                                <option value="">Todos os Tipos</option>
+                                <option value="PESSOA_FISICA">Pessoa Física</option>
+                                <option value="PESSOA_JURIDICA">Pessoa Jurídica</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-md-6">
+                            <label class="form-label text-light">Cliente</label>
+                            <select class="form-select form-control-glass" id="clienteId">
+                                <option value="">Todos os Clientes</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-1 col-md-6 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary w-100" id="aplicarFiltros">
+                                <i class="bi bi-search"></i> Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPIs Principais -->
+        <h3 class="section-title">
+            <i class="bi bi-speedometer2"></i>
+            Métricas Principais
+        </h3>
+        <div class="row g-4 mb-5">
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="kpi-card">
+                    <i class="bi bi-cart-check kpi-icon"></i>
+                    <div class="kpi-value" id="kpi-total-pedidos">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="kpi-label">Total de Pedidos</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="kpi-card">
+                    <i class="bi bi-people-fill kpi-icon"></i>
+                    <div class="kpi-value" id="kpi-clientes">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="kpi-label">Clientes Ativos</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="kpi-card">
+                    <i class="bi bi-person-badge-fill kpi-icon"></i>
+                    <div class="kpi-value" id="kpi-funcionarios">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="kpi-label">Funcionários</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="kpi-card">
+                    <i class="bi bi-box-seam kpi-icon"></i>
+                    <div class="kpi-value" id="kpi-produtos">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="kpi-label">Produtos</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="kpi-card">
+                    <i class="bi bi-archive kpi-icon"></i>
+                    <div class="kpi-value" id="kpi-produtos-estoque">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="kpi-label">Em Estoque</div>
+                </div>
+            </div>
+            <div class="col-xl-2 col-md-4 col-6">
+                <div class="kpi-card">
+                    <i class="bi bi-ticket-perforated kpi-icon"></i>
+                    <div class="kpi-value" id="kpi-cupons">
+                        <div class="loading-spinner"></div>
+                    </div>
+                    <div class="kpi-label">Cupons</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <div id="alertas-container" class="mb-5"></div>
+
+        <!-- Gráficos Principais -->
+        <h3 class="section-title">
+            <i class="bi bi-bar-chart-line"></i>
+            Análises e Visualizações
+        </h3>
+
+        <!-- Gráficos em Grid -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-line-chart"></i>
+                            Evolução de Vendas (12 meses)
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="evolucaoVendasChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-person-circle"></i>
+                            Distribuição de Clientes PF/PJ
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="clientesTipoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-clipboard-check"></i>
+                            Pedidos por Status
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="pedidosStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-pie-chart"></i>
+                            Produtos por Categoria
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="produtosCategoriaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Produtos com Estoque Crítico
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="produtosBaixoEstoqueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-trophy"></i>
+                            Top Produtos Mais Vendidos
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="topProdutosChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-star-fill"></i>
+                            Clientes Mais Ativos
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="topClientesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-check-circle"></i>
+                            Pedidos Entregues no Prazo vs. Atrasados
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="entregasPrazoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-clock"></i>
+                            Tempo Médio de Entrega por Mês
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="tempoEntregaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Pedidos Recentes -->
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h5 class="chart-title">
+                            <i class="bi bi-clock-history"></i>
+                            Pedidos Recentes
+                        </h5>
+                    </div>
+                    <div class="chart-container">
+                        <div class="table-responsive">
+                            <table class="table table-glass">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Data Pedido</th>
+                                        <th>Valor Total</th>
+                                        <th>Data Entrega</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-pedidos">
+                                    <tr>
+                                        <td colspan="5" class="text-center" style="color: white !important;">
+                                            <div class="loading-spinner"></div>
+                                            <div class="mt-2" style="color: white !important;">Carregando...</div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalhes Dinâmico -->
+    <div class="modal fade" id="detalheModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detalheModalLabel">Detalhes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body" id="detalheModalBody">
+                    <!-- Detalhes dinâmicos aqui -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Dashboard Principal - Studio Muda - Versão Moderna com Filtros
+        class DashboardStudioMuda {
+            constructor() {
+                this.charts = {};
+                this.filters = {
+                    dataInicio: '',
+                    dataFim: '',
+                    statusPedido: '',
+                    categoria: '',
+                    tipoCliente: '',
+                    clienteId: ''
+                };
+                this.colors = {
+                    primary: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'],
+                    gradients: {
+                        blue: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        purple: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                        cyan: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                        success: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                        warning: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+                    }
+                };
+                this.init();
+            }
+
+            async init() {
+                if (typeof Chart === 'undefined') {
+                    console.error('Chart.js não está carregado!');
+                    return;
+                }
+
+                console.log('Iniciando Dashboard Studio Muda...');
+                this.setupChartDefaults();
+                this.initializeFilters();
+                await this.loadFilterOptions();
+                await this.loadKPIs();
+                await this.loadAlertas();
+                await this.initializeCharts();
+                await this.loadPedidosRecentes();
+                console.log('Dashboard iniciado com sucesso!');
+            }
+
+            setupChartDefaults() {
+                Chart.defaults.font.family = "'Inter', sans-serif";
+                Chart.defaults.color = '#2c3e50'; // Cor mais escura e legível
+                Chart.defaults.responsive = true;
+                Chart.defaults.maintainAspectRatio = false;
+                Chart.defaults.plugins.legend.labels.color = '#2c3e50'; // Texto legível em fundos claros
+                Chart.defaults.scale.grid.color = 'rgba(44, 62, 80, 0.2)'; // Grid visível mas sutil
+                Chart.defaults.scale.ticks.color = '#2c3e50'; // Ticks legíveis
+            }
+
+            // Inicializar filtros
+            initializeFilters() {
+                // Set default date range (last 12 months)
+                const today = new Date();
+                const lastYear = new Date(today);
+                lastYear.setFullYear(today.getFullYear() - 1);
+
+                document.getElementById('dataInicio').value = lastYear.toISOString().split('T')[0];
+                document.getElementById('dataFim').value = today.toISOString().split('T')[0];
+
+                // Add event listeners
+                document.getElementById('aplicarFiltros').addEventListener('click', () => this.applyFilters());
+                document.getElementById('resetFilters').addEventListener('click', () => this.resetFilters());
+
+                // Auto-apply filters on change
+                ['dataInicio', 'dataFim', 'statusPedido', 'categoria', 'tipoCliente', 'clienteId'].forEach(id => {
+                    document.getElementById(id).addEventListener('change', () => {
+                        this.updateFiltersFromDOM();
+                        this.applyFiltersDebounced();
+                    });
+                });
+            }
+
+            // Carregar opções dos filtros
+            async loadFilterOptions() {
+                try {
+                    // Carregar categorias
+                    const categoriaResponse = await fetch('/dashboard/api/categorias');
+                    const categorias = await categoriaResponse.json();
+                    const categoriaSelect = document.getElementById('categoria');
+                    categorias.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.id;
+                        option.textContent = cat.nome;
+                        categoriaSelect.appendChild(option);
+                    });
+
+                    // Carregar clientes
+                    const clienteResponse = await fetch('/dashboard/api/clientes');
+                    const clientes = await clienteResponse.json();
+                    const clienteSelect = document.getElementById('clienteId');
+                    clientes.forEach(cliente => {
+                        const option = document.createElement('option');
+                        option.value = cliente.id;
+                        option.textContent = cliente.nome;
+                        clienteSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Erro ao carregar opções dos filtros:', error);
+                }
+            }
+
+            // Atualizar filtros do DOM
+            updateFiltersFromDOM() {
+                this.filters = {
+                    dataInicio: document.getElementById('dataInicio').value,
+                    dataFim: document.getElementById('dataFim').value,
+                    statusPedido: document.getElementById('statusPedido').value,
+                    categoria: document.getElementById('categoria').value,
+                    tipoCliente: document.getElementById('tipoCliente').value,
+                    clienteId: document.getElementById('clienteId').value
+                };
+            }
+
+            // Aplicar filtros com debounce
+            applyFiltersDebounced() {
+                clearTimeout(this.filterTimeout);
+                this.filterTimeout = setTimeout(() => this.applyFilters(), 500);
+            }
+
+            // Aplicar filtros
+            async applyFilters() {
+                this.updateFiltersFromDOM();
+                console.log('Aplicando filtros:', this.filters);
+
+                // Show loading indicators
+                this.showLoadingIndicators();
+
+                try {
+                    // Reload all data with filters
+                    await Promise.all([
+                        this.loadKPIs(),
+                        this.loadAlertas(),
+                        this.updateAllCharts(),
+                        this.loadPedidosRecentes()
+                    ]);
+                } catch (error) {
+                    console.error('Erro ao aplicar filtros:', error);
+                }
+            }
+
+            // Resetar filtros
+            async resetFilters() {
+                const today = new Date();
+                const lastYear = new Date(today);
+                lastYear.setFullYear(today.getFullYear() - 1);
+
+                document.getElementById('dataInicio').value = lastYear.toISOString().split('T')[0];
+                document.getElementById('dataFim').value = today.toISOString().split('T')[0];
+                document.getElementById('statusPedido').value = '';
+                document.getElementById('categoria').value = '';
+                document.getElementById('tipoCliente').value = '';
+                document.getElementById('clienteId').value = '';
+
+                await this.applyFilters();
+            }
+
+            // Mostrar indicadores de carregamento
+            showLoadingIndicators() {
+                const chartContainers = document.querySelectorAll('.chart-container canvas');
+                chartContainers.forEach(canvas => {
+                    canvas.style.opacity = '0.5';
+                });
+            }
+
+            // Construir query string dos filtros
+            buildFilterQuery() {
+                const params = new URLSearchParams();
+                Object.entries(this.filters).forEach(([key, value]) => {
+                    if (value) params.append(key, value);
+                });
+                return params.toString();
+            }
+
+            // Atualizar todos os gráficos
+            async updateAllCharts() {
+                const chartMethods = [
+                    this.createEvolucaoVendasChart,
+                    this.createClientesTipoChart,
+                    this.createPedidosStatusChart,
+                    this.createProdutosCategoriaChart,
+                    this.createProdutosBaixoEstoqueChart,
+                    this.createTopProdutosChart,
+                    this.createTopClientesChart,
+                    this.createEntregasPrazoChart,
+                    this.createTempoEntregaChart
+                ];
+
+                for (const method of chartMethods) {
+                    try {
+                        await method.call(this);
+                    } catch (error) {
+                        console.error(`Erro ao atualizar gráfico:`, error);
+                    }
+                }
+            }
+
+            // KPIs com filtros
+            async loadKPIs() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/metricas-principais?${query}`);
+                    const data = await response.json();
+
+                    this.updateKPI('kpi-total-pedidos', data.totalPedidos || 0);
+                    this.updateKPI('kpi-clientes', data.clientesAtivos || 0);
+                    this.updateKPI('kpi-funcionarios', data.funcionariosAtivos || 0);
+                    this.updateKPI('kpi-produtos', data.totalProdutos || 0);
+                    this.updateKPI('kpi-produtos-estoque', data.produtosEstoque || 0);
+                    this.updateKPI('kpi-cupons', data.totalCupons || 0);
+                } catch (error) {
+                    console.error('Erro ao carregar KPIs:', error);
+                    this.showErrorKPIs();
+                }
+            }
+
+            updateKPI(elementId, value) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    const spinner = element.querySelector('.loading-spinner');
+                    if (spinner) spinner.remove();
+                    element.textContent = typeof value === 'number' ? value.toLocaleString('pt-BR') : value;
+                }
+            }
+
+            showErrorKPIs() {
+                ['kpi-total-pedidos', 'kpi-clientes', 'kpi-funcionarios', 'kpi-produtos', 'kpi-produtos-estoque', 'kpi-cupons'].forEach(id => {
+                    this.updateKPI(id, '--');
+                });
+            }
+
+            // Alertas com filtros
+            async loadAlertas() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/alertas?${query}`);
+                    const data = await response.json();
+
+                    const container = document.getElementById('alertas-container');
+                    if (container) {
+                        container.innerHTML = '';
+
+                        if (data.produtosFalta > 0 || data.pedidosPendentes > 0 || data.pedidosAtrasados > 0 || data.alertasFinanceiros > 0) {
+                            const alertDiv = document.createElement('div');
+                            alertDiv.className = 'alert-glass';
+                            alertDiv.innerHTML = `
+                        <h6><i class="bi bi-exclamation-triangle"></i> Atenção Necessária</h6>
+                        <div class="row">
+                            ${data.produtosFalta > 0 ? `<div class="col-md-4"><strong>${data.produtosFalta}</strong> produtos em falta</div>` : ''}
+                            ${data.pedidosPendentes > 0 ? `<div class="col-md-4"><strong>${data.pedidosPendentes}</strong>  pedidos em aberto</div>` : ''}
+                            ${data.pedidosAtrasados > 0 ? `<div class="col-md-4"><strong>${data.pedidosAtrasados}</strong> pedidos atrasados</div>` : ''}
+                            ${data.alertasFinanceiros > 0 ? `<div class="col-md-4"><strong>${data.alertasFinanceiros}</strong> alertas de inadimplência</div>` : ''}
+                        </div>
+                    `;
+                            container.appendChild(alertDiv);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar alertas:', error);
+                }
+            }
+
+            // Inicializar gráficos
+            async initializeCharts() {
+                const chartMethods = [
+                    this.createEvolucaoVendasChart,
+                    this.createClientesTipoChart,
+                    this.createPedidosStatusChart,
+                    this.createProdutosCategoriaChart,
+                    this.createProdutosBaixoEstoqueChart,
+                    this.createTopProdutosChart,
+                    this.createTopClientesChart,
+                    this.createEntregasPrazoChart,
+                    this.createTempoEntregaChart
+                ];
+
+                for (const method of chartMethods) {
+                    try {
+                        await method.call(this);
+                    } catch (error) {
+                        console.error(`Erro ao inicializar gráfico:`, error);
+                    }
+                }
+            }
+
+            // Gráficos individuais
+            async createEvolucaoVendasChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/evolucao-vendas?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('evolucaoVendasChart');
+                    if (!ctx) return;
+
+                    // Destroy existing chart
+                    if (this.charts.evolucaoVendas) {
+                        this.charts.evolucaoVendas.destroy();
+                    }
+
+                    this.charts.evolucaoVendas = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.map(item => `${item.nomeMes}/${item.ano}`),
+                            datasets: [{
+                                label: 'Faturamento (R$)',
+                                data: data.map(item => item.faturamento),
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                yAxisID: 'y'
+                            }, {
+                                label: 'Pedidos',
+                                data: data.map(item => item.pedidos),
+                                borderColor: '#f093fb',
+                                backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                                borderWidth: 3,
+                                fill: false,
+                                tension: 0.4,
+                                yAxisID: 'y1'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false,
+                            },
+                            scales: {
+                                y: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'left',
+                                    title: { display: true, text: 'Faturamento (R$)', color: '#2c3e50' },
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    title: { display: true, text: 'Pedidos', color: '#2c3e50' },
+                                    grid: { drawOnChartArea: false },
+                                    ticks: { color: '#2c3e50' }
+                                },
+                                x: {
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: { color: '#2c3e50' }
+                                }
+                            },
+                            onComplete: () => {
+                                ctx.style.opacity = '1';
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de evolução de vendas:', error);
+                }
+            }
+
+            async createClientesTipoChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/clientes-tipo?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('clientesTipoChart');
+                    if (!ctx) return;
+
+                    if (this.charts.clientesTipo) {
+                        this.charts.clientesTipo.destroy();
+                    }
+
+                    this.charts.clientesTipo = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Pessoa Física', 'Pessoa Jurídica'],
+                            datasets: [{
+                                data: [data.pf, data.pj],
+                                backgroundColor: ['#667eea', '#f093fb'],
+                                borderWidth: 3,
+                                borderColor: 'rgba(255, 255, 255, 0.2)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#2c3e50' }
+                                }
+                            },
+                            onComplete: () => {
+                                ctx.style.opacity = '1';
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de tipos de cliente:', error);
+                }
+            }
+
+            // ...dentro da sua classe DashboardStudioMuda...
+
+            async createPedidosStatusChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/pedidos-status?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('pedidosStatusChart');
+                    if (!ctx) return;
+
+                    // Mapeamento para labels amigáveis
+                    const statusLabelsMap = {
+                        'PENDENTE': 'Pendente',
+                        'EM_ANDAMENTO': 'Em Andamento',
+                        'ENTREGUE': 'Entregue'
+                    };
+
+                    // Descobre se há filtro de status
+                    const statusFiltro = document.getElementById('statusPedido').value;
+
+                    let labels = [];
+                    let valores = [];
+                    let cores = [];
+
+                    if (statusFiltro && statusLabelsMap[statusFiltro]) {
+                        // Só mostra o status filtrado
+                        const item = data.find(i => i.status === statusFiltro);
+                        labels = [statusLabelsMap[statusFiltro]];
+                        valores = [item ? item.total : 0];
+                        // Cor correspondente ao status
+                        cores = statusFiltro === 'PENDENTE' ? ['#b5aaff']
+                            : statusFiltro === 'EM_ANDAMENTO' ? ['#d1a3c7']
+                                : ['#ffb3f7'];
+                    } else {
+                        // Mostra todos os status
+                        labels = Object.values(statusLabelsMap);
+                        valores = [
+                            data.find(i => i.status === 'PENDENTE')?.total || 0,
+                            data.find(i => i.status === 'EM_ANDAMENTO')?.total || 0,
+                            data.find(i => i.status === 'ENTREGUE')?.total || 0
+                        ];
+                        cores = ['#b5aaff', '#d1a3c7', '#ffb3f7'];
+                    }
+
+                    // Destroy existing chart if exists
+                    if (this.charts && this.charts.pedidosStatus) {
+                        this.charts.pedidosStatus.destroy();
+                    }
+
+                    this.charts = this.charts || {};
+                    this.charts.pedidosStatus = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: valores,
+                                backgroundColor: cores,
+                                borderWidth: 3,
+                                borderColor: 'rgba(255, 255, 255, 0.2)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#2c3e50' }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de status dos pedidos:', error);
+                }
+            }
+
+            async createProdutosCategoriaChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/vendas-por-categoria?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('produtosCategoriaChart');
+                    if (!ctx) return;
+
+                    // Destroy existing chart
+                    if (this.charts.produtosCategoria) {
+                        this.charts.produtosCategoria.destroy();
+                    }
+
+                    this.charts.produtosCategoria = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.map(item => item.categoria),
+                            datasets: [{
+                                data: data.map(item => item.quantidadeTotal),
+                                backgroundColor: this.colors.primary,
+                                borderWidth: 3,
+                                borderColor: 'rgba(255, 255, 255, 0.2)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#2c3e50' }
+                                }
+                            },
+                            onComplete: () => {
+                                ctx.style.opacity = '1';
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de produtos por categoria:', error);
+                }
+            }
+
+            async createProdutosBaixoEstoqueChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/produtos-baixo-estoque?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('produtosBaixoEstoqueChart');
+                    if (!ctx) return;
+
+                    const limitedData = data.slice(0, 10);
+
+                    // Destroy existing chart
+                    if (this.charts.produtosBaixoEstoque) {
+                        this.charts.produtosBaixoEstoque.destroy();
+                    }
+
+                    this.charts.produtosBaixoEstoque = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: limitedData.map(item => item.nome),
+                            datasets: [{
+                                label: 'Quantidade em Estoque',
+                                data: limitedData.map(item => item.quantidade),
+                                backgroundColor: limitedData.map(item => {
+                                    if (item.quantidade === 0) return '#dc3545';
+                                    if (item.quantidade <= 5) return '#fd7e14';
+                                    return '#ffc107';
+                                }),
+                                borderWidth: 2,
+                                borderColor: 'rgba(255, 255, 255, 0.2)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            indexAxis: 'y',
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: {
+                                    title: { display: true, text: 'Quantidade', color: '#2c3e50' },
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                },
+                                y: {
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de baixo estoque:', error);
+                }
+            }
+
+            async createTopProdutosChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/top-produtos?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('topProdutosChart');
+                    if (!ctx) return;
+
+                    // Destroy existing chart
+                    if (this.charts.topProdutos) {
+                        this.charts.topProdutos.destroy();
+                    }
+
+                    this.charts.topProdutos = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(item => item.produtoNome),
+                            datasets: [{
+                                label: 'Quantidade Vendida',
+                                data: data.map(item => item.quantidadeVendida),
+                                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                                borderColor: '#667eea',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            indexAxis: 'y',
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                x: {
+                                    title: { display: true, text: 'Quantidade Vendida', color: '#2c3e50' },
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                },
+                                y: {
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de top produtos:', error);
+                }
+            }
+
+            // ...dentro da sua classe DashboardStudioMuda...
+
+            async createTopClientesChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/top-clientes?${query}`);
+                    const data = await response.json();
+
+                    const ctx = document.getElementById('topClientesChart');
+                    if (!ctx) return;
+
+                    // Destroy existing chart
+                    if (this.charts.topClientes) {
+                        this.charts.topClientes.destroy();
+                    }
+
+                    this.charts.topClientes = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(item => item.nome),
+                            datasets: [{
+                                label: 'Total de Pedidos',
+                                data: data.map(item => item.pedidos), // <-- CORRIGIDO AQUI
+                                backgroundColor: 'rgba(240, 147, 251, 0.8)',
+                                borderColor: '#f093fb',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    title: { display: true, text: 'Pedidos', color: '#2c3e50' },
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                },
+                                x: {
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de top clientes:', error);
+                }
+            }
+
+            async createEntregasPrazoChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    console.log('Carregando Entregas Prazo - Query:', query);
+                    const response = await fetch(`/dashboard/api/entregas-prazo?${query}`);
+                    console.log('Entregas Prazo Response status:', response.status);
+                    const data = await response.json();
+                    console.log('Entregas Prazo Data:', data);
+
+                    const ctx = document.getElementById('entregasPrazoChart');
+                    console.log('Entregas Prazo Canvas encontrado:', !!ctx);
+                    if (!ctx) {
+                        console.error('Canvas entregasPrazoChart não encontrado!');
+                        return;
+                    }
+
+                    // Destroy existing chart
+                    if (this.charts.entregasPrazo) {
+                        this.charts.entregasPrazo.destroy();
+                    }
+
+                    this.charts.entregasPrazo = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['No Prazo', 'Atrasadas'],
+                            datasets: [{
+                                data: [data.noPrazo, data.atrasados],
+                                backgroundColor: ['#43e97b', '#fa709a'],
+                                borderWidth: 3,
+                                borderColor: 'rgba(255, 255, 255, 0.2)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#2c3e50' }
+                                }
+                            },
+                            onComplete: () => {
+                                ctx.style.opacity = '1';
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de entregas no prazo:', error);
+                }
+            }
+
+            async createTempoEntregaChart() {
+                try {
+                    const query = this.buildFilterQuery();
+                    console.log('Carregando Tempo Entrega - Query:', query);
+                    const response = await fetch(`/dashboard/api/tempo-entrega-mes?${query}`);
+                    console.log('Tempo Entrega Response status:', response.status);
+                    const data = await response.json();
+                    console.log('Tempo Entrega Data:', data);
+
+                    const ctx = document.getElementById('tempoEntregaChart');
+                    console.log('Tempo Entrega Canvas encontrado:', !!ctx);
+                    if (!ctx) {
+                        console.error('Canvas tempoEntregaChart não encontrado!');
+                        return;
+                    }
+
+                    // Destroy existing chart
+                    if (this.charts.tempoEntrega) {
+                        this.charts.tempoEntrega.destroy();
+                    }
+
+                    this.charts.tempoEntrega = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.map(item => `${item.mes}/${item.ano}`),
+                            datasets: [{
+                                label: 'Tempo Médio (dias)',
+                                data: data.map(item => item.tempoMedio),
+                                borderColor: '#4facfe',
+                                backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    title: { display: true, text: 'Dias', color: '#2c3e50' },
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                },
+                                x: {
+                                    ticks: { color: '#2c3e50' },
+                                    grid: { color: 'rgba(44, 62, 80, 0.2)' }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Erro ao criar gráfico de tempo de entrega:', error);
+                }
+            }
+
+            // Pedidos recentes com filtros
+            async loadPedidosRecentes() {
+                try {
+                    const query = this.buildFilterQuery();
+                    const response = await fetch(`/dashboard/api/recentes-pedidos?${query}`);
+                    const data = await response.json();
+
+                    const tbody = document.getElementById('tabela-pedidos');
+                    if (tbody) {
+                        tbody.innerHTML = '';
+
+                        if (data && data.length > 0) {
+                            data.forEach(pedido => {
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = `
+                            <td><strong>#${pedido.id}</strong></td>
+                            <td>${pedido.clienteNome}</td>
+                            <td>${new Date(pedido.dataRequisicao).toLocaleDateString('pt-BR')}</td>
+                            <td>R$ ${pedido.valorTotal ? pedido.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'}</td>
+                            <td>${pedido.dataEntrega ? new Date(pedido.dataEntrega).toLocaleDateString('pt-BR') : 'Não definida'}</td>
+                        `;
+                                tbody.appendChild(tr);
+                            });
+                        } else {
+                            tbody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum pedido encontrado para os filtros aplicados</td></tr>';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar pedidos recentes:', error);
+                    const tbody = document.getElementById('tabela-pedidos');
+                    if (tbody) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Erro ao carregar dados</td></tr>';
+                    }
+                }
+            }
+
+            // Modal
+            showModal(title, content) {
+                const modalTitle = document.getElementById('detalheModalLabel');
+                const modalBody = document.getElementById('detalheModalBody');
+
+                if (modalTitle && modalBody) {
+                    modalTitle.textContent = title;
+                    modalBody.innerHTML = content;
+                    const modal = new bootstrap.Modal(document.getElementById('detalheModal'));
+                    modal.show();
+                }
+            }
+        }
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM carregado, inicializando dashboard...');
+
+            // Função para tentar inicializar o dashboard
+            function initDashboard() {
+                if (typeof Chart !== 'undefined') {
+                    console.log('Chart.js v' + Chart.version + ' disponível, iniciando dashboard...');
+                    new DashboardStudioMuda();
+                    return true;
+                }
+                return false;
+            }
+
+            // Tentar inicializar imediatamente
+            if (!initDashboard()) {
+                // Se não funcionou, aguardar um pouco mais
+                console.log('Aguardando Chart.js carregar...');
+                setTimeout(() => {
+                    if (!initDashboard()) {
+                        console.error('Chart.js não pôde ser carregado após múltiplas tentativas');
+                    }
+                }, 500);
+            }
+        });
+    </script>
+</body>
+
+</html>
+    Forwarded URL = null
+   Redirected URL = null
+          Cookies = []
+]]></system-out>
+  </testcase>
+  <testcase name="deveRedirecionarParaLoginQuandoNaoAutenticado" classname="com.studiomuda.estoque.config.SecurityConfigTest" time="0"/>
+  <testcase name="deveBloquearAcessoCuponsParaAuxiliar" classname="com.studiomuda.estoque.config.SecurityConfigTest" time="5.903">
+    <error message="Request processing failed; nested exception is org.thymeleaf.exceptions.TemplateInputException: An error happened during template parsing (template: &quot;class path resource [templates/erro.html]&quot;)" type="org.springframework.web.util.NestedServletException">org.springframework.web.util.NestedServletException: Request processing failed; nested exception is org.thymeleaf.exceptions.TemplateInputException: An error happened during template parsing (template: "class path resource [templates/erro.html]")
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoCuponsParaAuxiliar(SecurityConfigTest.java:47)
+Caused by: org.thymeleaf.exceptions.TemplateInputException: An error happened during template parsing (template: "class path resource [templates/erro.html]")
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoCuponsParaAuxiliar(SecurityConfigTest.java:47)
+Caused by: org.attoparser.ParseException: Error resolving fragment: "${content}": template or fragment could not be resolved (template: "layout" - line 202, col 14)
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoCuponsParaAuxiliar(SecurityConfigTest.java:47)
+Caused by: org.thymeleaf.exceptions.TemplateInputException: Error resolving fragment: "${content}": template or fragment could not be resolved (template: "layout" - line 202, col 14)
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoCuponsParaAuxiliar(SecurityConfigTest.java:47)
+</error>
+    <system-out><![CDATA[2026-05-25 14:46:35.758 ERROR 20432 --- [           main] org.thymeleaf.TemplateEngine             : [THYMELEAF][main] Exception processing template "erro": An error happened during template parsing (template: "class path resource [templates/erro.html]")
+
+org.thymeleaf.exceptions.TemplateInputException: An error happened during template parsing (template: "class path resource [templates/erro.html]")
+	at org.thymeleaf.templateparser.markup.AbstractMarkupTemplateParser.parse(AbstractMarkupTemplateParser.java:241) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.templateparser.markup.AbstractMarkupTemplateParser.parseStandalone(AbstractMarkupTemplateParser.java:100) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.engine.TemplateManager.parseAndProcess(TemplateManager.java:666) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.TemplateEngine.process(TemplateEngine.java:1098) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.TemplateEngine.process(TemplateEngine.java:1072) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.spring5.view.ThymeleafView.renderFragment(ThymeleafView.java:366) ~[thymeleaf-spring5-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.spring5.view.ThymeleafView.render(ThymeleafView.java:190) ~[thymeleaf-spring5-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.springframework.web.servlet.DispatcherServlet.render(DispatcherServlet.java:1405) ~[spring-webmvc-5.3.25.jar:5.3.25]
+	at org.springframework.test.web.servlet.TestDispatcherServlet.render(TestDispatcherServlet.java:137) ~[spring-test-5.3.25.jar:5.3.25]
+	at org.springframework.web.servlet.DispatcherServlet.processDispatchResult(DispatcherServlet.java:1149) ~[spring-webmvc-5.3.25.jar:5.3.25]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1088) ~[spring-webmvc-5.3.25.jar:5.3.25]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:964) ~[spring-webmvc-5.3.25.jar:5.3.25]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1006) ~[spring-webmvc-5.3.25.jar:5.3.25]
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:898) ~[spring-webmvc-5.3.25.jar:5.3.25]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:670) ~[tomcat-embed-core-9.0.71.jar:4.0.FR]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:883) ~[spring-webmvc-5.3.25.jar:5.3.25]
+	at org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72) ~[spring-test-5.3.25.jar:5.3.25]
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:779) ~[tomcat-embed-core-9.0.71.jar:4.0.FR]
+	at org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:167) ~[spring-test-5.3.25.jar:5.3.25]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:134) ~[spring-test-5.3.25.jar:5.3.25]
+	at org.springframework.boot.web.servlet.filter.ErrorPageSecurityFilter.doFilter(ErrorPageSecurityFilter.java:80) ~[spring-boot-2.7.9.jar:2.7.9]
+	at org.springframework.boot.web.servlet.filter.ErrorPageSecurityFilter.doFilter(ErrorPageSecurityFilter.java:70) ~[spring-boot-2.7.9.jar:2.7.9]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:134) ~[spring-test-5.3.25.jar:5.3.25]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:337) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.invoke(FilterSecurityInterceptor.java:115) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.access.intercept.FilterSecurityInterceptor.doFilter(FilterSecurityInterceptor.java:81) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:346) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:122) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:116) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:346) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:126) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:81) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:346) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:109) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:346) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:149) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:346) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:346) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:223) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter.doFilter(AbstractAuthenticationProcessingFilter.java:217) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:346) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:103) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:89) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:346) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.25.jar:5.3.25]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:346) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:112) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.context.SecurityContextPersistenceFilter.doFilter(SecurityContextPersistenceFilter.java:82) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:346) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:55) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.25.jar:5.3.25]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:346) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.25.jar:5.3.25]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:346) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:221) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:186) ~[spring-security-web-5.7.7.jar:5.7.7]
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:354) ~[spring-web-5.3.25.jar:5.3.25]
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:267) ~[spring-web-5.3.25.jar:5.3.25]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:134) ~[spring-test-5.3.25.jar:5.3.25]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-5.3.25.jar:5.3.25]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.25.jar:5.3.25]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:134) ~[spring-test-5.3.25.jar:5.3.25]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-5.3.25.jar:5.3.25]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.25.jar:5.3.25]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:134) ~[spring-test-5.3.25.jar:5.3.25]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-5.3.25.jar:5.3.25]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:117) ~[spring-web-5.3.25.jar:5.3.25]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:134) ~[spring-test-5.3.25.jar:5.3.25]
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:201) ~[spring-test-5.3.25.jar:5.3.25]
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoCuponsParaAuxiliar(SecurityConfigTest.java:47) ~[test-classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:725) ~[junit-platform-commons-1.8.2.jar:1.8.2]
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:149) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:140) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:84) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.execution.ExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(ExecutableInvoker.java:115) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.execution.ExecutableInvoker.lambda$invoke$0(ExecutableInvoker.java:105) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.execution.ExecutableInvoker.invoke(ExecutableInvoker.java:104) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.execution.ExecutableInvoker.invoke(ExecutableInvoker.java:98) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:214) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:210) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:135) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:66) ~[junit-jupiter-engine-5.8.2.jar:5.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1604) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.8.2.jar:1.8.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:107) ~[junit-platform-launcher-1.8.2.jar:1.8.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:88) ~[junit-platform-launcher-1.8.2.jar:1.8.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:54) ~[junit-platform-launcher-1.8.2.jar:1.8.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:67) ~[junit-platform-launcher-1.8.2.jar:1.8.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:52) ~[junit-platform-launcher-1.8.2.jar:1.8.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:114) ~[junit-platform-launcher-1.8.2.jar:1.8.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:86) ~[junit-platform-launcher-1.8.2.jar:1.8.2]
+	at org.junit.platform.launcher.core.DefaultLauncherSession$DelegatingLauncher.execute(DefaultLauncherSession.java:86) ~[junit-platform-launcher-1.8.2.jar:1.8.2]
+	at org.junit.platform.launcher.core.SessionPerRequestLauncher.execute(SessionPerRequestLauncher.java:53) ~[junit-platform-launcher-1.8.2.jar:1.8.2]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:150) ~[surefire-junit-platform-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:124) ~[surefire-junit-platform-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:384) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418) ~[surefire-booter-2.22.2.jar:2.22.2]
+Caused by: org.attoparser.ParseException: Error resolving fragment: "${content}": template or fragment could not be resolved (template: "layout" - line 202, col 14)
+	at org.attoparser.MarkupParser.parseDocument(MarkupParser.java:393) ~[attoparser-2.0.5.RELEASE.jar:2.0.5.RELEASE]
+	at org.attoparser.MarkupParser.parse(MarkupParser.java:257) ~[attoparser-2.0.5.RELEASE.jar:2.0.5.RELEASE]
+	at org.thymeleaf.templateparser.markup.AbstractMarkupTemplateParser.parse(AbstractMarkupTemplateParser.java:230) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	... 140 common frames omitted
+Caused by: org.thymeleaf.exceptions.TemplateInputException: Error resolving fragment: "${content}": template or fragment could not be resolved (template: "layout" - line 202, col 14)
+	at org.thymeleaf.standard.processor.AbstractStandardFragmentInsertionTagProcessor.doProcess(AbstractStandardFragmentInsertionTagProcessor.java:116) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.processor.element.AbstractAttributeTagProcessor.doProcess(AbstractAttributeTagProcessor.java:74) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.processor.element.AbstractElementTagProcessor.process(AbstractElementTagProcessor.java:95) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.util.ProcessorConfigurationUtils$ElementTagProcessorWrapper.process(ProcessorConfigurationUtils.java:633) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.engine.ProcessorTemplateHandler.handleOpenElement(ProcessorTemplateHandler.java:1314) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.engine.OpenElementTag.beHandled(OpenElementTag.java:205) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.engine.Model.process(Model.java:282) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.engine.ProcessorTemplateHandler.handleOpenElement(ProcessorTemplateHandler.java:1587) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.engine.TemplateHandlerAdapterMarkupHandler.handleOpenElementEnd(TemplateHandlerAdapterMarkupHandler.java:304) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.templateparser.markup.InlinedOutputExpressionMarkupHandler$InlineMarkupAdapterPreProcessorHandler.handleOpenElementEnd(InlinedOutputExpressionMarkupHandler.java:278) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.standard.inline.OutputExpressionInlinePreProcessorHandler.handleOpenElementEnd(OutputExpressionInlinePreProcessorHandler.java:186) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.thymeleaf.templateparser.markup.InlinedOutputExpressionMarkupHandler.handleOpenElementEnd(InlinedOutputExpressionMarkupHandler.java:124) ~[thymeleaf-3.0.15.RELEASE.jar:3.0.15.RELEASE]
+	at org.attoparser.HtmlElement.handleOpenElementEnd(HtmlElement.java:109) ~[attoparser-2.0.5.RELEASE.jar:2.0.5.RELEASE]
+	at org.attoparser.HtmlMarkupHandler.handleOpenElementEnd(HtmlMarkupHandler.java:297) ~[attoparser-2.0.5.RELEASE.jar:2.0.5.RELEASE]
+	at org.attoparser.MarkupEventProcessorHandler.handleOpenElementEnd(MarkupEventProcessorHandler.java:402) ~[attoparser-2.0.5.RELEASE.jar:2.0.5.RELEASE]
+	at org.attoparser.ParsingElementMarkupUtil.parseOpenElement(ParsingElementMarkupUtil.java:159) ~[attoparser-2.0.5.RELEASE.jar:2.0.5.RELEASE]
+	at org.attoparser.MarkupParser.parseBuffer(MarkupParser.java:710) ~[attoparser-2.0.5.RELEASE.jar:2.0.5.RELEASE]
+	at org.attoparser.MarkupParser.parseDocument(MarkupParser.java:301) ~[attoparser-2.0.5.RELEASE.jar:2.0.5.RELEASE]
+	... 142 common frames omitted
+
+]]></system-out>
+  </testcase>
+</testsuite>

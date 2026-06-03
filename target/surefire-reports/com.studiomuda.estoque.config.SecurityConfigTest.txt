@@ -1,0 +1,18 @@
+-------------------------------------------------------------------------------
+Test set: com.studiomuda.estoque.config.SecurityConfigTest
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 1, Errors: 1, Skipped: 0, Time elapsed: 18.764 s <<< FAILURE! - in com.studiomuda.estoque.config.SecurityConfigTest
+deveBloquearAcessoDashboardParaEstoquista  Time elapsed: 1.172 s  <<< FAILURE!
+java.lang.AssertionError: Status expected:<403> but was:<200>
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoDashboardParaEstoquista(SecurityConfigTest.java:41)
+
+deveBloquearAcessoCuponsParaAuxiliar  Time elapsed: 5.903 s  <<< ERROR!
+org.springframework.web.util.NestedServletException: Request processing failed; nested exception is org.thymeleaf.exceptions.TemplateInputException: An error happened during template parsing (template: "class path resource [templates/erro.html]")
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoCuponsParaAuxiliar(SecurityConfigTest.java:47)
+Caused by: org.thymeleaf.exceptions.TemplateInputException: An error happened during template parsing (template: "class path resource [templates/erro.html]")
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoCuponsParaAuxiliar(SecurityConfigTest.java:47)
+Caused by: org.attoparser.ParseException: Error resolving fragment: "${content}": template or fragment could not be resolved (template: "layout" - line 202, col 14)
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoCuponsParaAuxiliar(SecurityConfigTest.java:47)
+Caused by: org.thymeleaf.exceptions.TemplateInputException: Error resolving fragment: "${content}": template or fragment could not be resolved (template: "layout" - line 202, col 14)
+	at com.studiomuda.estoque.config.SecurityConfigTest.deveBloquearAcessoCuponsParaAuxiliar(SecurityConfigTest.java:47)
+
