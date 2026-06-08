@@ -1,20 +1,22 @@
 package com.studiomuda.estoque.config;
 
-import com.studiomuda.estoque.security.DatabaseUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    private final DatabaseUserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-    public SecurityConfig(DatabaseUserDetailsService userDetailsService) {
+    public SecurityConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
@@ -30,6 +32,18 @@ public class SecurityConfig {
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/login", "/error", "/erro", "/css/**", "/js/**", "/favicon.ico").permitAll()
+                .antMatchers("/dashboard/**").hasAnyRole(
+                        "DIRETOR", "AUXILIAR",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                .antMatchers("/cupons/**").hasAnyRole(
+                        "DIRETOR",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                .antMatchers("/estoque/**").hasAnyRole(
+                        "DIRETOR", "ESTOQUISTA",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                .antMatchers("/funcionarios/**").hasAnyRole(
+                        "DIRETOR",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL")
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
@@ -43,7 +57,8 @@ public class SecurityConfig {
                 .permitAll()
                 .and()
                 .exceptionHandling()
-                .accessDeniedPage("/error");
+                .accessDeniedHandler((request, response, accessDeniedException) ->
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN));
 
         return http.build();
     }

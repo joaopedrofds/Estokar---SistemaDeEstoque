@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+    <div th:replace="layout :: menu"></div>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="page-title">
+                        <i class="bi bi-gear-fill me-3"></i>
+                        Parametrização de Meta
+                    </h1>
+                    <p class="page-subtitle">Configure as metas de performance e limites críticos do sistema</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Info Card -->
+                <div class="card mb-4 bg-light border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold text-gradient mb-2">Indicador Selecionado</h5>
+                        <p class="mb-1"><strong class="text-muted">Nome:</strong> <span class="fw-semibold fs-5 text-dark" th:text="${indicador.nome}"></span></p>
+                        <p class="mb-1"><strong class="text-muted">Código Interno:</strong> <code th:text="${indicador.codigo}">TICKET_MEDIO</code></p>
+                        <p class="mb-0"><strong class="text-muted">Descrição Funcional:</strong> <span class="text-muted" th:text="${indicador.descricao}"></span></p>
+                    </div>
+                </div>
+
+                <!-- Form Card -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <form th:action="@{/kpis/meta/salvar}" method="post" class="needs-validation" novalidate>
+                            <input type="hidden" name="indicadorId" th:value="${indicador.id}" />
+
+                            <div class="row g-3">
+                                <!-- Operador de Comparação -->
+                                <div class="col-md-6">
+                                    <label for="operador" class="form-label fw-semibold">Operador Lógico</label>
+                                    <select class="form-select" id="operador" name="operador" required>
+                                        <option value="MAIOR_IGUAL" th:selected="${meta.operador == 'MAIOR_IGUAL'}">Maior ou Igual (≥)</option>
+                                        <option value="MENOR_IGUAL" th:selected="${meta.operador == 'MENOR_IGUAL'}">Menor ou Igual (≤)</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Define se o indicador deve se manter acima (≥) ou abaixo (≤) do alvo.
+                                    </div>
+                                </div>
+
+                                <!-- Ativo Switch -->
+                                <div class="col-md-6 d-flex align-items-center justify-content-md-end mt-4">
+                                    <div class="form-check form-switch card-switch p-3 px-4 bg-light rounded-3">
+                                        <input class="form-check-input" type="checkbox" id="ativo" name="ativo" 
+                                               th:checked="${meta.ativo}" />
+                                        <label class="form-check-label fw-semibold ms-2" for="ativo">Meta Ativa</label>
+                                    </div>
+                                </div>
+
+                                <!-- Valor Alvo -->
+                                <div class="col-md-6">
+                                    <label for="valorAlvo" class="form-label fw-semibold">Valor Alvo (Meta)</label>
+                                    <div class="input-group">
+                                        <span th:if="${indicador.codigo == 'TICKET_MEDIO'}" class="input-group-text">R$</span>
+                                        <input type="number" step="0.0001" class="form-control" id="valorAlvo" name="valorAlvo" 
+                                               th:value="${meta.valorAlvo}" required />
+                                        <span th:if="${indicador.codigo == 'TAXA_CANCELAMENTO'}" class="input-group-text">%</span>
+                                    </div>
+                                    <div class="form-text">
+                                        O valor desejado que o indicador deve atingir.
+                                    </div>
+                                </div>
+
+                                <!-- Limite Crítico -->
+                                <div class="col-md-6">
+                                    <label for="limiteCritico" class="form-label fw-semibold text-danger">Limite Crítico (Grave)</label>
+                                    <div class="input-group">
+                                        <span th:if="${indicador.codigo == 'TICKET_MEDIO'}" class="input-group-text">R$</span>
+                                        <input type="number" step="0.0001" class="form-control" id="limiteCritico" name="limiteCritico" 
+                                               th:value="${meta.limiteCritico}" required />
+                                        <span th:if="${indicador.codigo == 'TAXA_CANCELAMENTO'}" class="input-group-text">%</span>
+                                    </div>
+                                    <div class="form-text text-danger">
+                                        O limite máximo aceitável. Rompê-lo gera alerta crítico.
+                                    </div>
+                                </div>
+
+                                <!-- Vigência Início -->
+                                <div class="col-md-6">
+                                    <label for="vigenciaInicio" class="form-label fw-semibold">Início da Vigência</label>
+                                    <input type="date" class="form-control" id="vigenciaInicio" name="vigenciaInicio" 
+                                           th:value="${meta.vigenciaInicio}" required />
+                                </div>
+
+                                <!-- Vigência Fim -->
+                                <div class="col-md-6">
+                                    <label for="vigenciaFim" class="form-label fw-semibold">Fim da Vigência (Opcional)</label>
+                                    <input type="date" class="form-control" id="vigenciaFim" name="vigenciaFim" 
+                                           th:value="${meta.vigenciaFim}" />
+                                </div>
+                            </div>
+
+                            <hr class="my-4" />
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="/kpis" class="btn btn-outline-secondary">Cancelar</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save me-2"></i>Salvar Parâmetros de Meta
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="layout :: footer"></div>
+    <div th:replace="layout :: scripts"></div>
+</body>
+</html>
