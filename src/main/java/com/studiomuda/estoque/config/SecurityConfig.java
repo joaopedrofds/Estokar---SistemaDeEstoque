@@ -38,8 +38,14 @@ public class SecurityConfig {
                 .antMatchers("/cupons/**").hasAnyRole(
                         "DIRETOR",
                         "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                .antMatchers("/pedidos/**").hasAnyRole(
+                        "DIRETOR",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
                 .antMatchers("/estoque/**").hasAnyRole(
                         "DIRETOR", "ESTOQUISTA",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                .antMatchers("/inventarios/**").hasAnyRole(
+                        "DIRETOR", "ESTOQUISTA", "AUXILIAR",
                         "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
                 .antMatchers("/funcionarios/**").hasAnyRole(
                         "DIRETOR",

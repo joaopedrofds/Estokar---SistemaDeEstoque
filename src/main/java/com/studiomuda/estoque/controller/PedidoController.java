@@ -7,23 +7,32 @@ import com.studiomuda.estoque.dao.ItemPedidoDAO;
 import com.studiomuda.estoque.dao.MovimentacaoEstoqueDAO;
 import com.studiomuda.estoque.dao.PedidoDAO;
 import com.studiomuda.estoque.dao.ProdutoDAO;
+import com.studiomuda.estoque.jpa.entity.PedidoJpaEntity;
 import com.studiomuda.estoque.model.Cupom;
 import com.studiomuda.estoque.model.ItemPedido;
 import com.studiomuda.estoque.model.MovimentacaoEstoque;
 import com.studiomuda.estoque.model.Pedido;
 import com.studiomuda.estoque.model.Produto;
+import com.studiomuda.estoque.security.UsuarioAutenticado;
+import com.studiomuda.estoque.service.PedidoService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/pedidos")
@@ -36,19 +45,29 @@ public class PedidoController {
     private final ProdutoDAO produtoDAO;
     private final FuncionarioDAO funcionarioDAO;
     private final CupomDAO cupomDAO;
+    private final PedidoService pedidoService;
 
-    public PedidoController() {
-        this(new PedidoDAO(), new ItemPedidoDAO(), new ClienteDAO(), new ProdutoDAO(), new FuncionarioDAO(), new CupomDAO());
+    @Autowired
+    public PedidoController(PedidoService pedidoService) {
+        this(new PedidoDAO(), new ItemPedidoDAO(), new ClienteDAO(), new ProdutoDAO(), new FuncionarioDAO(), new CupomDAO(), pedidoService);
     }
 
     PedidoController(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO, ClienteDAO clienteDAO,
                      ProdutoDAO produtoDAO, FuncionarioDAO funcionarioDAO, CupomDAO cupomDAO) {
+        this(pedidoDAO, itemPedidoDAO, clienteDAO, produtoDAO, funcionarioDAO, cupomDAO,
+                new PedidoService(pedidoDAO, itemPedidoDAO));
+    }
+
+    PedidoController(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO, ClienteDAO clienteDAO,
+                     ProdutoDAO produtoDAO, FuncionarioDAO funcionarioDAO, CupomDAO cupomDAO,
+                     PedidoService pedidoService) {
         this.pedidoDAO = pedidoDAO;
         this.itemPedidoDAO = itemPedidoDAO;
         this.clienteDAO = clienteDAO;
         this.produtoDAO = produtoDAO;
         this.funcionarioDAO = funcionarioDAO;
         this.cupomDAO = cupomDAO;
+        this.pedidoService = pedidoService;
     }
 
     @GetMapping
@@ -180,6 +199,12 @@ public class PedidoController {
                 }
                 pedidoDAO.inserir(pedido);
             } else {
+                Pedido pedidoAtual = pedidoDAO.buscarPorId(pedido.getId());
+                if (pedidoAtual != null && isPedidoImutavel(pedidoAtual)) {
+                    carregarDadosFormularioPedido(model, pedidoAtual);
+                    model.addAttribute("mensagemErro", "Pedido cancelado ou pendente de aprovacao nao pode ser alterado.");
+                    return "pedidos/form";
+                }
                 pedidoDAO.atualizar(pedido);
             }
             return "redirect:/pedidos/itens/" + pedido.getId();
@@ -245,6 +270,12 @@ public class PedidoController {
                 }
                 pedidoDAO.inserir(pedido);
             } else {
+                Pedido pedidoAtual = pedidoDAO.buscarPorId(pedido.getId());
+                if (pedidoAtual != null && isPedidoImutavel(pedidoAtual)) {
+                    Map<String, String> error = new HashMap<>();
+                    error.put("erro", "Pedido cancelado ou pendente de aprovacao nao pode ser alterado.");
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+                }
                 pedidoDAO.atualizar(pedido);
             }
             return ResponseEntity.ok(pedido);
@@ -323,6 +354,56 @@ public class PedidoController {
             return "redirect:/erro?mensagem=" + e.getMessage();
         }
     }
+
+    @GetMapping("/cancelamentos")
+    public String listarCancelamentos(Model model) {
+        try {
+            List<PedidoJpaEntity> cancelamentos = pedidoService.listarCancelamentosAuditados();
+            model.addAttribute("cancelamentos", cancelamentos);
+            model.addAttribute("pendentes", pedidoService.listarCancelamentosPendentes());
+            model.addAttribute("limiteCancelamento", pedidoService.buscarLimiteQuantidadeCancelamento());
+            return "pedidos/cancelamentos";
+        } catch (SQLException e) {
+            model.addAttribute("mensagemErro", "Erro ao listar cancelamentos: " + e.getMessage());
+            return "erro";
+        }
+    }
+
+    @GetMapping("/cancelamentos/{id}")
+    public String detalheCancelamento(@PathVariable("id") int id, Model model) {
+        PedidoJpaEntity pedido = pedidoService.buscarPedidoJpa(id);
+        if (pedido == null) {
+            return "redirect:/pedidos/cancelamentos";
+        }
+        model.addAttribute("pedido", pedido);
+        return "pedidos/cancelamento-detalhe";
+    }
+
+    @PostMapping("/cancelar/{id}")
+    public String cancelarPedido(@PathVariable("id") int id,
+                                 @RequestParam("justificativa") String justificativa,
+                                 Authentication authentication,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            PedidoService.ResultadoCancelamento resultado = pedidoService.cancelarPedido(
+                    id,
+                    usuarioOperacao(authentication),
+                    justificativa,
+                    autoridades(authentication)
+            );
+            if (PedidoDAO.STATUS_PEDIDO_CANCELAMENTO_PENDENTE.equals(resultado.getStatus())) {
+                redirectAttributes.addFlashAttribute("mensagemAviso",
+                        "Cancelamento enviado para aprovacao. Volume: " + resultado.getQuantidadeTotal() +
+                                " unidades; limite: " + resultado.getLimiteQuantidadeSemAprovacao() + ".");
+            } else {
+                redirectAttributes.addFlashAttribute("mensagemSucesso", "Pedido cancelado e estoque estornado com sucesso.");
+            }
+            return "redirect:/pedidos";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao cancelar pedido: " + e.getMessage());
+            return "redirect:/pedidos";
+        }
+    }
     
     @DeleteMapping("/api/{id}")
     @ResponseBody
@@ -338,6 +419,36 @@ public class PedidoController {
         } catch (SQLException e) {
             Map<String, String> error = new HashMap<>();
             error.put("erro", "Erro ao excluir pedido: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
+    @PostMapping("/api/{id}/cancelar")
+    @ResponseBody
+    public ResponseEntity<?> cancelarPedidoApi(@PathVariable("id") int id,
+                                               @RequestBody Map<String, String> body,
+                                               Authentication authentication) {
+        try {
+            PedidoService.ResultadoCancelamento resultado = pedidoService.cancelarPedido(
+                    id,
+                    usuarioOperacao(authentication),
+                    body != null ? body.get("justificativa") : null,
+                    autoridades(authentication)
+            );
+            Map<String, Object> response = new HashMap<>();
+            response.put("pedidoId", resultado.getPedidoId());
+            response.put("status", resultado.getStatus());
+            response.put("quantidadeTotal", resultado.getQuantidadeTotal());
+            response.put("limiteQuantidadeSemAprovacao", resultado.getLimiteQuantidadeSemAprovacao());
+            response.put("exigiuAprovacao", resultado.isExigiuAprovacao());
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("erro", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+        } catch (SQLException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("erro", "Erro ao cancelar pedido: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
@@ -402,6 +513,11 @@ public class PedidoController {
     public String adicionarItemPedido(@ModelAttribute ItemPedido item, Model model) {
         try {
             // Verificar se há estoque disponível
+            Pedido pedido = pedidoDAO.buscarPorId(item.getPedidoId());
+            if (pedido != null && isPedidoImutavel(pedido)) {
+                return "redirect:/pedidos/itens/" + item.getPedidoId() + "?erro=Pedido cancelado ou pendente de aprovacao nao permite alterar itens.";
+            }
+
             Produto produto = produtoDAO.buscarPorId(item.getProdutoId());
             if (produto == null) {
                 return "redirect:/erro?mensagem=Produto não encontrado";
@@ -441,6 +557,13 @@ public class PedidoController {
     public ResponseEntity<?> adicionarItemPedidoApi(@RequestBody ItemPedido item) {
         try {
             // Verificar se há estoque disponível
+            Pedido pedido = pedidoDAO.buscarPorId(item.getPedidoId());
+            if (pedido != null && isPedidoImutavel(pedido)) {
+                Map<String, String> error = new HashMap<>();
+                error.put("erro", "Pedido cancelado ou pendente de aprovacao nao permite alterar itens.");
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+            }
+
             Produto produto = produtoDAO.buscarPorId(item.getProdutoId());
             if (produto == null) {
                 Map<String, String> error = new HashMap<>();
@@ -491,8 +614,12 @@ public class PedidoController {
             if (itemPedido == null) {
                 return "redirect:/erro?mensagem=Item não encontrado";
             }
-            
+
             int pedidoId = itemPedido.getPedidoId();
+            Pedido pedido = pedidoDAO.buscarPorId(pedidoId);
+            if (pedido != null && isPedidoImutavel(pedido)) {
+                return "redirect:/pedidos/itens/" + pedidoId + "?erro=Pedido cancelado ou pendente de aprovacao nao permite alterar itens.";
+            }
             System.out.println("Item pertence ao pedido ID: " + pedidoId);
             
             // Restaurar o estoque
@@ -527,6 +654,13 @@ public class PedidoController {
                 error.put("erro", "Item não encontrado");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
             }
+
+            Pedido pedido = pedidoDAO.buscarPorId(item.getPedidoId());
+            if (pedido != null && isPedidoImutavel(pedido)) {
+                Map<String, String> error = new HashMap<>();
+                error.put("erro", "Pedido cancelado ou pendente de aprovacao nao permite alterar itens.");
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+            }
             
             // Restaurar o estoque
             MovimentacaoEstoque movimentacao = new MovimentacaoEstoque();
@@ -555,6 +689,30 @@ public class PedidoController {
         model.addAttribute("clientes", clienteDAO.listarAtivos());
         model.addAttribute("funcionarios", funcionarioDAO.listar());
         model.addAttribute("cupons", cupomDAO.listar());
+    }
+
+    private boolean isPedidoImutavel(Pedido pedido) {
+        String status = pedidoService.normalizarStatusPedido(pedido.getStatus());
+        return PedidoDAO.STATUS_PEDIDO_CANCELADO.equals(status)
+                || PedidoDAO.STATUS_PEDIDO_CANCELAMENTO_PENDENTE.equals(status);
+    }
+
+    private PedidoService.UsuarioOperacao usuarioOperacao(Authentication authentication) {
+        if (authentication != null && authentication.getPrincipal() instanceof UsuarioAutenticado) {
+            UsuarioAutenticado usuario = (UsuarioAutenticado) authentication.getPrincipal();
+            return new PedidoService.UsuarioOperacao(usuario.getId(), usuario.getNome());
+        }
+        String nome = authentication != null ? authentication.getName() : "sistema";
+        return new PedidoService.UsuarioOperacao(1, nome);
+    }
+
+    private Collection<String> autoridades(Authentication authentication) {
+        if (authentication == null || authentication.getAuthorities() == null) {
+            return java.util.Collections.emptyList();
+        }
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
     }
     
     @GetMapping("/filtros")

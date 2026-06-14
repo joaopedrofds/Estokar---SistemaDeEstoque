@@ -143,8 +143,16 @@ CREATE TABLE pedido (
     funcionario_id INT,                                -- Funcionário associado à venda
     cupom_id INT,                                      -- Cupom de desconto aplicado
     valor_desconto DECIMAL(10,2) DEFAULT 0.00,         -- Valor do desconto aplicado
+    status VARCHAR(40) NOT NULL DEFAULT 'PENDENTE',    -- PENDENTE, CONCLUIDO, CANCELADO, CANCELAMENTO_PENDENTE_APROVACAO
     status_pagamento VARCHAR(20) NOT NULL DEFAULT 'PENDENTE', -- PENDENTE ou PAGO
     data_pagamento DATE,                               -- Data de quitação
+    cancelamento_solicitante_id INT NULL,
+    cancelamento_solicitante_nome VARCHAR(120) NULL,
+    justificativa_cancelamento VARCHAR(300) NULL,
+    data_cancelamento TIMESTAMP NULL,
+    cancelamento_aprovador_id INT NULL,
+    cancelamento_aprovador_nome VARCHAR(120) NULL,
+    data_aprovacao_cancelamento TIMESTAMP NULL,
     FOREIGN KEY (cupom_id) REFERENCES cupom(id),
     FOREIGN KEY (funcionario_id) REFERENCES funcionario(id)
 );
@@ -153,6 +161,21 @@ CREATE TABLE pedido (
 CREATE INDEX idx_pedido_funcionario ON pedido(funcionario_id);
 CREATE INDEX idx_pedido_cupom ON pedido(cupom_id);
 CREATE INDEX idx_pedido_cliente_pagamento ON pedido(cliente_id, status_pagamento, data_requisicao);
+CREATE INDEX idx_pedido_status ON pedido(status);
+
+CREATE TABLE parametro_cancelamento (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    limite_quantidade_sem_aprovacao INT NOT NULL DEFAULT 10
+);
+
+INSERT INTO parametro_cancelamento (limite_quantidade_sem_aprovacao) VALUES (10);
+
+CREATE TABLE parametro_inventario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tolerancia_quantidade INT NOT NULL DEFAULT 3
+);
+
+INSERT INTO parametro_inventario (tolerancia_quantidade) VALUES (3);
 
 -- Tabela de movimentações de estoque
 CREATE TABLE movimentacao_estoque (
@@ -173,6 +196,47 @@ CREATE TABLE historico_estoque (
     motivo TEXT,
     data_alteracao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE sessao_inventario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    setor VARCHAR(80) NOT NULL,
+    data_abertura DATE NOT NULL,
+    gerente_id INT NOT NULL,
+    gerente_nome VARCHAR(120) NOT NULL,
+    status VARCHAR(40) NOT NULL DEFAULT 'EM_ANDAMENTO',
+    bloqueia_saidas BOOLEAN NOT NULL DEFAULT FALSE,
+    tolerancia_quantidade INT NOT NULL DEFAULT 3,
+    aprovador_id INT NULL,
+    aprovador_nome VARCHAR(120) NULL,
+    data_aprovacao TIMESTAMP NULL,
+    data_fechamento TIMESTAMP NULL,
+    observacao VARCHAR(300) NULL
+);
+
+CREATE TABLE inventario_escopo_produto (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sessao_id INT NOT NULL,
+    produto_id INT NOT NULL,
+    quantidade_sistema_abertura INT NOT NULL DEFAULT 0,
+    UNIQUE KEY uq_inventario_escopo_produto (sessao_id, produto_id),
+    FOREIGN KEY (sessao_id) REFERENCES sessao_inventario(id),
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
+);
+
+CREATE TABLE contagem_item (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sessao_id INT NOT NULL,
+    produto_id INT NOT NULL,
+    quantidade_fisica INT NOT NULL,
+    auxiliar_id INT NOT NULL,
+    auxiliar_nome VARCHAR(120) NOT NULL,
+    data_contagem TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sessao_id) REFERENCES sessao_inventario(id),
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
+);
+
+CREATE INDEX idx_sessao_inventario_setor_status ON sessao_inventario(setor, status);
+CREATE INDEX idx_contagem_item_sessao_produto_data ON contagem_item(sessao_id, produto_id, data_contagem);
 
 -- Tabela intermediária de itens dos pedidos
 CREATE TABLE item_pedido (
@@ -508,6 +572,7 @@ FROM (
     SELECT 'CUPOM' UNION ALL
     SELECT 'PEDIDO' UNION ALL
     SELECT 'ESTOQUE' UNION ALL
+    SELECT 'INVENTARIO' UNION ALL
     SELECT 'SUPRIMENTO' UNION ALL
     SELECT 'REMESSA' UNION ALL
     SELECT 'CLIENTE' UNION ALL
@@ -535,6 +600,9 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (2, 'PEDIDO', 'APROVACAO', TRUE),
 (2, 'ESTOQUE', 'LEITURA', TRUE),
 (2, 'ESTOQUE', 'ESCRITA', TRUE),
+(2, 'INVENTARIO', 'LEITURA', TRUE),
+(2, 'INVENTARIO', 'ESCRITA', TRUE),
+(2, 'INVENTARIO', 'APROVACAO', TRUE),
 (2, 'SUPRIMENTO', 'LEITURA', TRUE),
 (2, 'SUPRIMENTO', 'ESCRITA', TRUE),
 (2, 'SUPRIMENTO', 'APROVACAO', TRUE),
@@ -558,8 +626,12 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (3, 'PEDIDO', 'LEITURA', TRUE),
 (3, 'PEDIDO', 'ESCRITA', TRUE),
 (3, 'ESTOQUE', 'LEITURA', TRUE),
+(3, 'ESTOQUE', 'ESCRITA', TRUE),
+(3, 'INVENTARIO', 'LEITURA', TRUE),
+(3, 'INVENTARIO', 'ESCRITA', TRUE),
 (3, 'CLIENTE', 'LEITURA', TRUE),
 (3, 'CLIENTE', 'ESCRITA', TRUE),
+(3, 'FUNCIONARIO', 'LEITURA', TRUE),
 (3, 'DASHBOARD', 'LEITURA', TRUE),
 (3, 'API', 'LEITURA', TRUE),
 (3, 'HOME', 'LEITURA', TRUE);

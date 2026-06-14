@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+    <div th:replace="layout :: menu"></div>
+
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="page-title">
+                        <i class="bi bi-clipboard2-check-fill me-3"></i>
+                        Cancelamentos de Pedidos
+                    </h1>
+                    <p class="page-subtitle">Acompanhe aprovações pendentes e auditoria de estornos</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/pedidos" class="btn btn-primary btn-lg">
+                        <i class="bi bi-arrow-left-circle me-2"></i>
+                        Pedidos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Pendentes de aprovação</div>
+                        <div class="display-6 fw-bold" th:text="${pendentes.size()}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Registros auditáveis</div>
+                        <div class="display-6 fw-bold" th:text="${cancelamentos.size()}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Alçada parametrizada</div>
+                        <div class="display-6 fw-bold" th:text="${limiteCancelamento}">10</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" th:if="${cancelamentos.empty}">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-clipboard2-x display-4 text-muted"></i>
+                <h3 class="mt-3">Nenhum cancelamento registrado</h3>
+            </div>
+        </div>
+
+        <div class="card" th:if="${!cancelamentos.empty}">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover modern-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Pedido</th>
+                                <th>Status</th>
+                                <th>Solicitante</th>
+                                <th>Data solicitação</th>
+                                <th>Aprovador</th>
+                                <th>Data aprovação</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="pedido : ${cancelamentos}">
+                                <td>
+                                    <span class="text-muted small">#</span><span th:text="${pedido.id}"></span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-warning text-dark" th:if="${pedido.status == 'CANCELAMENTO_PENDENTE_APROVACAO'}">Aguardando aprovação</span>
+                                    <span class="badge bg-danger" th:if="${pedido.status == 'CANCELADO'}">Cancelado</span>
+                                </td>
+                                <td th:text="${pedido.cancelamentoSolicitanteNome != null ? pedido.cancelamentoSolicitanteNome : 'Não informado'}"></td>
+                                <td th:text="${pedido.dataCancelamento != null ? #dates.format(pedido.dataCancelamento, 'dd/MM/yyyy HH:mm') : 'Não registrada'}"></td>
+                                <td th:text="${pedido.cancelamentoAprovadorNome != null ? pedido.cancelamentoAprovadorNome : 'Sem aprovação'}"></td>
+                                <td th:text="${pedido.dataAprovacaoCancelamento != null ? #dates.format(pedido.dataAprovacaoCancelamento, 'dd/MM/yyyy HH:mm') : 'Não registrada'}"></td>
+                                <td>
+                                    <div class="action-buttons justify-content-center">
+                                        <a th:href="@{/pedidos/cancelamentos/{id}(id=${pedido.id})}"
+                                           class="btn btn-sm btn-outline-info" title="Ver Auditoria">
+                                            <i class="bi bi-search"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-success" title="Aprovar"
+                                                th:if="${pedido.status == 'CANCELAMENTO_PENDENTE_APROVACAO'}"
+                                                th:onclick="'cancelarPedido(' + ${pedido.id} + ')'">
+                                            <i class="bi bi-check2-circle"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="layout :: footer"></div>
+    <div th:replace="layout :: scripts"></div>
+</body>
+</html>
