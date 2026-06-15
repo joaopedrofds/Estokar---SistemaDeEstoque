@@ -14,9 +14,7 @@ import com.studiomuda.estoque.model.MovimentacaoEstoque;
 import com.studiomuda.estoque.model.Pedido;
 import com.studiomuda.estoque.model.Produto;
 import com.studiomuda.estoque.security.UsuarioAutenticado;
-import com.studiomuda.estoque.service.CobrancaService;
 import com.studiomuda.estoque.service.PedidoService;
-import com.studiomuda.estoque.service.ResultadoAvaliacaoCredito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,23 +46,21 @@ public class PedidoController {
     private final FuncionarioDAO funcionarioDAO;
     private final CupomDAO cupomDAO;
     private final PedidoService pedidoService;
-    private final CobrancaService cobrancaService;
 
     @Autowired
-    public PedidoController(PedidoService pedidoService, CobrancaService cobrancaService) {
-        this(new PedidoDAO(), new ItemPedidoDAO(), new ClienteDAO(), new ProdutoDAO(), new FuncionarioDAO(), new CupomDAO(), pedidoService, cobrancaService);
+    public PedidoController(PedidoService pedidoService) {
+        this(new PedidoDAO(), new ItemPedidoDAO(), new ClienteDAO(), new ProdutoDAO(), new FuncionarioDAO(), new CupomDAO(), pedidoService);
     }
 
     PedidoController(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO, ClienteDAO clienteDAO,
                      ProdutoDAO produtoDAO, FuncionarioDAO funcionarioDAO, CupomDAO cupomDAO) {
         this(pedidoDAO, itemPedidoDAO, clienteDAO, produtoDAO, funcionarioDAO, cupomDAO,
-                new PedidoService(pedidoDAO, itemPedidoDAO), null);
+                new PedidoService(pedidoDAO, itemPedidoDAO));
     }
 
     PedidoController(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO, ClienteDAO clienteDAO,
                      ProdutoDAO produtoDAO, FuncionarioDAO funcionarioDAO, CupomDAO cupomDAO,
-                     PedidoService pedidoService,
-                     CobrancaService cobrancaService) {
+                     PedidoService pedidoService) {
         this.pedidoDAO = pedidoDAO;
         this.itemPedidoDAO = itemPedidoDAO;
         this.clienteDAO = clienteDAO;
@@ -72,7 +68,6 @@ public class PedidoController {
         this.funcionarioDAO = funcionarioDAO;
         this.cupomDAO = cupomDAO;
         this.pedidoService = pedidoService;
-        this.cobrancaService = cobrancaService;
     }
 
     @GetMapping
@@ -82,13 +77,13 @@ public class PedidoController {
                 // Buscar cliente por CPF/CNPJ
                 String cpfCnpjLimpo = cpfCnpj.replaceAll("[^0-9]", "");
                 com.studiomuda.estoque.model.Cliente cliente = clienteDAO.buscarPorCpfCnpj(cpfCnpjLimpo);
-
+                
                 if (cliente != null) {
                     // Cliente encontrado, buscar pedidos deste cliente
                     model.addAttribute("pedidos", pedidoDAO.listarPorCliente(cliente.getId()));
                     model.addAttribute("clienteEncontrado", cliente);
                 } else {
-                    // Cliente nÃ£o encontrado
+                    // Cliente não encontrado
                     model.addAttribute("pedidos", new java.util.ArrayList<>());
                     model.addAttribute("mensagemAviso", "Nenhum cliente encontrado com o CPF/CNPJ informado.");
                 }
@@ -103,7 +98,7 @@ public class PedidoController {
             return "erro";
         }
     }
-
+    
     @GetMapping("/api")
     @ResponseBody
     public ResponseEntity<?> listarPedidosApi() {
@@ -126,13 +121,13 @@ public class PedidoController {
             carregarDadosFormularioPedido(model, pedido);
             return "pedidos/form";
         } catch (SQLException e) {
-            model.addAttribute("mensagemErro", "Erro ao preparar formulÃ¡rio: " + e.getMessage());
+            model.addAttribute("mensagemErro", "Erro ao preparar formulário: " + e.getMessage());
             return "erro";
         }
     }
 
     @PostMapping("/salvar")
-    public String salvarPedido(@ModelAttribute Pedido pedido,
+    public String salvarPedido(@ModelAttribute Pedido pedido, 
                               @RequestParam(value = "dataRequisicaoStr", required = false) String dataRequisicaoStr,
                               @RequestParam(value = "dataEntregaStr", required = false) String dataEntregaStr,
                               @RequestParam(value = "dataPagamentoStr", required = false) String dataPagamentoStr,
@@ -143,7 +138,7 @@ public class PedidoController {
             if (dataRequisicaoStr != null && !dataRequisicaoStr.isEmpty()) {
                 pedido.setDataRequisicao(Date.valueOf(dataRequisicaoStr));
             }
-
+            
             if (dataEntregaStr != null && !dataEntregaStr.isEmpty()) {
                 pedido.setDataEntrega(Date.valueOf(dataEntregaStr));
             }
@@ -164,7 +159,7 @@ public class PedidoController {
             } else if (pedido.getDataPagamento() == null) {
                 pedido.setDataPagamento(Date.valueOf(LocalDate.now()));
             }
-
+            
             // Verificar e aplicar cupom se existir
             if (cupomId != null && cupomId > 0) {
                 Cupom cupom = cupomDAO.buscarPorId(cupomId);
@@ -179,17 +174,21 @@ public class PedidoController {
                 pedido.setCupomId(0);
                 pedido.setValorDesconto(0.0);
             }
-
+            
             if (pedido.getId() == 0) {
-                ResultadoAvaliacaoCredito avaliacaoCredito = avaliarCreditoParaVenda(pedido.getClienteId());
-                if (avaliacaoCredito.isBloqueado()) {
-                    String alertaFinanceiro = "Cliente bloqueado automaticamente por inadimpl\u00eancia. " +
-                            "Existe pend\u00eancia com " + avaliacaoCredito.getDiasAtraso() + " dias de atraso " +
-                            "(pedido #" + avaliacaoCredito.getPedidoId() + ").";
+                PedidoDAO.InadimplenciaInfo inadimplenciaInfo = pedidoDAO.verificarInadimplenciaCliente(
+                        pedido.getClienteId(),
+                        DIAS_LIMITE_INADIMPLENCIA
+                );
+                if (inadimplenciaInfo.isBloqueado()) {
+                    clienteDAO.bloquearPorInadimplencia(pedido.getClienteId());
+                    String alertaFinanceiro = "Cliente bloqueado automaticamente por inadimplência. " +
+                            "Existe pendência com " + inadimplenciaInfo.getDiasAtraso() + " dias de atraso " +
+                            "(pedido #" + inadimplenciaInfo.getPedidoPendenteId() + ").";
                     pedidoDAO.registrarAlertaFinanceiro(
                             pedido.getClienteId(),
-                            avaliacaoCredito.getPedidoId(),
-                            avaliacaoCredito.getDiasAtraso(),
+                            inadimplenciaInfo.getPedidoPendenteId(),
+                            inadimplenciaInfo.getDiasAtraso(),
                             alertaFinanceiro
                     );
 
@@ -219,7 +218,7 @@ public class PedidoController {
             return "pedidos/form";
         }
     }
-
+    
     @PostMapping("/api/salvar")
     @ResponseBody
     public ResponseEntity<?> salvarPedidoApi(@RequestBody Pedido pedido) {
@@ -246,23 +245,27 @@ public class PedidoController {
                 pedido.setCupomId(0);
                 pedido.setValorDesconto(0.0);
             }
-
+            
             if (pedido.getId() == 0) {
-                ResultadoAvaliacaoCredito avaliacaoCredito = avaliarCreditoParaVenda(pedido.getClienteId());
-                if (avaliacaoCredito.isBloqueado()) {
-                    String mensagem = "Venda bloqueada por inadimplÃªncia. Pedido pendente #" +
-                            avaliacaoCredito.getPedidoId() + " com " +
-                            avaliacaoCredito.getDiasAtraso() + " dias de atraso.";
+                PedidoDAO.InadimplenciaInfo inadimplenciaInfo = pedidoDAO.verificarInadimplenciaCliente(
+                        pedido.getClienteId(),
+                        DIAS_LIMITE_INADIMPLENCIA
+                );
+                if (inadimplenciaInfo.isBloqueado()) {
+                    clienteDAO.bloquearPorInadimplencia(pedido.getClienteId());
+                    String mensagem = "Venda bloqueada por inadimplência. Pedido pendente #" +
+                            inadimplenciaInfo.getPedidoPendenteId() + " com " +
+                            inadimplenciaInfo.getDiasAtraso() + " dias de atraso.";
                     pedidoDAO.registrarAlertaFinanceiro(
                             pedido.getClienteId(),
-                            avaliacaoCredito.getPedidoId(),
-                            avaliacaoCredito.getDiasAtraso(),
+                            inadimplenciaInfo.getPedidoPendenteId(),
+                            inadimplenciaInfo.getDiasAtraso(),
                             mensagem
                     );
                     Map<String, Object> error = new HashMap<>();
                     error.put("erro", mensagem);
                     error.put("codigo", "CLIENTE_BLOQUEADO_INADIMPLENCIA");
-                    error.put("diasAtraso", avaliacaoCredito.getDiasAtraso());
+                    error.put("diasAtraso", inadimplenciaInfo.getDiasAtraso());
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
                 }
                 pedidoDAO.inserir(pedido);
@@ -297,7 +300,7 @@ public class PedidoController {
             return "redirect:/erro?mensagem=" + e.getMessage();
         }
     }
-
+    
     @GetMapping("/api/{id}")
     @ResponseBody
     public ResponseEntity<?> buscarPedidoApi(@PathVariable("id") int id) {
@@ -306,7 +309,7 @@ public class PedidoController {
             if (pedido != null) {
                 // Buscar e adicionar os itens do pedido
                 List<ItemPedido> itens = itemPedidoDAO.listarPorPedido(id);
-                // Adiciona os itens como um campo dinÃ¢mico no Map para serializaÃ§Ã£o
+                // Adiciona os itens como um campo dinâmico no Map para serialização
                 Map<String, Object> pedidoMap = new HashMap<>();
                 pedidoMap.put("id", pedido.getId());
                 pedidoMap.put("dataRequisicao", pedido.getDataRequisicao());
@@ -343,7 +346,7 @@ public class PedidoController {
             // Depois excluir o pedido
             System.out.println("Excluindo o pedido...");
             pedidoDAO.deletar(id);
-            System.out.println("Pedido excluÃ­do com sucesso!");
+            System.out.println("Pedido excluído com sucesso!");
             return "redirect:/pedidos";
         } catch (SQLException e) {
             System.out.println("ERRO ao excluir pedido: " + e.getMessage());
@@ -401,7 +404,7 @@ public class PedidoController {
             return "redirect:/pedidos";
         }
     }
-
+    
     @DeleteMapping("/api/{id}")
     @ResponseBody
     public ResponseEntity<?> excluirPedidoApi(@PathVariable("id") int id) {
@@ -411,7 +414,7 @@ public class PedidoController {
             // Depois excluir o pedido
             pedidoDAO.deletar(id);
             Map<String, String> response = new HashMap<>();
-            response.put("mensagem", "Pedido excluÃ­do com sucesso");
+            response.put("mensagem", "Pedido excluído com sucesso");
             return ResponseEntity.ok(response);
         } catch (SQLException e) {
             Map<String, String> error = new HashMap<>();
@@ -449,22 +452,22 @@ public class PedidoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-
+    
     @GetMapping("/itens/{pedidoId}")
     public String listarItensPedido(
-            @PathVariable("pedidoId") int pedidoId,
+            @PathVariable("pedidoId") int pedidoId, 
             @RequestParam(required = false) String erro,
             Model model) {
         try {
             Pedido pedido = pedidoDAO.buscarPorId(pedidoId);
             List<ItemPedido> itens = itemPedidoDAO.listarPorPedido(pedidoId);
             double valorTotal = 0.0;
-
+            
             // Calcular o valor total dos itens do pedido
             for (ItemPedido itemPedido : itens) {
                 valorTotal += itemPedido.getSubtotal();
             }
-
+            
             // Aplicar o desconto do cupom, se houver
             double valorComDesconto = valorTotal;
             if (pedido.getValorDesconto() > 0) {
@@ -473,26 +476,26 @@ public class PedidoController {
                     valorComDesconto = 0; // Garantir que o valor nunca seja negativo
                 }
             }
-
+            
             model.addAttribute("pedido", pedido);
             model.addAttribute("itens", itens);
             model.addAttribute("novoItem", new ItemPedido());
             model.addAttribute("produtos", produtoDAO.listar());
             model.addAttribute("valorTotal", valorTotal);
             model.addAttribute("valorComDesconto", valorComDesconto);
-
+            
             // Adicionar mensagem de erro, se houver
             if (erro != null && !erro.isEmpty()) {
                 model.addAttribute("mensagemErro", erro);
             }
-
+            
             return "pedidos/itens";
         } catch (SQLException e) {
             model.addAttribute("mensagemErro", "Erro ao listar itens do pedido: " + e.getMessage());
             return "erro";
         }
     }
-
+    
     @GetMapping("/api/itens/{pedidoId}")
     @ResponseBody
     public ResponseEntity<?> listarItensPedidoApi(@PathVariable("pedidoId") int pedidoId) {
@@ -505,11 +508,11 @@ public class PedidoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-
+    
     @PostMapping("/itens/adicionar")
     public String adicionarItemPedido(@ModelAttribute ItemPedido item, Model model) {
         try {
-            // Verificar se hÃ¡ estoque disponÃ­vel
+            // Verificar se há estoque disponível
             Pedido pedido = pedidoDAO.buscarPorId(item.getPedidoId());
             if (pedido != null && isPedidoImutavel(pedido)) {
                 return "redirect:/pedidos/itens/" + item.getPedidoId() + "?erro=Pedido cancelado ou pendente de aprovacao nao permite alterar itens.";
@@ -517,43 +520,43 @@ public class PedidoController {
 
             Produto produto = produtoDAO.buscarPorId(item.getProdutoId());
             if (produto == null) {
-                return "redirect:/erro?mensagem=Produto nÃ£o encontrado";
+                return "redirect:/erro?mensagem=Produto não encontrado";
             }
-
+            
             if (item.getQuantidade() <= 0) {
                 return "redirect:/erro?mensagem=A quantidade deve ser maior que zero";
             }
-
+            
             if (item.getQuantidade() > produto.getQuantidade()) {
-                return "redirect:/pedidos/itens/" + item.getPedidoId() + "?erro=Estoque insuficiente. Quantidade disponÃ­vel: " + produto.getQuantidade();
+                return "redirect:/pedidos/itens/" + item.getPedidoId() + "?erro=Estoque insuficiente. Quantidade disponível: " + produto.getQuantidade();
             }
-
-            // Se chegou aqui, hÃ¡ estoque suficiente
+            
+            // Se chegou aqui, há estoque suficiente
             itemPedidoDAO.inserir(item);
-
-            // Registrar saÃ­da no estoque
+            
+            // Registrar saída no estoque
             MovimentacaoEstoque movimentacao = new MovimentacaoEstoque();
             movimentacao.setIdProduto(item.getProdutoId());
             movimentacao.setTipo("saida");
             movimentacao.setQuantidade(item.getQuantidade());
             movimentacao.setMotivo("Venda - Pedido #" + item.getPedidoId());
             movimentacao.setData(new Date(System.currentTimeMillis()));
-
+            
             MovimentacaoEstoqueDAO movimentacaoDAO = new MovimentacaoEstoqueDAO();
             movimentacaoDAO.registrar(movimentacao);
-
+            
             return "redirect:/pedidos/itens/" + item.getPedidoId();
         } catch (SQLException e) {
             e.printStackTrace();
             return "redirect:/erro?mensagem=" + e.getMessage();
         }
     }
-
+    
     @PostMapping("/api/itens/adicionar")
     @ResponseBody
     public ResponseEntity<?> adicionarItemPedidoApi(@RequestBody ItemPedido item) {
         try {
-            // Verificar se hÃ¡ estoque disponÃ­vel
+            // Verificar se há estoque disponível
             Pedido pedido = pedidoDAO.buscarPorId(item.getPedidoId());
             if (pedido != null && isPedidoImutavel(pedido)) {
                 Map<String, String> error = new HashMap<>();
@@ -564,36 +567,36 @@ public class PedidoController {
             Produto produto = produtoDAO.buscarPorId(item.getProdutoId());
             if (produto == null) {
                 Map<String, String> error = new HashMap<>();
-                error.put("erro", "Produto nÃ£o encontrado");
+                error.put("erro", "Produto não encontrado");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
             }
-
+            
             if (item.getQuantidade() <= 0) {
                 Map<String, String> error = new HashMap<>();
                 error.put("erro", "A quantidade deve ser maior que zero");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
             }
-
+            
             if (item.getQuantidade() > produto.getQuantidade()) {
                 Map<String, String> error = new HashMap<>();
-                error.put("erro", "Estoque insuficiente. Quantidade disponÃ­vel: " + produto.getQuantidade());
+                error.put("erro", "Estoque insuficiente. Quantidade disponível: " + produto.getQuantidade());
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
             }
-
-            // Se chegou aqui, hÃ¡ estoque suficiente
+            
+            // Se chegou aqui, há estoque suficiente
             itemPedidoDAO.inserir(item);
-
-            // Registrar saÃ­da no estoque
+            
+            // Registrar saída no estoque
             MovimentacaoEstoque movimentacao = new MovimentacaoEstoque();
             movimentacao.setIdProduto(item.getProdutoId());
             movimentacao.setTipo("saida");
             movimentacao.setQuantidade(item.getQuantidade());
             movimentacao.setMotivo("Venda - Pedido #" + item.getPedidoId());
             movimentacao.setData(new Date(System.currentTimeMillis()));
-
+            
             MovimentacaoEstoqueDAO movimentacaoDAO = new MovimentacaoEstoqueDAO();
             movimentacaoDAO.registrar(movimentacao);
-
+            
             return ResponseEntity.ok(item);
         } catch (SQLException e) {
             Map<String, String> error = new HashMap<>();
@@ -601,7 +604,7 @@ public class PedidoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-
+    
     @GetMapping("/itens/excluir/{id}")
     public String excluirItemPedido(@PathVariable("id") int id) {
         try {
@@ -609,7 +612,7 @@ public class PedidoController {
             // Buscar o item para obter o ID do pedido antes de excluir
             ItemPedido itemPedido = itemPedidoDAO.buscarPorId(id);
             if (itemPedido == null) {
-                return "redirect:/erro?mensagem=Item nÃ£o encontrado";
+                return "redirect:/erro?mensagem=Item não encontrado";
             }
 
             int pedidoId = itemPedido.getPedidoId();
@@ -618,7 +621,7 @@ public class PedidoController {
                 return "redirect:/pedidos/itens/" + pedidoId + "?erro=Pedido cancelado ou pendente de aprovacao nao permite alterar itens.";
             }
             System.out.println("Item pertence ao pedido ID: " + pedidoId);
-
+            
             // Restaurar o estoque
             MovimentacaoEstoque movimentacao = new MovimentacaoEstoque();
             movimentacao.setIdProduto(itemPedido.getProdutoId());
@@ -626,13 +629,13 @@ public class PedidoController {
             movimentacao.setQuantidade(itemPedido.getQuantidade());
             movimentacao.setMotivo("Estorno - Cancelamento Item Pedido #" + pedidoId);
             movimentacao.setData(new Date(System.currentTimeMillis()));
-
+            
             MovimentacaoEstoqueDAO movimentacaoDAO = new MovimentacaoEstoqueDAO();
             movimentacaoDAO.registrar(movimentacao);
-
+            
             System.out.println("Excluindo item...");
             itemPedidoDAO.deletar(id);
-            System.out.println("Item excluÃ­do com sucesso!");
+            System.out.println("Item excluído com sucesso!");
             return "redirect:/pedidos/itens/" + pedidoId;
         } catch (SQLException e) {
             System.out.println("ERRO ao excluir item de pedido: " + e.getMessage());
@@ -640,7 +643,7 @@ public class PedidoController {
             return "redirect:/erro?mensagem=" + e.getMessage();
         }
     }
-
+    
     @DeleteMapping("/api/itens/{id}")
     @ResponseBody
     public ResponseEntity<?> excluirItemPedidoApi(@PathVariable("id") int id) {
@@ -648,7 +651,7 @@ public class PedidoController {
             ItemPedido item = itemPedidoDAO.buscarPorId(id);
             if (item == null) {
                 Map<String, String> error = new HashMap<>();
-                error.put("erro", "Item nÃ£o encontrado");
+                error.put("erro", "Item não encontrado");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
             }
 
@@ -658,7 +661,7 @@ public class PedidoController {
                 error.put("erro", "Pedido cancelado ou pendente de aprovacao nao permite alterar itens.");
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
             }
-
+            
             // Restaurar o estoque
             MovimentacaoEstoque movimentacao = new MovimentacaoEstoque();
             movimentacao.setIdProduto(item.getProdutoId());
@@ -666,13 +669,13 @@ public class PedidoController {
             movimentacao.setQuantidade(item.getQuantidade());
             movimentacao.setMotivo("Estorno - Cancelamento Item Pedido #" + item.getPedidoId());
             movimentacao.setData(new Date(System.currentTimeMillis()));
-
+            
             MovimentacaoEstoqueDAO movimentacaoDAO = new MovimentacaoEstoqueDAO();
             movimentacaoDAO.registrar(movimentacao);
-
+            
             itemPedidoDAO.deletar(id);
             Map<String, String> response = new HashMap<>();
-            response.put("mensagem", "Item excluÃ­do com sucesso");
+            response.put("mensagem", "Item excluído com sucesso");
             return ResponseEntity.ok(response);
         } catch (SQLException e) {
             Map<String, String> error = new HashMap<>();
@@ -694,18 +697,6 @@ public class PedidoController {
                 || PedidoDAO.STATUS_PEDIDO_CANCELAMENTO_PENDENTE.equals(status);
     }
 
-    private ResultadoAvaliacaoCredito avaliarCreditoParaVenda(int clienteId) throws SQLException {
-        if (cobrancaService != null) {
-            return cobrancaService.avaliarVendaPdv(clienteId);
-        }
-        PedidoDAO.InadimplenciaInfo info = pedidoDAO.verificarInadimplenciaCliente(clienteId, DIAS_LIMITE_INADIMPLENCIA);
-        if (!info.isBloqueado()) {
-            return ResultadoAvaliacaoCredito.liberado();
-        }
-        clienteDAO.bloquearPorInadimplencia(clienteId);
-        return ResultadoAvaliacaoCredito.bloqueado(null, info.getPedidoPendenteId(), info.getDiasAtraso(), "Cliente bloqueado por inadimplencia.");
-    }
-
     private PedidoService.UsuarioOperacao usuarioOperacao(Authentication authentication) {
         if (authentication != null && authentication.getPrincipal() instanceof UsuarioAutenticado) {
             UsuarioAutenticado usuario = (UsuarioAutenticado) authentication.getPrincipal();
@@ -723,7 +714,7 @@ public class PedidoController {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
     }
-
+    
     @GetMapping("/filtros")
     @ResponseBody
     public Map<String, java.util.List<String>> getFiltrosPedidos() throws java.sql.SQLException {
