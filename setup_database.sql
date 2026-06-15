@@ -177,6 +177,50 @@ CREATE TABLE parametro_inventario (
 
 INSERT INTO parametro_inventario (tolerancia_quantidade) VALUES (3);
 
+CREATE TABLE parametro_ajuste_estoque (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    limite_quantidade_sem_aprovacao INT NOT NULL DEFAULT 5,
+    percentual_risco_alto INT NOT NULL DEFAULT 30
+);
+
+INSERT INTO parametro_ajuste_estoque (limite_quantidade_sem_aprovacao, percentual_risco_alto) VALUES (5, 30);
+
+CREATE TABLE solicitacao_ajuste_estoque (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    produto_id INT NOT NULL,
+    tipo VARCHAR(40) NOT NULL,
+    quantidade INT NOT NULL,
+    justificativa VARCHAR(300) NOT NULL,
+    status VARCHAR(40) NOT NULL,
+    risco VARCHAR(20) NOT NULL,
+    saldo_antes INT NOT NULL,
+    saldo_depois INT NOT NULL,
+    exige_aprovacao BOOLEAN NOT NULL DEFAULT FALSE,
+    solicitante_id INT NOT NULL,
+    solicitante_nome VARCHAR(120) NOT NULL,
+    aprovador_id INT NULL,
+    aprovador_nome VARCHAR(120) NULL,
+    motivo_decisao VARCHAR(300) NULL,
+    data_solicitacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_decisao TIMESTAMP NULL,
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
+);
+
+CREATE TABLE historico_ajuste_estoque (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    solicitacao_id INT NOT NULL,
+    status_anterior VARCHAR(40) NULL,
+    status_novo VARCHAR(40) NOT NULL,
+    descricao VARCHAR(350) NOT NULL,
+    usuario_id INT NOT NULL,
+    usuario_nome VARCHAR(120) NOT NULL,
+    data_evento TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (solicitacao_id) REFERENCES solicitacao_ajuste_estoque(id)
+);
+
+CREATE INDEX idx_solicitacao_ajuste_status_data ON solicitacao_ajuste_estoque(status, data_solicitacao);
+CREATE INDEX idx_historico_ajuste_solicitacao_data ON historico_ajuste_estoque(solicitacao_id, data_evento);
+
 -- Tabela de movimentações de estoque
 CREATE TABLE movimentacao_estoque (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -572,6 +616,7 @@ FROM (
     SELECT 'CUPOM' UNION ALL
     SELECT 'PEDIDO' UNION ALL
     SELECT 'ESTOQUE' UNION ALL
+    SELECT 'AJUSTE_ESTOQUE' UNION ALL
     SELECT 'INVENTARIO' UNION ALL
     SELECT 'SUPRIMENTO' UNION ALL
     SELECT 'REMESSA' UNION ALL
@@ -600,6 +645,9 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (2, 'PEDIDO', 'APROVACAO', TRUE),
 (2, 'ESTOQUE', 'LEITURA', TRUE),
 (2, 'ESTOQUE', 'ESCRITA', TRUE),
+(2, 'AJUSTE_ESTOQUE', 'LEITURA', TRUE),
+(2, 'AJUSTE_ESTOQUE', 'ESCRITA', TRUE),
+(2, 'AJUSTE_ESTOQUE', 'APROVACAO', TRUE),
 (2, 'INVENTARIO', 'LEITURA', TRUE),
 (2, 'INVENTARIO', 'ESCRITA', TRUE),
 (2, 'INVENTARIO', 'APROVACAO', TRUE),
@@ -627,6 +675,8 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (3, 'PEDIDO', 'ESCRITA', TRUE),
 (3, 'ESTOQUE', 'LEITURA', TRUE),
 (3, 'ESTOQUE', 'ESCRITA', TRUE),
+(3, 'AJUSTE_ESTOQUE', 'LEITURA', TRUE),
+(3, 'AJUSTE_ESTOQUE', 'ESCRITA', TRUE),
 (3, 'INVENTARIO', 'LEITURA', TRUE),
 (3, 'INVENTARIO', 'ESCRITA', TRUE),
 (3, 'CLIENTE', 'LEITURA', TRUE),

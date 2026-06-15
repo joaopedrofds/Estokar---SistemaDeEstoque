@@ -16,6 +16,10 @@
                     <p class="page-subtitle">Acompanhe e gerencie todos os pedidos dos clientes</p>
                 </div>
                 <div class="col-md-4 text-end">
+                    <a href="/pedidos/cancelamentos" class="btn btn-outline-light btn-lg me-2">
+                        <i class="bi bi-clipboard2-check me-2"></i>
+                        Cancelamentos
+                    </a>
                     <a href="/pedidos/novo" class="btn btn-primary btn-lg">
                         <i class="bi bi-plus-circle me-2"></i>
                         Novo Pedido
@@ -54,6 +58,16 @@
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
             <span th:text="${mensagemAviso}"></span>
         </div>
+
+        <div class="alert alert-success d-flex align-items-center" th:if="${mensagemSucesso != null}">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${mensagemSucesso}"></span>
+        </div>
+
+        <div class="alert alert-danger d-flex align-items-center" th:if="${mensagemErro != null}">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>
+            <span th:text="${mensagemErro}"></span>
+        </div>
         
         <!-- Empty State -->
         <div class="empty-state" th:if="${pedidos.empty and cpfCnpj == null}">
@@ -81,6 +95,7 @@
                                 <th>Data Requisição</th>
                                 <th>Data Entrega</th>
                                 <th>Desconto</th>
+                                <th>Status</th>
                                 <th>Pagamento</th>
                                 <th class="text-center">Ações</th>
                             </tr>
@@ -114,10 +129,17 @@
                                     <small class="text-muted" th:unless="${pedido.dataEntrega != null}">Não definida</small>
                                 </td>
                                 <td>
-                                    <span th:if="${pedido.valorDesconto > 0}" 
-                                          class="badge bg-warning text-dark" 
+                                    <span th:if="${pedido.valorDesconto > 0}"
+                                          class="badge bg-warning text-dark"
                                           th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorDesconto, 1, 'POINT', 2, 'COMMA')}"></span>
                                     <small class="text-muted" th:unless="${pedido.valorDesconto > 0}">Sem cupom</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary"
+                                          th:if="${pedido.status == null || pedido.status == '' || pedido.status == 'PENDENTE'}">Pendente</span>
+                                    <span class="badge bg-success" th:if="${pedido.status == 'CONCLUIDO'}">Concluído</span>
+                                    <span class="badge bg-warning text-dark" th:if="${pedido.status == 'CANCELAMENTO_PENDENTE_APROVACAO'}">Aguardando aprovação</span>
+                                    <span class="badge bg-danger" th:if="${pedido.status == 'CANCELADO'}">Cancelado</span>
                                 </td>
                                 <td>
                                     <span class="badge bg-success" th:if="${pedido.statusPagamento == 'PAGO'}">
@@ -135,10 +157,20 @@
                                            class="btn btn-sm btn-outline-info" title="Ver Itens">
                                             <i class="bi bi-list-check"></i>
                                         </a>
-                                        <a th:href="@{/pedidos/editar/{id}(id=${pedido.id})}" 
+                                        <a th:href="@{/pedidos/editar/{id}(id=${pedido.id})}"
                                            class="btn btn-sm btn-outline-primary" title="Editar">
                                             <i class="bi bi-pencil"></i>
                                         </a>
+                                        <button class="btn btn-sm btn-outline-warning" title="Cancelar"
+                                                th:if="${pedido.status == null || pedido.status == '' || pedido.status == 'PENDENTE' || pedido.status == 'CONCLUIDO'}"
+                                                th:onclick="'cancelarPedido(' + ${pedido.id} + ')'">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success" title="Aprovar Cancelamento"
+                                                th:if="${pedido.status == 'CANCELAMENTO_PENDENTE_APROVACAO'}"
+                                                th:onclick="'cancelarPedido(' + ${pedido.id} + ')'">
+                                            <i class="bi bi-check2-circle"></i>
+                                        </button>
                                         <button class="btn btn-sm btn-outline-danger" title="Excluir"
                                                 th:onclick="'excluirPedido(' + ${pedido.id} + ')'">
                                             <i class="bi bi-trash"></i>

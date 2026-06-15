@@ -84,6 +84,9 @@ public final class InterceptadorAutorizacaoDao {
         if (nomeClasse.contains("Pedido") || nomeClasse.contains("ItemPedido")) {
             return RecursoAcesso.PEDIDO;
         }
+        if (nomeClasse.contains("AjusteEstoque")) {
+            return RecursoAcesso.AJUSTE_ESTOQUE;
+        }
         if (nomeClasse.contains("Estoque") || nomeClasse.contains("Movimentacao")) {
             return RecursoAcesso.ESTOQUE;
         }

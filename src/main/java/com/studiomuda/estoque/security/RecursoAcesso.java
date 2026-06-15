@@ -5,6 +5,7 @@ public enum RecursoAcesso {
     CUPOM("Cupons"),
     PEDIDO("Pedidos"),
     ESTOQUE("Estoque"),
+    AJUSTE_ESTOQUE("Ajustes de estoque"),
     SUPRIMENTO("Suprimentos"),
     REMESSA("Remessas"),
     CLIENTE("Clientes"),

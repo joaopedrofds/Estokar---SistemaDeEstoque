@@ -47,6 +47,9 @@ public class SecurityConfig {
                 .antMatchers("/inventarios/**").hasAnyRole(
                         "DIRETOR", "ESTOQUISTA", "AUXILIAR",
                         "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                .antMatchers("/ajustes-estoque/**").hasAnyRole(
+                        "DIRETOR", "ESTOQUISTA",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
                 .antMatchers("/funcionarios/**").hasAnyRole(
                         "DIRETOR",
                         "ADMINISTRADOR", "GERENTE_OPERACIONAL")
