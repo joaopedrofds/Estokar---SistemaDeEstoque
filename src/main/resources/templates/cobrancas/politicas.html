@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: menu"></div>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="bi bi-shield-check me-3"></i>Políticas de Crédito</h1>
+        <p class="page-subtitle">A política ativa define o limite de dias para bloqueio automático.</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div th:if="${mensagem}" class="alert alert-success" th:text="${mensagem}"></div>
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Nova Política</h5></div>
+                <div class="card-body">
+                    <form th:action="@{/cobrancas/politicas}" th:object="${politica}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label" for="nome">Nome</label>
+                            <input id="nome" th:field="*{nome}" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="limiteDiasAtraso">Limite de atraso</label>
+                            <input id="limiteDiasAtraso" th:field="*{limiteDiasAtraso}" type="number" min="1" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="limiteCredito">Limite de crédito</label>
+                            <input id="limiteCredito" th:field="*{limiteCredito}" type="number" step="0.01" min="0" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="dataInicio">Início</label>
+                            <input id="dataInicio" th:field="*{dataInicio}" type="date" class="form-control" required>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="ativa" th:field="*{ativa}">
+                            <label class="form-check-label" for="ativa">Ativa</label>
+                        </div>
+                        <button class="btn btn-primary w-100" type="submit">Salvar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover modern-table mb-0">
+                        <thead><tr><th>Nome</th><th>Limite</th><th>Início</th><th>Fim</th><th>Status</th></tr></thead>
+                        <tbody>
+                        <tr th:each="p : ${politicas}">
+                            <td th:text="${p.nome}"></td>
+                            <td th:text="${p.limiteDiasAtraso + ' dias'}"></td>
+                            <td th:text="${p.dataInicio}"></td>
+                            <td th:text="${p.dataFim != null ? p.dataFim : '-'}"></td>
+                            <td><span class="badge" th:classappend="${p.ativa} ? ' bg-success' : ' bg-secondary'" th:text="${p.ativa ? 'Ativa' : 'Encerrada'}"></span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="layout :: footer"></div>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

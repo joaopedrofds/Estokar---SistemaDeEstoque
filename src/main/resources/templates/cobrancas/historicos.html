@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: menu"></div>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="bi bi-clock-history me-3"></i>Histórico de Cobrança</h1>
+        <p class="page-subtitle">Contatos são imutáveis; correções criam um novo registro vinculado.</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div th:if="${mensagem}" class="alert alert-success" th:text="${mensagem}"></div>
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Registrar Contato</h5></div>
+                <div class="card-body">
+                    <form th:action="@{/cobrancas/historicos}" th:object="${historico}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label" for="clienteId">Cliente</label>
+                            <select id="clienteId" name="clienteId" class="form-select" required>
+                                <option th:each="c : ${clientes}" th:value="${c.id}" th:text="${c.nome}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="faturaId">Fatura</label>
+                            <select id="faturaId" name="faturaId" class="form-select">
+                                <option value="">Sem fatura</option>
+                                <option th:each="f : ${faturas}" th:value="${f.id}" th:text="${f.numero + ' - ' + f.cliente.nome}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="registroOriginalId">Registro corrigido</label>
+                            <input id="registroOriginalId" name="registroOriginalId" type="number" min="1" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="tipoContato">Tipo</label>
+                            <select id="tipoContato" th:field="*{tipoContato}" class="form-select">
+                                <option value="EMAIL">E-mail</option>
+                                <option value="TELEFONE">Telefone</option>
+                                <option value="WHATSAPP">WhatsApp</option>
+                                <option value="PRESENCIAL">Presencial</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="responsavel">Responsável</label>
+                            <input id="responsavel" th:field="*{responsavel}" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="descricao">Descrição</label>
+                            <textarea id="descricao" th:field="*{descricao}" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <button class="btn btn-primary w-100" type="submit">Registrar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover modern-table mb-0">
+                        <thead><tr><th>ID</th><th>Cliente</th><th>Contato</th><th>Responsável</th><th>Correção</th></tr></thead>
+                        <tbody>
+                        <tr th:each="h : ${historicos}">
+                            <td th:text="${h.id}"></td>
+                            <td th:text="${h.cliente.nome}"></td>
+                            <td th:text="${h.tipoContato + ' em ' + h.dataContato}"></td>
+                            <td th:text="${h.responsavel}"></td>
+                            <td th:text="${h.registroOriginal != null ? h.registroOriginal.id : '-'}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="layout :: footer"></div>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

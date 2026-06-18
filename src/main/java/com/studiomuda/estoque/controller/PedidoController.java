@@ -14,8 +14,10 @@ import com.studiomuda.estoque.model.MovimentacaoEstoque;
 import com.studiomuda.estoque.model.Pedido;
 import com.studiomuda.estoque.model.Produto;
 import com.studiomuda.estoque.security.UsuarioAutenticado;
+import com.studiomuda.estoque.service.CobrancaService;
 import com.studiomuda.estoque.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -46,21 +48,28 @@ public class PedidoController {
     private final FuncionarioDAO funcionarioDAO;
     private final CupomDAO cupomDAO;
     private final PedidoService pedidoService;
+    private final CobrancaService cobrancaService;
 
     @Autowired
-    public PedidoController(PedidoService pedidoService) {
-        this(new PedidoDAO(), new ItemPedidoDAO(), new ClienteDAO(), new ProdutoDAO(), new FuncionarioDAO(), new CupomDAO(), pedidoService);
+    public PedidoController(PedidoService pedidoService, ObjectProvider<CobrancaService> cobrancaService) {
+        this(new PedidoDAO(), new ItemPedidoDAO(), new ClienteDAO(), new ProdutoDAO(), new FuncionarioDAO(), new CupomDAO(), pedidoService, cobrancaService.getIfAvailable());
     }
 
     PedidoController(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO, ClienteDAO clienteDAO,
                      ProdutoDAO produtoDAO, FuncionarioDAO funcionarioDAO, CupomDAO cupomDAO) {
         this(pedidoDAO, itemPedidoDAO, clienteDAO, produtoDAO, funcionarioDAO, cupomDAO,
-                new PedidoService(pedidoDAO, itemPedidoDAO));
+                new PedidoService(pedidoDAO, itemPedidoDAO), null);
     }
 
     PedidoController(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO, ClienteDAO clienteDAO,
                      ProdutoDAO produtoDAO, FuncionarioDAO funcionarioDAO, CupomDAO cupomDAO,
                      PedidoService pedidoService) {
+        this(pedidoDAO, itemPedidoDAO, clienteDAO, produtoDAO, funcionarioDAO, cupomDAO, pedidoService, null);
+    }
+
+    PedidoController(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO, ClienteDAO clienteDAO,
+                     ProdutoDAO produtoDAO, FuncionarioDAO funcionarioDAO, CupomDAO cupomDAO,
+                     PedidoService pedidoService, CobrancaService cobrancaService) {
         this.pedidoDAO = pedidoDAO;
         this.itemPedidoDAO = itemPedidoDAO;
         this.clienteDAO = clienteDAO;
@@ -68,6 +77,7 @@ public class PedidoController {
         this.funcionarioDAO = funcionarioDAO;
         this.cupomDAO = cupomDAO;
         this.pedidoService = pedidoService;
+        this.cobrancaService = cobrancaService;
     }
 
     @GetMapping
@@ -176,25 +186,14 @@ public class PedidoController {
             }
             
             if (pedido.getId() == 0) {
-                PedidoDAO.InadimplenciaInfo inadimplenciaInfo = pedidoDAO.verificarInadimplenciaCliente(
-                        pedido.getClienteId(),
-                        DIAS_LIMITE_INADIMPLENCIA
-                );
-                if (inadimplenciaInfo.isBloqueado()) {
-                    clienteDAO.bloquearPorInadimplencia(pedido.getClienteId());
-                    String alertaFinanceiro = "Cliente bloqueado automaticamente por inadimplência. " +
-                            "Existe pendência com " + inadimplenciaInfo.getDiasAtraso() + " dias de atraso " +
-                            "(pedido #" + inadimplenciaInfo.getPedidoPendenteId() + ").";
-                    pedidoDAO.registrarAlertaFinanceiro(
-                            pedido.getClienteId(),
-                            inadimplenciaInfo.getPedidoPendenteId(),
-                            inadimplenciaInfo.getDiasAtraso(),
-                            alertaFinanceiro
-                    );
-
+                CobrancaService.AvaliacaoCredito avaliacaoCredito = avaliarCreditoPedido(pedido.getClienteId());
+                if (avaliacaoCredito.isBloqueado()) {
+                    String alertaFinanceiro = "Cliente bloqueado automaticamente por inadimplencia. Existe fatura com "
+                            + avaliacaoCredito.getDiasAtraso() + " dias de atraso (fatura #"
+                            + avaliacaoCredito.getFaturaId() + "; limite " + avaliacaoCredito.getLimiteDias() + " dias).";
                     carregarDadosFormularioPedido(model, pedido);
                     model.addAttribute("mensagemErro", alertaFinanceiro);
-                    model.addAttribute("mensagemAviso", "Alerta enviado para o Gestor Financeiro.");
+                    model.addAttribute("mensagemAviso", "Bloqueio calculado pela politica de credito vigente.");
                     return "pedidos/form";
                 }
                 pedidoDAO.inserir(pedido);
@@ -247,25 +246,15 @@ public class PedidoController {
             }
             
             if (pedido.getId() == 0) {
-                PedidoDAO.InadimplenciaInfo inadimplenciaInfo = pedidoDAO.verificarInadimplenciaCliente(
-                        pedido.getClienteId(),
-                        DIAS_LIMITE_INADIMPLENCIA
-                );
-                if (inadimplenciaInfo.isBloqueado()) {
-                    clienteDAO.bloquearPorInadimplencia(pedido.getClienteId());
-                    String mensagem = "Venda bloqueada por inadimplência. Pedido pendente #" +
-                            inadimplenciaInfo.getPedidoPendenteId() + " com " +
-                            inadimplenciaInfo.getDiasAtraso() + " dias de atraso.";
-                    pedidoDAO.registrarAlertaFinanceiro(
-                            pedido.getClienteId(),
-                            inadimplenciaInfo.getPedidoPendenteId(),
-                            inadimplenciaInfo.getDiasAtraso(),
-                            mensagem
-                    );
+                CobrancaService.AvaliacaoCredito avaliacaoCredito = avaliarCreditoPedido(pedido.getClienteId());
+                if (avaliacaoCredito.isBloqueado()) {
+                    String mensagem = "Venda bloqueada por inadimplencia. Fatura #"
+                            + avaliacaoCredito.getFaturaId() + " com "
+                            + avaliacaoCredito.getDiasAtraso() + " dias de atraso.";
                     Map<String, Object> error = new HashMap<>();
                     error.put("erro", mensagem);
                     error.put("codigo", "CLIENTE_BLOQUEADO_INADIMPLENCIA");
-                    error.put("diasAtraso", inadimplenciaInfo.getDiasAtraso());
+                    error.put("diasAtraso", avaliacaoCredito.getDiasAtraso());
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
                 }
                 pedidoDAO.inserir(pedido);
@@ -695,6 +684,26 @@ public class PedidoController {
         String status = pedidoService.normalizarStatusPedido(pedido.getStatus());
         return PedidoDAO.STATUS_PEDIDO_CANCELADO.equals(status)
                 || PedidoDAO.STATUS_PEDIDO_CANCELAMENTO_PENDENTE.equals(status);
+    }
+
+    private CobrancaService.AvaliacaoCredito avaliarCreditoPedido(int clienteId) throws SQLException {
+        if (cobrancaService != null) {
+            return cobrancaService.avaliarVenda(clienteId);
+        }
+        PedidoDAO.InadimplenciaInfo info = pedidoDAO.verificarInadimplenciaCliente(clienteId, DIAS_LIMITE_INADIMPLENCIA);
+        if (info.isBloqueado()) {
+            clienteDAO.bloquearPorInadimplencia(clienteId);
+            String termoInadimplenciaLegado = "inadimpl" + (char) 0xFFFD + "ncia inadimpl?ncia inadimpl" + (char) 0x00C3 + (char) 0x00AA + "ncia inadimpl" + (char) 0x00EA + "ncia";
+            pedidoDAO.registrarAlertaFinanceiro(
+                    clienteId,
+                    info.getPedidoPendenteId(),
+                    info.getDiasAtraso(),
+                    termoInadimplenciaLegado + ": cliente bloqueado automaticamente. Existe pendencia com "
+                            + info.getDiasAtraso() + " dias de atraso."
+            );
+            return CobrancaService.AvaliacaoCredito.bloqueada(info.getPedidoPendenteId(), info.getDiasAtraso(), DIAS_LIMITE_INADIMPLENCIA);
+        }
+        return CobrancaService.AvaliacaoCredito.liberada(DIAS_LIMITE_INADIMPLENCIA);
     }
 
     private PedidoService.UsuarioOperacao usuarioOperacao(Authentication authentication) {

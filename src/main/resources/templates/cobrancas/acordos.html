@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: menu"></div>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="bi bi-handshake me-3"></i>Acordos de Pagamento</h1>
+        <p class="page-subtitle">Acordos ativos protegem a venda enquanto suas parcelas estiverem em dia.</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div th:if="${mensagem}" class="alert alert-success" th:text="${mensagem}"></div>
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Novo Acordo</h5></div>
+                <div class="card-body">
+                    <form th:action="@{/cobrancas/acordos}" th:object="${acordo}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label" for="clienteId">Cliente</label>
+                            <select id="clienteId" name="clienteId" class="form-select" required>
+                                <option th:each="c : ${clientes}" th:value="${c.id}" th:text="${c.nome}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="valorTotal">Valor total</label>
+                            <input id="valorTotal" th:field="*{valorTotal}" type="number" step="0.01" min="0" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="dataInicio">Início</label>
+                            <input id="dataInicio" th:field="*{dataInicio}" type="date" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="dataFim">Fim</label>
+                            <input id="dataFim" th:field="*{dataFim}" type="date" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="status">Status</label>
+                            <select id="status" th:field="*{status}" class="form-select">
+                                <option value="ATIVO">Ativo</option>
+                                <option value="CUMPRIDO">Cumprido</option>
+                                <option value="QUEBRADO">Quebrado</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary w-100" type="submit">Salvar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover modern-table mb-0">
+                        <thead><tr><th>Cliente</th><th>Valor</th><th>Início</th><th>Fim</th><th>Status</th></tr></thead>
+                        <tbody>
+                        <tr th:each="a : ${acordos}">
+                            <td th:text="${a.cliente.nome}"></td>
+                            <td th:text="${a.valorTotal}"></td>
+                            <td th:text="${a.dataInicio}"></td>
+                            <td th:text="${a.dataFim != null ? a.dataFim : '-'}"></td>
+                            <td><span class="badge bg-secondary" th:text="${a.status}"></span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="layout :: footer"></div>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>
