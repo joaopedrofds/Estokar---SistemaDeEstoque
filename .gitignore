@@ -1,0 +1,30 @@
+# Arquivos de compilação do Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# Logs
+*.log
+logs/
+app.log
+
+# Arquivos de classe compilados
+*.class
+
+# Pastas e arquivos de configuração de IDEs (VS Code, IntelliJ, Eclipse)
+.vscode/
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+
+# Arquivos de Sistema Operacional
+.DS_Store
+Thumbs.db
