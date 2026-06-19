@@ -9,7 +9,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import org.springframework.stereotype.Service;
 
+@Service
 public class RemessaService {
     private static final String[] JANELAS_PADRAO = {"08:00", "10:00", "13:00", "15:00", "17:00"};
 
