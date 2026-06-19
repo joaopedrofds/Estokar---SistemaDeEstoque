@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: menu"></div>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="bi bi-receipt-cutoff me-3"></i>Cobranças</h1>
+        <p class="page-subtitle">Gestão de políticas, faturas, acordos e contatos financeiros.</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <a class="card text-decoration-none h-100" href="/cobrancas/politicas">
+                <div class="card-body">
+                    <h5 class="mb-2"><i class="bi bi-shield-check me-2"></i>Políticas</h5>
+                    <div class="fs-3 fw-bold" th:text="${#lists.size(politicas)}">0</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a class="card text-decoration-none h-100" href="/cobrancas/faturas">
+                <div class="card-body">
+                    <h5 class="mb-2"><i class="bi bi-file-earmark-text me-2"></i>Faturas</h5>
+                    <div class="fs-3 fw-bold" th:text="${#lists.size(faturas)}">0</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a class="card text-decoration-none h-100" href="/cobrancas/acordos">
+                <div class="card-body">
+                    <h5 class="mb-2"><i class="bi bi-handshake me-2"></i>Acordos</h5>
+                    <div class="fs-3 fw-bold" th:text="${#lists.size(acordos)}">0</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a class="card text-decoration-none h-100" href="/cobrancas/historicos">
+                <div class="card-body">
+                    <h5 class="mb-2"><i class="bi bi-clock-history me-2"></i>Histórico</h5>
+                    <div class="fs-3 fw-bold" th:text="${#lists.size(historicos)}">0</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div th:replace="layout :: footer"></div>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

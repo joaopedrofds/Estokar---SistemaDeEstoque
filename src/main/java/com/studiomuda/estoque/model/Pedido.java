@@ -1,6 +1,7 @@
 package com.studiomuda.estoque.model;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
 public class Pedido {
     private int id;
@@ -19,6 +20,13 @@ public class Pedido {
     private String statusPagamento; // PENDENTE ou PAGO
     private Date dataPagamento;
     private Integer diasAtrasoPagamento; // Campo auxiliar para exibição
+    private Integer cancelamentoSolicitanteId;
+    private String cancelamentoSolicitanteNome;
+    private String justificativaCancelamento;
+    private Timestamp dataCancelamento;
+    private Integer cancelamentoAprovadorId;
+    private String cancelamentoAprovadorNome;
+    private Timestamp dataAprovacaoCancelamento;
 
     public Pedido() {
         this.statusPagamento = "PENDENTE";
@@ -161,6 +169,62 @@ public class Pedido {
 
     public void setDiasAtrasoPagamento(Integer diasAtrasoPagamento) {
         this.diasAtrasoPagamento = diasAtrasoPagamento;
+    }
+
+    public Integer getCancelamentoSolicitanteId() {
+        return cancelamentoSolicitanteId;
+    }
+
+    public void setCancelamentoSolicitanteId(Integer cancelamentoSolicitanteId) {
+        this.cancelamentoSolicitanteId = cancelamentoSolicitanteId;
+    }
+
+    public String getCancelamentoSolicitanteNome() {
+        return cancelamentoSolicitanteNome;
+    }
+
+    public void setCancelamentoSolicitanteNome(String cancelamentoSolicitanteNome) {
+        this.cancelamentoSolicitanteNome = cancelamentoSolicitanteNome;
+    }
+
+    public String getJustificativaCancelamento() {
+        return justificativaCancelamento;
+    }
+
+    public void setJustificativaCancelamento(String justificativaCancelamento) {
+        this.justificativaCancelamento = justificativaCancelamento;
+    }
+
+    public Timestamp getDataCancelamento() {
+        return dataCancelamento;
+    }
+
+    public void setDataCancelamento(Timestamp dataCancelamento) {
+        this.dataCancelamento = dataCancelamento;
+    }
+
+    public Integer getCancelamentoAprovadorId() {
+        return cancelamentoAprovadorId;
+    }
+
+    public void setCancelamentoAprovadorId(Integer cancelamentoAprovadorId) {
+        this.cancelamentoAprovadorId = cancelamentoAprovadorId;
+    }
+
+    public String getCancelamentoAprovadorNome() {
+        return cancelamentoAprovadorNome;
+    }
+
+    public void setCancelamentoAprovadorNome(String cancelamentoAprovadorNome) {
+        this.cancelamentoAprovadorNome = cancelamentoAprovadorNome;
+    }
+
+    public Timestamp getDataAprovacaoCancelamento() {
+        return dataAprovacaoCancelamento;
+    }
+
+    public void setDataAprovacaoCancelamento(Timestamp dataAprovacaoCancelamento) {
+        this.dataAprovacaoCancelamento = dataAprovacaoCancelamento;
     }
 
     @Override

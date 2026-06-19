@@ -1,9 +1,0 @@
--- Adicionar colunas faltantes na tabela cupom
-USE studiomuda;
-
-ALTER TABLE cupom
-ADD COLUMN IF NOT EXISTS tipo_desconto VARCHAR(10) NOT NULL DEFAULT 'FIXO',
-ADD COLUMN IF NOT EXISTS limite_usos INT,
-ADD COLUMN IF NOT EXISTS usos_realizados INT NOT NULL DEFAULT 0,
-ADD COLUMN IF NOT EXISTS cliente_id INT,
-ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT TRUE;

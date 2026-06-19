@@ -1,7 +1,9 @@
 package com.studiomuda.estoque.dao;
+
 import org.springframework.stereotype.Repository;
 
 import com.studiomuda.estoque.conexao.Conexao;
+import com.studiomuda.estoque.model.ItemPedido;
 import com.studiomuda.estoque.model.Pedido;
 
 import java.sql.*;
@@ -11,11 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-
 @Repository
 public class PedidoDAO {
     private static final String STATUS_PAGAMENTO_PENDENTE = "PENDENTE";
     private static final String STATUS_PAGAMENTO_PAGO = "PAGO";
+    public static final String STATUS_PEDIDO_PENDENTE = "PENDENTE";
+    public static final String STATUS_PEDIDO_CONCLUIDO = "CONCLUIDO";
+    public static final String STATUS_PEDIDO_CANCELADO = "CANCELADO";
+    public static final String STATUS_PEDIDO_CANCELAMENTO_PENDENTE = "CANCELAMENTO_PENDENTE_APROVACAO";
+    private static final int LIMITE_CANCELAMENTO_PADRAO = 10;
 
     public static class InadimplenciaInfo {
         private final boolean bloqueado;
@@ -206,6 +212,100 @@ public class PedidoDAO {
         return lista;
     }
 
+    public int buscarLimiteQuantidadeCancelamento() throws SQLException {
+        String sql = "SELECT limite_quantidade_sem_aprovacao FROM parametro_cancelamento ORDER BY id LIMIT 1";
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("limite_quantidade_sem_aprovacao");
+            }
+        } catch (SQLException e) {
+            if (!isTabelaOuColunaInexistente(e)) {
+                throw e;
+            }
+        }
+        return LIMITE_CANCELAMENTO_PADRAO;
+    }
+
+    public void registrarCancelamentoPendente(int pedidoId,
+                                              int solicitanteId,
+                                              String solicitanteNome,
+                                              String justificativa) throws SQLException {
+        String sql = "UPDATE pedido SET status = ?, cancelamento_solicitante_id = ?, " +
+                "cancelamento_solicitante_nome = ?, justificativa_cancelamento = ?, data_cancelamento = CURRENT_TIMESTAMP " +
+                "WHERE id = ?";
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, STATUS_PEDIDO_CANCELAMENTO_PENDENTE);
+            stmt.setInt(2, solicitanteId);
+            stmt.setString(3, solicitanteNome);
+            stmt.setString(4, justificativa);
+            stmt.setInt(5, pedidoId);
+            stmt.executeUpdate();
+        }
+    }
+
+    public void cancelarComEstorno(int pedidoId,
+                                   List<ItemPedido> itens,
+                                   int solicitanteId,
+                                   String solicitanteNome,
+                                   String justificativa,
+                                   Integer aprovadorId,
+                                   String aprovadorNome) throws SQLException {
+        String sqlMovimentacao = "INSERT INTO movimentacao_estoque (id_produto, tipo, quantidade, motivo, data) VALUES (?, ?, ?, ?, ?)";
+        String sqlEstoque = "UPDATE produto SET quantidade = quantidade + ? WHERE id = ?";
+        String sqlPedido = "UPDATE pedido SET status = ?, cancelamento_solicitante_id = ?, " +
+                "cancelamento_solicitante_nome = ?, justificativa_cancelamento = ?, data_cancelamento = CURRENT_TIMESTAMP, " +
+                "cancelamento_aprovador_id = ?, cancelamento_aprovador_nome = ?, data_aprovacao_cancelamento = ? " +
+                "WHERE id = ?";
+
+        try (Connection conn = Conexao.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement stmtMov = conn.prepareStatement(sqlMovimentacao, Statement.RETURN_GENERATED_KEYS);
+                 PreparedStatement stmtEstoque = conn.prepareStatement(sqlEstoque);
+                 PreparedStatement stmtPedido = conn.prepareStatement(sqlPedido)) {
+
+                Date hoje = Date.valueOf(LocalDate.now());
+                for (ItemPedido item : itens) {
+                    stmtMov.setInt(1, item.getProdutoId());
+                    stmtMov.setString(2, "entrada");
+                    stmtMov.setInt(3, item.getQuantidade());
+                    stmtMov.setString(4, "EntradaPorCancelamento - Pedido #" + pedidoId);
+                    stmtMov.setDate(5, hoje);
+                    stmtMov.executeUpdate();
+
+                    stmtEstoque.setInt(1, item.getQuantidade());
+                    stmtEstoque.setInt(2, item.getProdutoId());
+                    stmtEstoque.executeUpdate();
+                }
+
+                stmtPedido.setString(1, STATUS_PEDIDO_CANCELADO);
+                stmtPedido.setInt(2, solicitanteId);
+                stmtPedido.setString(3, solicitanteNome);
+                stmtPedido.setString(4, justificativa);
+                if (aprovadorId != null && aprovadorId > 0) {
+                    stmtPedido.setInt(5, aprovadorId);
+                    stmtPedido.setString(6, aprovadorNome);
+                    stmtPedido.setTimestamp(7, Timestamp.valueOf(java.time.LocalDateTime.now()));
+                } else {
+                    stmtPedido.setNull(5, Types.INTEGER);
+                    stmtPedido.setNull(6, Types.VARCHAR);
+                    stmtPedido.setNull(7, Types.TIMESTAMP);
+                }
+                stmtPedido.setInt(8, pedidoId);
+                stmtPedido.executeUpdate();
+
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
     public InadimplenciaInfo verificarInadimplenciaCliente(int clienteId, int diasLimite) throws SQLException {
         String sql = "SELECT id, data_requisicao, DATEDIFF(CURDATE(), data_requisicao) AS dias_atraso " +
                 "FROM pedido " +
@@ -388,6 +488,21 @@ public class PedidoDAO {
             p.setStatus(null);
         }
 
+        // Campos de cancelamento (do colega)
+        try {
+            p.setCancelamentoSolicitanteId((Integer) rs.getObject("cancelamento_solicitante_id"));
+            p.setCancelamentoSolicitanteNome(rs.getString("cancelamento_solicitante_nome"));
+            p.setJustificativaCancelamento(rs.getString("justificativa_cancelamento"));
+            p.setDataCancelamento(rs.getTimestamp("data_cancelamento"));
+            p.setCancelamentoAprovadorId((Integer) rs.getObject("cancelamento_aprovador_id"));
+            p.setCancelamentoAprovadorNome(rs.getString("cancelamento_aprovador_nome"));
+            p.setDataAprovacaoCancelamento(rs.getTimestamp("data_aprovacao_cancelamento"));
+        } catch (SQLException ignored) {
+            p.setCancelamentoSolicitanteId(null);
+            p.setCancelamentoAprovadorId(null);
+        }
+
+        // Campos de status de pagamento (meus)
         try {
             p.setStatusPagamento(normalizarStatusPagamento(rs.getString("status_pagamento")));
         } catch (SQLException ignored) {

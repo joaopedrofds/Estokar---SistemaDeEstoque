@@ -1,21 +1,23 @@
 package com.studiomuda.estoque.config;
 
-import com.studiomuda.estoque.security.DatabaseUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    private final DatabaseUserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-    public SecurityConfig(DatabaseUserDetailsService userDetailsService) {
+    public SecurityConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
@@ -37,6 +39,40 @@ public class SecurityConfig {
                 .antMatchers("/devolucoes/creditos").hasAnyRole("ADMINISTRADOR", "GERENTE_OPERACIONAL")
                 .antMatchers("/devolucoes/**").hasAnyRole("ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
                 .antMatchers("/devolucoes").hasAnyRole("ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                // Precificação Dinâmica
+                .antMatchers("/precificacao/**").hasAnyRole("ADMINISTRADOR", "GERENTE_OPERACIONAL")
+                // Cupons uso
+                .antMatchers("/cupons/uso/**").hasAnyRole("ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                // Histórico de Preços
+                .antMatchers("/produtos/historico/**").hasAnyRole("ADMINISTRADOR", "GERENTE_OPERACIONAL")
+                // Dashboard
+                .antMatchers("/dashboard/**").hasAnyRole(
+                        "DIRETOR", "AUXILIAR",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                // Cupons
+                .antMatchers("/cupons/**").hasAnyRole(
+                        "DIRETOR",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                // Pedidos
+                .antMatchers("/pedidos/**").hasAnyRole(
+                        "DIRETOR",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                // Estoque
+                .antMatchers("/estoque/**").hasAnyRole(
+                        "DIRETOR", "ESTOQUISTA",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                // Inventários
+                .antMatchers("/inventarios/**").hasAnyRole(
+                        "DIRETOR", "ESTOQUISTA", "AUXILIAR",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                // Ajustes de Estoque
+                .antMatchers("/ajustes-estoque/**").hasAnyRole(
+                        "DIRETOR", "ESTOQUISTA",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL", "OPERADOR_VENDEDOR")
+                // Funcionários
+                .antMatchers("/funcionarios/**").hasAnyRole(
+                        "DIRETOR",
+                        "ADMINISTRADOR", "GERENTE_OPERACIONAL")
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
@@ -50,7 +86,8 @@ public class SecurityConfig {
                 .permitAll()
                 .and()
                 .exceptionHandling()
-                .accessDeniedPage("/error");
+                .accessDeniedHandler((request, response, accessDeniedException) ->
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN));
 
         return http.build();
     }

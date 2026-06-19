@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: menu"></div>
+
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title"><i class="bi bi-file-earmark-text me-3"></i>Faturas</h1>
+        <p class="page-subtitle">Títulos e parcelas usados pela avaliação de inadimplência.</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div th:if="${mensagem}" class="alert alert-success" th:text="${mensagem}"></div>
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header"><h5 class="mb-0">Nova Fatura</h5></div>
+                <div class="card-body">
+                    <form th:action="@{/cobrancas/faturas}" th:object="${fatura}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label" for="clienteId">Cliente</label>
+                            <select id="clienteId" name="clienteId" class="form-select" required>
+                                <option th:each="c : ${clientes}" th:value="${c.id}" th:text="${c.nome}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="acordoId">Acordo</label>
+                            <select id="acordoId" name="acordoId" class="form-select">
+                                <option value="">Sem acordo</option>
+                                <option th:each="a : ${acordos}" th:value="${a.id}" th:text="${'#' + a.id + ' - ' + a.cliente.nome}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="numero">Número</label>
+                            <input id="numero" th:field="*{numero}" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="dataVencimento">Vencimento</label>
+                            <input id="dataVencimento" th:field="*{dataVencimento}" type="date" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="valor">Valor</label>
+                            <input id="valor" th:field="*{valor}" type="number" step="0.01" min="0" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="status">Status</label>
+                            <select id="status" th:field="*{status}" class="form-select">
+                                <option value="PENDENTE">Pendente</option>
+                                <option value="PAGO">Pago</option>
+                                <option value="CANCELADO">Cancelado</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary w-100" type="submit">Salvar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover modern-table mb-0">
+                        <thead><tr><th>Número</th><th>Cliente</th><th>Vencimento</th><th>Valor</th><th>Status</th></tr></thead>
+                        <tbody>
+                        <tr th:each="f : ${faturas}">
+                            <td th:text="${f.numero}"></td>
+                            <td th:text="${f.cliente.nome}"></td>
+                            <td th:text="${f.dataVencimento}"></td>
+                            <td th:text="${f.valor}"></td>
+                            <td><span class="badge bg-secondary" th:text="${f.status}"></span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="layout :: footer"></div>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

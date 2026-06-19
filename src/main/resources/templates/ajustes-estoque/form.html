@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+    <div th:replace="layout :: menu"></div>
+
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="page-title">
+                        <i class="bi bi-clipboard-plus-fill me-3"></i>
+                        Nova Solicitação de Ajuste
+                    </h1>
+                    <p class="page-subtitle">Ajustes pequenos podem ser automáticos; riscos altos exigem aprovação</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/ajustes-estoque" class="btn btn-primary btn-lg">
+                        <i class="bi bi-arrow-left-circle me-2"></i>
+                        Ajustes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <div th:if="${mensagemErro}" class="alert alert-danger" th:text="${mensagemErro}"></div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Limite automático</div>
+                        <div class="fw-bold"><span th:text="${parametros.limiteQuantidadeSemAprovacao}">5</span> unidades</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Risco alto por impacto</div>
+                        <div class="fw-bold"><span th:text="${parametros.percentualRiscoAlto}">30</span>% do saldo atual</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form action="/ajustes-estoque" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Produto</label>
+                            <select name="produtoId" class="form-select" required>
+                                <option value="">Selecione</option>
+                                <option th:each="produto : ${produtos}"
+                                        th:value="${produto.id}"
+                                        th:text="${produto.nome + ' - saldo atual: ' + produto.quantidade}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Tipo</label>
+                            <select name="tipo" class="form-select" required>
+                                <option value="">Selecione</option>
+                                <option value="PERDA">Perda</option>
+                                <option value="AVARIA">Avaria</option>
+                                <option value="SOBRA">Sobra</option>
+                                <option value="CORRECAO_ADMINISTRATIVA">Correção administrativa</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Quantidade</label>
+                            <input type="number" name="quantidade" class="form-control" min="1" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Justificativa</label>
+                            <textarea name="justificativa" class="form-control" rows="4" minlength="10" maxlength="300" required
+                                      placeholder="Informe o motivo operacional do ajuste"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check2-circle me-2"></i>
+                            Registrar Solicitação
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="layout :: footer"></div>
+    <div th:replace="layout :: scripts"></div>
+</body>
+</html>

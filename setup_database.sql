@@ -143,8 +143,16 @@ CREATE TABLE pedido (
     funcionario_id INT,                                -- Funcionário associado à venda
     cupom_id INT,                                      -- Cupom de desconto aplicado
     valor_desconto DECIMAL(10,2) DEFAULT 0.00,         -- Valor do desconto aplicado
+    status VARCHAR(40) NOT NULL DEFAULT 'PENDENTE',    -- PENDENTE, CONCLUIDO, CANCELADO, CANCELAMENTO_PENDENTE_APROVACAO
     status_pagamento VARCHAR(20) NOT NULL DEFAULT 'PENDENTE', -- PENDENTE ou PAGO
     data_pagamento DATE,                               -- Data de quitação
+    cancelamento_solicitante_id INT NULL,
+    cancelamento_solicitante_nome VARCHAR(120) NULL,
+    justificativa_cancelamento VARCHAR(300) NULL,
+    data_cancelamento TIMESTAMP NULL,
+    cancelamento_aprovador_id INT NULL,
+    cancelamento_aprovador_nome VARCHAR(120) NULL,
+    data_aprovacao_cancelamento TIMESTAMP NULL,
     FOREIGN KEY (cupom_id) REFERENCES cupom(id),
     FOREIGN KEY (funcionario_id) REFERENCES funcionario(id)
 );
@@ -153,6 +161,65 @@ CREATE TABLE pedido (
 CREATE INDEX idx_pedido_funcionario ON pedido(funcionario_id);
 CREATE INDEX idx_pedido_cupom ON pedido(cupom_id);
 CREATE INDEX idx_pedido_cliente_pagamento ON pedido(cliente_id, status_pagamento, data_requisicao);
+CREATE INDEX idx_pedido_status ON pedido(status);
+
+CREATE TABLE parametro_cancelamento (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    limite_quantidade_sem_aprovacao INT NOT NULL DEFAULT 10
+);
+
+INSERT INTO parametro_cancelamento (limite_quantidade_sem_aprovacao) VALUES (10);
+
+CREATE TABLE parametro_inventario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tolerancia_quantidade INT NOT NULL DEFAULT 3
+);
+
+INSERT INTO parametro_inventario (tolerancia_quantidade) VALUES (3);
+
+CREATE TABLE parametro_ajuste_estoque (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    limite_quantidade_sem_aprovacao INT NOT NULL DEFAULT 5,
+    percentual_risco_alto INT NOT NULL DEFAULT 30
+);
+
+INSERT INTO parametro_ajuste_estoque (limite_quantidade_sem_aprovacao, percentual_risco_alto) VALUES (5, 30);
+
+CREATE TABLE solicitacao_ajuste_estoque (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    produto_id INT NOT NULL,
+    tipo VARCHAR(40) NOT NULL,
+    quantidade INT NOT NULL,
+    justificativa VARCHAR(300) NOT NULL,
+    status VARCHAR(40) NOT NULL,
+    risco VARCHAR(20) NOT NULL,
+    saldo_antes INT NOT NULL,
+    saldo_depois INT NOT NULL,
+    exige_aprovacao BOOLEAN NOT NULL DEFAULT FALSE,
+    solicitante_id INT NOT NULL,
+    solicitante_nome VARCHAR(120) NOT NULL,
+    aprovador_id INT NULL,
+    aprovador_nome VARCHAR(120) NULL,
+    motivo_decisao VARCHAR(300) NULL,
+    data_solicitacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_decisao TIMESTAMP NULL,
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
+);
+
+CREATE TABLE historico_ajuste_estoque (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    solicitacao_id INT NOT NULL,
+    status_anterior VARCHAR(40) NULL,
+    status_novo VARCHAR(40) NOT NULL,
+    descricao VARCHAR(350) NOT NULL,
+    usuario_id INT NOT NULL,
+    usuario_nome VARCHAR(120) NOT NULL,
+    data_evento TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (solicitacao_id) REFERENCES solicitacao_ajuste_estoque(id)
+);
+
+CREATE INDEX idx_solicitacao_ajuste_status_data ON solicitacao_ajuste_estoque(status, data_solicitacao);
+CREATE INDEX idx_historico_ajuste_solicitacao_data ON historico_ajuste_estoque(solicitacao_id, data_evento);
 
 -- Tabela de movimentações de estoque
 CREATE TABLE movimentacao_estoque (
@@ -173,6 +240,47 @@ CREATE TABLE historico_estoque (
     motivo TEXT,
     data_alteracao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE sessao_inventario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    setor VARCHAR(80) NOT NULL,
+    data_abertura DATE NOT NULL,
+    gerente_id INT NOT NULL,
+    gerente_nome VARCHAR(120) NOT NULL,
+    status VARCHAR(40) NOT NULL DEFAULT 'EM_ANDAMENTO',
+    bloqueia_saidas BOOLEAN NOT NULL DEFAULT FALSE,
+    tolerancia_quantidade INT NOT NULL DEFAULT 3,
+    aprovador_id INT NULL,
+    aprovador_nome VARCHAR(120) NULL,
+    data_aprovacao TIMESTAMP NULL,
+    data_fechamento TIMESTAMP NULL,
+    observacao VARCHAR(300) NULL
+);
+
+CREATE TABLE inventario_escopo_produto (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sessao_id INT NOT NULL,
+    produto_id INT NOT NULL,
+    quantidade_sistema_abertura INT NOT NULL DEFAULT 0,
+    UNIQUE KEY uq_inventario_escopo_produto (sessao_id, produto_id),
+    FOREIGN KEY (sessao_id) REFERENCES sessao_inventario(id),
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
+);
+
+CREATE TABLE contagem_item (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sessao_id INT NOT NULL,
+    produto_id INT NOT NULL,
+    quantidade_fisica INT NOT NULL,
+    auxiliar_id INT NOT NULL,
+    auxiliar_nome VARCHAR(120) NOT NULL,
+    data_contagem TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sessao_id) REFERENCES sessao_inventario(id),
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
+);
+
+CREATE INDEX idx_sessao_inventario_setor_status ON sessao_inventario(setor, status);
+CREATE INDEX idx_contagem_item_sessao_produto_data ON contagem_item(sessao_id, produto_id, data_contagem);
 
 -- Tabela intermediária de itens dos pedidos
 CREATE TABLE item_pedido (
@@ -537,6 +645,8 @@ FROM (
     SELECT 'CUPOM' UNION ALL
     SELECT 'PEDIDO' UNION ALL
     SELECT 'ESTOQUE' UNION ALL
+    SELECT 'AJUSTE_ESTOQUE' UNION ALL
+    SELECT 'INVENTARIO' UNION ALL
     SELECT 'SUPRIMENTO' UNION ALL
     SELECT 'REMESSA' UNION ALL
     SELECT 'CLIENTE' UNION ALL
@@ -564,6 +674,12 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (2, 'PEDIDO', 'APROVACAO', TRUE),
 (2, 'ESTOQUE', 'LEITURA', TRUE),
 (2, 'ESTOQUE', 'ESCRITA', TRUE),
+(2, 'AJUSTE_ESTOQUE', 'LEITURA', TRUE),
+(2, 'AJUSTE_ESTOQUE', 'ESCRITA', TRUE),
+(2, 'AJUSTE_ESTOQUE', 'APROVACAO', TRUE),
+(2, 'INVENTARIO', 'LEITURA', TRUE),
+(2, 'INVENTARIO', 'ESCRITA', TRUE),
+(2, 'INVENTARIO', 'APROVACAO', TRUE),
 (2, 'SUPRIMENTO', 'LEITURA', TRUE),
 (2, 'SUPRIMENTO', 'ESCRITA', TRUE),
 (2, 'SUPRIMENTO', 'APROVACAO', TRUE),
@@ -587,8 +703,14 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (3, 'PEDIDO', 'LEITURA', TRUE),
 (3, 'PEDIDO', 'ESCRITA', TRUE),
 (3, 'ESTOQUE', 'LEITURA', TRUE),
+(3, 'ESTOQUE', 'ESCRITA', TRUE),
+(3, 'AJUSTE_ESTOQUE', 'LEITURA', TRUE),
+(3, 'AJUSTE_ESTOQUE', 'ESCRITA', TRUE),
+(3, 'INVENTARIO', 'LEITURA', TRUE),
+(3, 'INVENTARIO', 'ESCRITA', TRUE),
 (3, 'CLIENTE', 'LEITURA', TRUE),
 (3, 'CLIENTE', 'ESCRITA', TRUE),
+(3, 'FUNCIONARIO', 'LEITURA', TRUE),
 (3, 'DASHBOARD', 'LEITURA', TRUE),
 (3, 'API', 'LEITURA', TRUE),
 (3, 'HOME', 'LEITURA', TRUE);
@@ -626,3 +748,75 @@ UNION ALL
 SELECT id, 'MARGEM_BRUTA' FROM template_relatorio WHERE nome = 'Fechamento Semanal'
 UNION ALL
 SELECT id, 'TICKET_MEDIO' FROM template_relatorio WHERE nome = 'Fechamento Semanal';
+
+-- Módulo de KPIs Operacionais (Gestão de Indicadores Operacionais com Metas e Alertas Persistidos)
+CREATE TABLE IF NOT EXISTS indicador_operacional (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(40) NOT NULL UNIQUE,
+    nome VARCHAR(120) NOT NULL,
+    descricao VARCHAR(255),
+    tipo_calculo VARCHAR(30) NOT NULL,   -- TICKET_MEDIO, ESTOQUE_CRITICO, TAXA_CANCELAMENTO, SEM_ESTOQUE
+    periodo_padrao VARCHAR(10) NOT NULL DEFAULT 'MES',
+    ativo BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS meta_indicador (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    indicador_id INT NOT NULL,
+    valor_alvo DECIMAL(14,4) NOT NULL,
+    limite_critico DECIMAL(14,4) NOT NULL,
+    operador VARCHAR(20) NOT NULL DEFAULT 'MAIOR_IGUAL', -- MAIOR_IGUAL ou MENOR_IGUAL
+    vigencia_inicio DATE NOT NULL,
+    vigencia_fim DATE NULL,
+    ativo BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (indicador_id) REFERENCES indicador_operacional(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS snapshot_indicador (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    indicador_id INT NOT NULL,
+    valor_calculado DECIMAL(14,4) NOT NULL,
+    periodo_inicio DATE NOT NULL,
+    periodo_fim DATE NOT NULL,
+    executado_por_id INT NULL,
+    executado_por VARCHAR(60) NOT NULL,
+    data_execucao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    detalhe_rastreio VARCHAR(255),
+    FOREIGN KEY (indicador_id) REFERENCES indicador_operacional(id) ON DELETE CASCADE,
+    FOREIGN KEY (executado_por_id) REFERENCES usuario_acesso(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS alerta_indicador (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    indicador_id INT NOT NULL,
+    snapshot_id INT NOT NULL,
+    tipo_violacao VARCHAR(20) NOT NULL,   -- ABAIXO_META, ACIMA_CRITICO
+    valor_esperado DECIMAL(14,4) NOT NULL,
+    valor_encontrado DECIMAL(14,4) NOT NULL,
+    mensagem TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'ATIVO', -- ATIVO, RESOLVIDO
+    resolvido_por VARCHAR(60) NULL,
+    observacao TEXT NULL,
+    data_alerta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_resolucao TIMESTAMP NULL,
+    FOREIGN KEY (indicador_id) REFERENCES indicador_operacional(id) ON DELETE CASCADE,
+    FOREIGN KEY (snapshot_id) REFERENCES snapshot_indicador(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_snapshot_indicador_periodo ON snapshot_indicador(indicador_id, periodo_inicio, periodo_fim);
+CREATE INDEX idx_alerta_indicador_status ON alerta_indicador(status, data_alerta);
+
+-- Inserção de dados iniciais para os indicadores operacionais
+INSERT IGNORE INTO indicador_operacional (codigo, nome, descricao, tipo_calculo, periodo_padrao, ativo) VALUES
+('TICKET_MEDIO', 'Ticket Médio de Vendas', 'Média de faturamento por pedido finalizado.', 'TICKET_MEDIO', 'MES', TRUE),
+('PRODUTOS_CRITICOS', 'Produtos em Estoque Crítico', 'Quantidade de produtos com estoque igual ou abaixo do ponto de pedido.', 'ESTOQUE_CRITICO', 'MES', TRUE),
+('TAXA_CANCELAMENTO', 'Taxa de Cancelamento', 'Percentual de pedidos cancelados em relação ao total de pedidos.', 'TAXA_CANCELAMENTO', 'MES', TRUE),
+('PRODUTOS_SEM_ESTOQUE', 'Produtos Sem Estoque', 'Quantidade de produtos ativos com saldo zerado no estoque.', 'SEM_ESTOQUE', 'MES', TRUE);
+
+-- Inserção de metas padrão para cada indicador
+INSERT IGNORE INTO meta_indicador (indicador_id, valor_alvo, limite_critico, operador, vigencia_inicio, vigencia_fim, ativo)
+VALUES 
+((SELECT id FROM indicador_operacional WHERE codigo = 'TICKET_MEDIO'), 150.0000, 100.0000, 'MAIOR_IGUAL', '2026-01-01', NULL, TRUE),
+((SELECT id FROM indicador_operacional WHERE codigo = 'PRODUTOS_CRITICOS'), 0.0000, 3.0000, 'MENOR_IGUAL', '2026-01-01', NULL, TRUE),
+((SELECT id FROM indicador_operacional WHERE codigo = 'TAXA_CANCELAMENTO'), 5.0000, 10.0000, 'MENOR_IGUAL', '2026-01-01', NULL, TRUE),
+((SELECT id FROM indicador_operacional WHERE codigo = 'PRODUTOS_SEM_ESTOQUE'), 0.0000, 2.0000, 'MENOR_IGUAL', '2026-01-01', NULL, TRUE);

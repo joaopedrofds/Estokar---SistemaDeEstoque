@@ -119,6 +119,49 @@ function excluirPedido(id) {
     });
 }
 
+function cancelarPedido(id) {
+    Swal.fire({
+        title: 'Cancelar pedido?',
+        input: 'textarea',
+        inputLabel: 'Justificativa',
+        inputPlaceholder: 'Informe uma justificativa entre 10 e 300 caracteres',
+        inputAttributes: {
+            maxlength: 300
+        },
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3a6ea5',
+        cancelButtonColor: '#dc3545',
+        confirmButtonText: 'Solicitar cancelamento',
+        cancelButtonText: 'Voltar',
+        reverseButtons: true,
+        backdrop: true,
+        heightAuto: false,
+        inputValidator: (value) => {
+            const texto = value ? value.trim() : '';
+            if (texto.length < 10 || texto.length > 300) {
+                return 'A justificativa deve ter entre 10 e 300 caracteres.';
+            }
+            return null;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/pedidos/cancelar/' + id;
+
+            const justificativa = document.createElement('input');
+            justificativa.type = 'hidden';
+            justificativa.name = 'justificativa';
+            justificativa.value = result.value.trim();
+
+            form.appendChild(justificativa);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+
 function excluirItemPedido(id, pedidoId) {
     Swal.fire({
         title: 'Excluir item?',
