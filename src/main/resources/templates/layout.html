@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="html (content)">
 <head th:fragment="head">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,6 +45,38 @@
                                     <i class="bi bi-gift-fill me-2"></i>Cupons
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" href="/cupons/uso">
+                                    <i class="bi bi-clock-history me-2"></i>Hist\u00f3rico de Cupons
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="/produtos/historico">
+                                    <i class="bi bi-clock-history me-2"></i>Histórico de Preços
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="/precificacao/simular">
+                                    <i class="bi bi-calculator me-2"></i>Simulador de Preços
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/precificacao/regras">
+                                    <i class="bi bi-sliders me-2"></i>Regras de Precificação
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/precificacao/historico">
+                                    <i class="bi bi-clock-history me-2"></i>Histórico de Simulações
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/precificacao/parametros">
+                                    <i class="bi bi-gear me-2"></i>Parâmetros de Precificação
+                                </a>
+                            </li>
                         </ul>
                     </li>
 
@@ -71,6 +103,11 @@
                             <li>
                                 <a class="dropdown-item" href="/remessas">
                                     <i class="bi bi-signpost-split-fill me-2"></i>Remessas
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/devolucoes">
+                                    <i class="bi bi-arrow-return-left me-2"></i>Devoluções
                                 </a>
                             </li>
                         </ul>
@@ -199,7 +236,7 @@
     </nav>
 
     <div th:fragment="main-container" class="container mt-4 animate__animated animate__fadeIn">
-        <div th:replace="${content}">Conteúdo será substituído</div>
+        <div th:fragment="content">Conteúdo será substituído</div>
     </div>
 
     <footer th:fragment="footer" class="footer">

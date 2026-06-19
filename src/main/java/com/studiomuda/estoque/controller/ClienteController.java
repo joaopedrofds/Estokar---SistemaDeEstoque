@@ -132,6 +132,7 @@ public class ClienteController {
             }
 
             if (cliente.getId() == 0) {
+                if (!cliente.isAtivo()) cliente.setAtivo(true);
                 clienteDAO.inserir(cliente);
             } else {
                 clienteDAO.atualizar(cliente);
@@ -154,6 +155,7 @@ public class ClienteController {
     public ResponseEntity<?> salvarClienteApi(@RequestBody Cliente cliente) {
         try {
             if (cliente.getId() == 0) {
+                if (!cliente.isAtivo()) cliente.setAtivo(true);
                 clienteDAO.inserir(cliente);
             } else {
                 clienteDAO.atualizar(cliente);

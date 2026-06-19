@@ -1,4 +1,5 @@
 package com.studiomuda.estoque.dao;
+import org.springframework.stereotype.Repository;
 
 import com.studiomuda.estoque.conexao.Conexao;
 import com.studiomuda.estoque.model.Funcionario;
@@ -7,6 +8,9 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
+@Repository
 public class FuncionarioDAO {
 
     public void inserir(Funcionario f) throws SQLException {

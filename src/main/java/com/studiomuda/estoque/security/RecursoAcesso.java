@@ -11,6 +11,7 @@ public enum RecursoAcesso {
     FUNCIONARIO("Funcionários"),
     DASHBOARD("Dashboard"),
     KPI("KPI"),
+    DEVOLUCAO("Devoluções"),
     FINANCEIRO("Relatórios financeiros"),
     ACESSO("Administração de acesso"),
     API("API"),

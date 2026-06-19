@@ -1,5 +1,7 @@
 package com.studiomuda.estoque.dao;
 
+import org.springframework.stereotype.Repository;
+
 import com.studiomuda.estoque.conexao.Conexao;
 import com.studiomuda.estoque.model.Produto;
 
@@ -7,6 +9,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class ProdutoDAO {
 
     public void inserir(Produto p) throws SQLException {

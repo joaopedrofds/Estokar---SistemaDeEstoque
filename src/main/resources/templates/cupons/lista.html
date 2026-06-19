@@ -93,6 +93,8 @@
                                 <th>ID</th>
                                 <th>Cupom</th>
                                 <th>Valor</th>
+                                <th>Tipo</th>
+                                <th>Usos</th>
                                 <th>Vigência</th>
                                 <th>Status</th>
                                 <th>Descrição</th>
@@ -116,6 +118,23 @@
                                 </td>
                                 <td>
                                     <span class="badge bg-success fs-6" th:text="${'R$ ' + #numbers.formatDecimal(cupom.valor, 1, 2)}"></span>
+                                </td>
+                                <td>
+                                    <span th:if="${cupom.tipoDesconto == 'PERCENTUAL'}" class="badge bg-info text-white">
+                                        <i class="bi bi-percent me-1"></i>Percentual
+                                    </span>
+                                    <span th:unless="${cupom.tipoDesconto == 'PERCENTUAL'}" class="badge bg-secondary">
+                                        <i class="bi bi-currency-dollar me-1"></i>Fixo
+                                    </span>
+                                </td>
+                                <td>
+                                    <span th:if="${cupom.limiteUsos != null}">
+                                        <span th:text="${cupom.usosRealizados}"></span>/<span th:text="${cupom.limiteUsos}"></span>
+                                        <span th:if="${cupom.esgotado}" class="badge bg-danger ms-1">Esgotado</span>
+                                    </span>
+                                    <span th:unless="${cupom.limiteUsos != null}" class="text-muted">
+                                        <span th:text="${cupom.usosRealizados}"></span> usos / ilimitado
+                                    </span>
                                 </td>
                                 <td>
                                     <div>
@@ -142,11 +161,15 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a th:href="@{/cupons/editar/{id}(id=${cupom.id})}" 
+                                        <a th:href="@{/cupons/editar/{id}(id=${cupom.id})}"
                                            class="btn btn-sm btn-outline-primary" title="Editar">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a th:href="@{/cupons/excluir/{id}(id=${cupom.id})}" 
+                                        <a th:href="@{/cupons/uso/{id}(id=${cupom.id})}"
+                                           class="btn btn-sm btn-outline-info" title="Hist\u00f3rico de Uso">
+                                            <i class="bi bi-clock-history"></i>
+                                        </a>
+                                        <a th:href="@{/cupons/excluir/{id}(id=${cupom.id})}"
                                            class="btn btn-sm btn-outline-danger" title="Excluir"
                                            onclick="return confirm('Tem certeza que deseja excluir este cupom?')">
                                             <i class="bi bi-trash"></i>

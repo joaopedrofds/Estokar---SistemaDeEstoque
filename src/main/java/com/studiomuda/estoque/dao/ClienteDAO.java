@@ -1,4 +1,5 @@
 package com.studiomuda.estoque.dao;
+import org.springframework.stereotype.Repository;
 
 import com.studiomuda.estoque.conexao.Conexao;
 import com.studiomuda.estoque.model.Cliente;
@@ -9,6 +10,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
+@Repository
 public class ClienteDAO {
     private final PedidoDAO pedidoDAO;
 

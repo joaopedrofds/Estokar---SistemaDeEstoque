@@ -55,6 +55,7 @@ public final class InterceptadorAutorizacaoDao {
 
     private static StackTraceElement encontrarOrigem() {
         StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+        StackTraceElement ultimaController = null;
         for (StackTraceElement frame : stack) {
             String classe = frame.getClassName();
             if (!classe.startsWith("com.studiomuda.estoque.")) {
@@ -64,13 +65,23 @@ public final class InterceptadorAutorizacaoDao {
                     || classe.equals("com.studiomuda.estoque.conexao.Conexao")) {
                 continue;
             }
-            if (classe.contains(".dao.")
-                    || classe.contains(".service.")
-                    || classe.contains(".controller.")) {
-                return frame;
+            if (classe.contains(".controller.")) {
+                ultimaController = frame;
+            }
+            if (classe.contains(".service.")) {
+                // Se já encontramos um controller, use o controller; senão, use o service
+                if (ultimaController != null) {
+                    return ultimaController;
+                }
+            }
+            if (classe.contains(".dao.")) {
+                // Se já encontramos um controller ou service, use eles; senão, use o DAO
+                if (ultimaController != null) {
+                    return ultimaController;
+                }
             }
         }
-        return null;
+        return ultimaController;
     }
 
     private static RecursoAcesso mapearRecurso(String nomeClasseCompleto) {
@@ -104,6 +115,9 @@ public final class InterceptadorAutorizacaoDao {
         }
         if (nomeClasse.contains("Kpi")) {
             return RecursoAcesso.KPI;
+        }
+        if (nomeClasse.contains("Devolucao")) {
+            return RecursoAcesso.DEVOLUCAO;
         }
         if (nomeClasse.contains("Financeiro")
                 || nomeClasse.contains("Relatorio")
@@ -158,7 +172,8 @@ public final class InterceptadorAutorizacaoDao {
                 || metodo.startsWith("dashboard")
                 || metodo.startsWith("get")
                 || metodo.startsWith("count")
-                || metodo.startsWith("contar")) {
+                || metodo.startsWith("contar")
+                || metodo.startsWith("form")) {
             return OperacaoAcesso.LEITURA;
         }
         return OperacaoAcesso.LEITURA;
@@ -207,19 +222,12 @@ public final class InterceptadorAutorizacaoDao {
 
     private static List<String> operacoesAceitas(OperacaoAcesso operacao) {
         if (operacao == OperacaoAcesso.LEITURA) {
-            return Arrays.asList(
-                    OperacaoAcesso.LEITURA.name(),
-                    OperacaoAcesso.ESCRITA.name(),
-                    OperacaoAcesso.APROVACAO.name()
-            );
+            return Arrays.asList(OperacaoAcesso.LEITURA.name());
         }
         if (operacao == OperacaoAcesso.ESCRITA) {
-            return Arrays.asList(
-                    OperacaoAcesso.ESCRITA.name(),
-                    OperacaoAcesso.APROVACAO.name()
-            );
+            return Arrays.asList(OperacaoAcesso.ESCRITA.name());
         }
-        return new ArrayList<>(Arrays.asList(OperacaoAcesso.APROVACAO.name()));
+        return Arrays.asList(OperacaoAcesso.APROVACAO.name());
     }
 
     private static void registrarTentativa(Integer usuarioId,

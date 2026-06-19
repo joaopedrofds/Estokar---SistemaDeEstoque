@@ -1,4 +1,5 @@
 package com.studiomuda.estoque.dao;
+import org.springframework.stereotype.Repository;
 
 import com.studiomuda.estoque.conexao.Conexao;
 import com.studiomuda.estoque.model.PerfilAcesso;
@@ -11,6 +12,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
+@Repository
 public class PerfilAcessoDAO {
 
     public void inserir(PerfilAcesso perfil) throws SQLException {

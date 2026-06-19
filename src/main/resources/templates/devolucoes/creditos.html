@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: menu"></div>
+
+<section class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="page-title"><i class="bi bi-wallet2 me-3"></i>Créditos de Clientes</h1>
+                <p class="page-subtitle">Saldos gerados por devoluções aprovadas</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="/devolucoes" class="btn btn-outline"><i class="bi bi-arrow-left me-2"></i>Voltar</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container my-4">
+    <div class="error-state" th:if="${creditos.empty}">
+        <div class="error-icon"><i class="bi bi-wallet2"></i></div>
+        <div class="error-message">Nenhum crédito ativo no momento</div>
+    </div>
+
+    <div class="table-container" th:unless="${creditos.empty}">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Devolução</th>
+                    <th>Valor Original</th>
+                    <th>Saldo</th>
+                    <th>Validade</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="c : ${creditos}">
+                    <td th:text="${c.clienteNome}"></td>
+                    <td><a th:href="@{/devolucoes/{id}(id=${c.devolucaoId})}" class="text-decoration-none">#<span th:text="${c.devolucaoId}"></span></a></td>
+                    <td th:text="${#numbers.formatCurrency(c.valor)}"></td>
+                    <td class="fw-semibold text-success" th:text="${#numbers.formatCurrency(c.saldo)}"></td>
+                    <td th:text="${c.validade}"></td>
+                    <td><span class="badge bg-success" th:text="${c.status}"></span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div th:replace="layout :: footer"></div>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

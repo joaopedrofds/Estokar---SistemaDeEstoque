@@ -1,4 +1,5 @@
 package com.studiomuda.estoque.dao;
+import org.springframework.stereotype.Repository;
 
 import com.studiomuda.estoque.conexao.Conexao;
 import com.studiomuda.estoque.model.Fornecedor;
@@ -10,6 +11,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+
+@Repository
 public class SuprimentoDAO {
 
     public List<Fornecedor> listarFornecedoresAtivos() throws SQLException {

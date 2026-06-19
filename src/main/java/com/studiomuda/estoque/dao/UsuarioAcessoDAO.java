@@ -1,4 +1,5 @@
 package com.studiomuda.estoque.dao;
+import org.springframework.stereotype.Repository;
 
 import com.studiomuda.estoque.conexao.Conexao;
 import com.studiomuda.estoque.model.UsuarioAcesso;
@@ -11,6 +12,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
+@Repository
 public class UsuarioAcessoDAO {
 
     public void inserir(UsuarioAcesso usuario) throws SQLException {

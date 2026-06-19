@@ -160,12 +160,22 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a th:href="@{/produtos/editar/{id}(id=${produto.id})}" 
-                                   class="btn btn-outline-primary" 
+                                <a th:href="@{/produtos/editar/{id}(id=${produto.id})}"
+                                   class="btn btn-outline-primary"
                                    title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <a th:href="@{/produtos/excluir/{id}(id=${produto.id})}" 
+                                <a th:href="@{/produtos/historico/{id}(id=${produto.id})}"
+                                   class="btn btn-outline-secondary"
+                                   title="Histórico de Preços">
+                                    <i class="bi bi-clock-history"></i>
+                                </a>
+                                <a th:href="@{/precificacao/simular/{id}(id=${produto.id})}"
+                                   class="btn btn-outline-success"
+                                   title="Simular Preço">
+                                    <i class="bi bi-calculator"></i>
+                                </a>
+                                <a th:href="@{/produtos/excluir/{id}(id=${produto.id})}"
                                    class="btn btn-outline-danger"
                                    title="Excluir"
                                    onclick="return confirmDelete('produto', this.href)">

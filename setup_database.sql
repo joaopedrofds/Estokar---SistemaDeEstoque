@@ -199,6 +199,35 @@ CREATE TABLE alerta_financeiro (
 
 CREATE INDEX idx_alerta_financeiro_resolvido ON alerta_financeiro(resolvido, data_alerta);
 
+-- Tabela de devoluções
+CREATE TABLE devolucao (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pedido_id INT NOT NULL,
+    cliente_id INT NOT NULL,
+    motivo TEXT,
+    tipo_restituicao VARCHAR(50),
+    status VARCHAR(20) DEFAULT 'PENDENTE',
+    observacao_gestor TEXT,
+    data_solicitacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_resolucao TIMESTAMP NULL,
+    FOREIGN KEY (pedido_id) REFERENCES pedido(id),
+    FOREIGN KEY (cliente_id) REFERENCES cliente(id)
+);
+
+CREATE INDEX idx_devolucao_pedido ON devolucao(pedido_id);
+CREATE INDEX idx_devolucao_cliente ON devolucao(cliente_id);
+CREATE INDEX idx_devolucao_status ON devolucao(status);
+
+-- Tabela de itens de devolução
+CREATE TABLE devolucao_item (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    devolucao_id INT NOT NULL,
+    produto_id INT NOT NULL,
+    quantidade INT NOT NULL,
+    FOREIGN KEY (devolucao_id) REFERENCES devolucao(id) ON DELETE CASCADE,
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
+);
+
 -- Tabelas de controle de acesso por perfil
 CREATE TABLE perfil_acesso (
     id INT AUTO_INCREMENT PRIMARY KEY,

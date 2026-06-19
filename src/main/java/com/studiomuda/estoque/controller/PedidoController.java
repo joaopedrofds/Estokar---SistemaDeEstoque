@@ -12,6 +12,8 @@ import com.studiomuda.estoque.model.ItemPedido;
 import com.studiomuda.estoque.model.MovimentacaoEstoque;
 import com.studiomuda.estoque.model.Pedido;
 import com.studiomuda.estoque.model.Produto;
+import com.studiomuda.estoque.service.CupomService;
+import com.studiomuda.estoque.strategy.ContextoDesconto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -36,19 +38,18 @@ public class PedidoController {
     private final ProdutoDAO produtoDAO;
     private final FuncionarioDAO funcionarioDAO;
     private final CupomDAO cupomDAO;
+    private final CupomService cupomService;
 
-    public PedidoController() {
-        this(new PedidoDAO(), new ItemPedidoDAO(), new ClienteDAO(), new ProdutoDAO(), new FuncionarioDAO(), new CupomDAO());
-    }
-
-    PedidoController(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO, ClienteDAO clienteDAO,
-                     ProdutoDAO produtoDAO, FuncionarioDAO funcionarioDAO, CupomDAO cupomDAO) {
+    public PedidoController(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO, ClienteDAO clienteDAO,
+                            ProdutoDAO produtoDAO, FuncionarioDAO funcionarioDAO, CupomDAO cupomDAO,
+                            CupomService cupomService) {
         this.pedidoDAO = pedidoDAO;
         this.itemPedidoDAO = itemPedidoDAO;
         this.clienteDAO = clienteDAO;
         this.produtoDAO = produtoDAO;
         this.funcionarioDAO = funcionarioDAO;
         this.cupomDAO = cupomDAO;
+        this.cupomService = cupomService;
     }
 
     @GetMapping
@@ -144,18 +145,31 @@ public class PedidoController {
             // Verificar e aplicar cupom se existir
             if (cupomId != null && cupomId > 0) {
                 Cupom cupom = cupomDAO.buscarPorId(cupomId);
-                if (cupom != null && cupom.isValido()) {
+                if (cupom != null) {
+                    if (!cupom.isAtivo() || !cupom.isValido()) {
+                        carregarDadosFormularioPedido(model, pedido);
+                        model.addAttribute("mensagemErro", "Cupom inv\u00e1lido ou expirado.");
+                        return "pedidos/form";
+                    }
+                    if (cupom.isEsgotado()) {
+                        carregarDadosFormularioPedido(model, pedido);
+                        model.addAttribute("mensagemErro", "Cupom esgotado \u2014 limite de usos atingido.");
+                        return "pedidos/form";
+                    }
+                    if (!cupom.podeSerUsadoPor(pedido.getClienteId())) {
+                        carregarDadosFormularioPedido(model, pedido);
+                        model.addAttribute("mensagemErro", "Este cupom \u00e9 exclusivo para outro cliente.");
+                        return "pedidos/form";
+                    }
                     pedido.setCupomId(cupomId);
-                    pedido.setValorDesconto(cupom.getValor());
-                } else {
-                    pedido.setCupomId(0);
-                    pedido.setValorDesconto(0.0);
+                    ContextoDesconto ctx = new ContextoDesconto(cupom.getTipoDesconto());
+                    pedido.setValorDesconto(ctx.calcular(0, cupom.getValor()));
                 }
             } else {
                 pedido.setCupomId(0);
                 pedido.setValorDesconto(0.0);
             }
-            
+
             if (pedido.getId() == 0) {
                 PedidoDAO.InadimplenciaInfo inadimplenciaInfo = pedidoDAO.verificarInadimplenciaCliente(
                         pedido.getClienteId(),
@@ -179,6 +193,15 @@ public class PedidoController {
                     return "pedidos/form";
                 }
                 pedidoDAO.inserir(pedido);
+                // Observer: registrar uso do cupom
+                if (pedido.getCupomId() > 0) {
+                    try {
+                        cupomService.aplicarCupom(pedido.getCupomId(), pedido.getId(),
+                                                   pedido.getClienteId(), pedido.getValorDesconto());
+                    } catch (Exception e) {
+                        System.err.println("[PedidoController] Aviso ao registrar uso do cupom: " + e.getMessage());
+                    }
+                }
             } else {
                 pedidoDAO.atualizar(pedido);
             }
@@ -210,8 +233,24 @@ public class PedidoController {
             // Verificar e aplicar cupom se existir
             if (pedido.getCupomId() > 0) {
                 Cupom cupom = cupomDAO.buscarPorId(pedido.getCupomId());
-                if (cupom != null && cupom.isValido()) {
-                    pedido.setValorDesconto(cupom.getValor());
+                if (cupom != null) {
+                    if (!cupom.isAtivo() || !cupom.isValido()) {
+                        Map<String, Object> error = new HashMap<>();
+                        error.put("erro", "Cupom inv\u00e1lido ou expirado.");
+                        return ResponseEntity.badRequest().body(error);
+                    }
+                    if (cupom.isEsgotado()) {
+                        Map<String, Object> error = new HashMap<>();
+                        error.put("erro", "Cupom esgotado \u2014 limite de usos atingido.");
+                        return ResponseEntity.badRequest().body(error);
+                    }
+                    if (!cupom.podeSerUsadoPor(pedido.getClienteId())) {
+                        Map<String, Object> error = new HashMap<>();
+                        error.put("erro", "Este cupom \u00e9 exclusivo para outro cliente.");
+                        return ResponseEntity.badRequest().body(error);
+                    }
+                    ContextoDesconto ctx = new ContextoDesconto(cupom.getTipoDesconto());
+                    pedido.setValorDesconto(ctx.calcular(0, cupom.getValor()));
                 } else {
                     pedido.setCupomId(0);
                     pedido.setValorDesconto(0.0);
@@ -220,7 +259,7 @@ public class PedidoController {
                 pedido.setCupomId(0);
                 pedido.setValorDesconto(0.0);
             }
-            
+
             if (pedido.getId() == 0) {
                 PedidoDAO.InadimplenciaInfo inadimplenciaInfo = pedidoDAO.verificarInadimplenciaCliente(
                         pedido.getClienteId(),
@@ -244,6 +283,15 @@ public class PedidoController {
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
                 }
                 pedidoDAO.inserir(pedido);
+                // Observer: registrar uso do cupom via service
+                if (pedido.getCupomId() > 0) {
+                    try {
+                        cupomService.aplicarCupom(pedido.getCupomId(), pedido.getId(),
+                                                   pedido.getClienteId(), pedido.getValorDesconto());
+                    } catch (Exception e) {
+                        System.err.println("[PedidoController] Aviso ao registrar uso do cupom: " + e.getMessage());
+                    }
+                }
             } else {
                 pedidoDAO.atualizar(pedido);
             }

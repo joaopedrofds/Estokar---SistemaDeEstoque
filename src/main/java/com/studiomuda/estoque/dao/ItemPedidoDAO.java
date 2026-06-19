@@ -1,5 +1,7 @@
 package com.studiomuda.estoque.dao;
 
+import org.springframework.stereotype.Repository;
+
 import com.studiomuda.estoque.conexao.Conexao;
 import com.studiomuda.estoque.model.ItemPedido;
 
@@ -7,6 +9,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class ItemPedidoDAO {
 
     public void inserir(ItemPedido item) throws SQLException {

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: menu"></div>
+
+<section class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="page-title"><i class="bi bi-arrow-return-left me-3"></i>Devoluções</h1>
+                <p class="page-subtitle">Gerencie as solicitações de devolução de pedidos</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="/pedidos" class="btn btn-outline">
+                    <i class="bi bi-bag me-2"></i>Ver Pedidos
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container my-4">
+    <!-- Filtros de status -->
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+        <a href="/devolucoes" class="btn btn-sm" th:classappend="${statusFiltro == null} ? 'btn-primary' : 'btn-outline-secondary'">Todas</a>
+        <a href="/devolucoes?status=PENDENTE" class="btn btn-sm" th:classappend="${statusFiltro == 'PENDENTE'} ? 'btn-warning text-dark' : 'btn-outline-warning'">Pendentes</a>
+        <a href="/devolucoes?status=APROVADA" class="btn btn-sm" th:classappend="${statusFiltro == 'APROVADA'} ? 'btn-success' : 'btn-outline-success'">Aprovadas</a>
+        <a href="/devolucoes?status=REJEITADA" class="btn btn-sm" th:classappend="${statusFiltro == 'REJEITADA'} ? 'btn-danger' : 'btn-outline-danger'">Rejeitadas</a>
+        <a href="/devolucoes/creditos" class="btn btn-sm btn-outline-info ms-auto">
+            <i class="bi bi-wallet2 me-1"></i>Ver Créditos
+        </a>
+    </div>
+
+    <div class="error-state" th:if="${devolucoes.empty}">
+        <div class="error-icon"><i class="bi bi-arrow-return-left"></i></div>
+        <div class="error-message">Nenhuma devolução encontrada</div>
+    </div>
+
+    <div class="table-container" th:unless="${devolucoes.empty}">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Pedido</th>
+                    <th>Cliente</th>
+                    <th>Motivo</th>
+                    <th>Restituição</th>
+                    <th>Status</th>
+                    <th>Data</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="d : ${devolucoes}">
+                    <td th:text="${d.id}"></td>
+                    <td><a th:href="@{/pedidos/itens/{id}(id=${d.pedidoId})}" class="text-decoration-none">#<span th:text="${d.pedidoId}"></span></a></td>
+                    <td th:text="${d.clienteNome}"></td>
+                    <td><span th:text="${#strings.abbreviate(d.motivo, 40)}"></span></td>
+                    <td>
+                        <span th:switch="${d.tipoRestituicao}">
+                            <span th:case="'CREDITO_LOJA'" class="badge bg-primary">Crédito</span>
+                            <span th:case="'TROCA'" class="badge bg-info text-dark">Troca</span>
+                            <span th:case="'ESTORNO'" class="badge bg-secondary">Estorno</span>
+                        </span>
+                    </td>
+                    <td>
+                        <span th:switch="${d.status}">
+                            <span th:case="'PENDENTE'" class="badge bg-warning text-dark">Pendente</span>
+                            <span th:case="'APROVADA'" class="badge bg-success">Aprovada</span>
+                            <span th:case="'REJEITADA'" class="badge bg-danger">Rejeitada</span>
+                        </span>
+                    </td>
+                    <td th:text="${#temporals.format(d.dataSolicitacao, 'dd/MM/yyyy')}"></td>
+                    <td>
+                        <a th:href="@{/devolucoes/{id}(id=${d.id})}" class="btn btn-sm btn-outline-primary" title="Ver detalhes">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div th:replace="layout :: footer"></div>
+<div th:replace="layout :: scripts"></div>
+</body>
+</html>

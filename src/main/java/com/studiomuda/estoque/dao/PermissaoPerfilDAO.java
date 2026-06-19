@@ -1,4 +1,5 @@
 package com.studiomuda.estoque.dao;
+import org.springframework.stereotype.Repository;
 
 import com.studiomuda.estoque.conexao.Conexao;
 import com.studiomuda.estoque.model.PermissaoPerfil;
@@ -14,6 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
+
+@Repository
 public class PermissaoPerfilDAO {
 
     public List<PermissaoPerfil> listarPorPerfil(int perfilId) throws SQLException {

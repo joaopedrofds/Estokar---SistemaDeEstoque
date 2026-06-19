@@ -10,6 +10,8 @@ import com.studiomuda.estoque.model.Cliente;
 import com.studiomuda.estoque.model.Cupom;
 import com.studiomuda.estoque.model.Funcionario;
 import com.studiomuda.estoque.model.Pedido;
+import com.studiomuda.estoque.repository.CupomRepository;
+import com.studiomuda.estoque.service.CupomService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ui.ExtendedModelMap;
@@ -21,9 +23,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 class PedidoControllerInadimplenciaTest {
 
     private FakePedidoDAO pedidoDAO;
@@ -34,13 +39,20 @@ class PedidoControllerInadimplenciaTest {
     void setUp() {
         this.pedidoDAO = new FakePedidoDAO();
         this.clienteDAO = new FakeClienteDAO();
+
+        // Create mock CupomRepository and CupomService
+        CupomRepository cupomRepository = mock(CupomRepository.class);
+        when(cupomRepository.findById(0)).thenReturn(Optional.empty());
+        CupomService cupomService = new CupomService(cupomRepository);
+
         this.controller = new PedidoController(
                 pedidoDAO,
                 new ItemPedidoDAO(),
                 clienteDAO,
                 new ProdutoDAO(),
                 new FakeFuncionarioDAO(),
-                new FakeCupomDAO()
+                new FakeCupomDAO(),
+                cupomService
         );
     }
 

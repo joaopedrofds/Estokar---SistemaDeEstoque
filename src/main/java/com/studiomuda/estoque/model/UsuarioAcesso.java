@@ -43,6 +43,14 @@ public class UsuarioAcesso {
         this.username = username;
     }
 
+    public String getLogin() {
+        return username;
+    }
+
+    public void setLogin(String login) {
+        this.username = login;
+    }
+
     public String getNome() {
         return nome;
     }
@@ -81,5 +89,35 @@ public class UsuarioAcesso {
 
     public void setPerfilNomes(List<String> perfilNomes) {
         this.perfilNomes = perfilNomes != null ? perfilNomes : new ArrayList<>();
+    }
+
+    public int getPerfilId() {
+        return perfilIds != null && !perfilIds.isEmpty() ? perfilIds.get(0) : 0;
+    }
+
+    public void setPerfilId(int perfilId) {
+        if (perfilIds == null) {
+            perfilIds = new ArrayList<>();
+        }
+        if (perfilIds.isEmpty()) {
+            perfilIds.add(perfilId);
+        } else {
+            perfilIds.set(0, perfilId);
+        }
+    }
+
+    public String getPerfilNome() {
+        return perfilNomes != null && !perfilNomes.isEmpty() ? perfilNomes.get(0) : null;
+    }
+
+    public void setPerfilNome(String perfilNome) {
+        if (perfilNomes == null) {
+            perfilNomes = new ArrayList<>();
+        }
+        if (perfilNomes.isEmpty()) {
+            perfilNomes.add(perfilNome);
+        } else {
+            perfilNomes.set(0, perfilNome);
+        }
     }
 }

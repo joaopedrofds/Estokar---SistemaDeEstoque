@@ -1,4 +1,5 @@
 package com.studiomuda.estoque.dao;
+import org.springframework.stereotype.Repository;
 
 import com.studiomuda.estoque.conexao.Conexao;
 import com.studiomuda.estoque.model.LogAcesso;
@@ -10,6 +11,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
+@Repository
 public class LogAcessoDAO {
 
     public List<LogAcesso> listarRecentes(String resultado, int limite) throws SQLException {

@@ -1,12 +1,32 @@
 package com.studiomuda.estoque.model;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name = "produto")
 public class Produto {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
+
+    @Column(name = "nome")
     private String nome;
+
+    @Column(name = "descricao")
     private String descricao;
+
+    @Column(name = "tipo")
     private String tipo;
+
+    @Column(name = "quantidade")
     private int quantidade;
+
+    @Column(name = "valor")
     private double valor;
+
+    @Column(name = "custo", columnDefinition = "DECIMAL(10,2) DEFAULT 0.00")
+    private Double custo = 0.0;
 
     public Produto() {}
 
@@ -36,6 +56,9 @@ public class Produto {
 
     public double getValor() { return valor; }
     public void setValor(double valor) { this.valor = valor; }
+
+    public Double getCusto() { return custo != null ? custo : 0.0; }
+    public void setCusto(Double custo) { this.custo = custo != null ? custo : 0.0; }
 
     @Override
     public String toString() {

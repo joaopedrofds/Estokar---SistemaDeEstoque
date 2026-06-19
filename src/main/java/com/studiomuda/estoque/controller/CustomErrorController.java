@@ -54,7 +54,7 @@ public class CustomErrorController implements ErrorController {
         model.addAttribute("errorDescription", errorDescription);
         model.addAttribute("requestUri", requestUri);
         
-        return "error/error";
+        return "erro";
     }
 
     private void logError(int statusCode, String requestUri, Exception exception, String errorMessage) {

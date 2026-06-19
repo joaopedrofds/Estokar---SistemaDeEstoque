@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+    <div th:replace="layout :: menu"></div>
+
+    <section class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="page-title">
+                        <i class="bi bi-clock-history me-3"></i>
+                        <span th:if="${modoGeral}">Hist\u00f3rico de Uso — Todos os Cupons</span>
+                        <span th:unless="${modoGeral}">Hist\u00f3rico de Uso — Cupom
+                            <span th:text="${cupom != null ? cupom.codigo : ''}"></span>
+                        </span>
+                    </h1>
+                    <p class="page-subtitle">Rastreabilidade completa de todos os cupons aplicados</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="/cupons" class="btn btn-outline">
+                        <i class="bi bi-arrow-left me-2"></i>Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container my-5">
+
+        <!-- Info do cupom (somente view por cupom) -->
+        <div class="card mb-4" th:if="${cupom != null and !modoGeral}">
+            <div class="card-body d-flex align-items-center gap-4 flex-wrap">
+                <div>
+                    <div class="text-muted small">C\u00f3digo</div>
+                    <div class="fw-semibold fs-5" th:text="${cupom.codigo}"></div>
+                </div>
+                <div>
+                    <div class="text-muted small">Tipo</div>
+                    <div class="fw-semibold" th:text="${cupom.tipoDesconto}"></div>
+                </div>
+                <div>
+                    <div class="text-muted small">Usos Realizados</div>
+                    <div class="fw-semibold fs-5 text-primary" th:text="${cupom.usosRealizados}"></div>
+                </div>
+                <div th:if="${cupom.limiteUsos != null}">
+                    <div class="text-muted small">Limite</div>
+                    <div class="fw-semibold" th:text="${cupom.limiteUsos}"></div>
+                </div>
+                <div class="ms-auto">
+                    <span th:if="${cupom.esgotado}" class="badge bg-danger fs-6">Esgotado</span>
+                    <span th:if="${cupom.valido and !cupom.esgotado}" class="badge bg-success fs-6">Ativo</span>
+                    <span th:unless="${cupom.valido}" class="badge bg-secondary fs-6">Expirado</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado vazio -->
+        <div class="error-state" th:if="${usos == null or usos.empty}">
+            <div class="error-icon"><i class="bi bi-clock-history"></i></div>
+            <div class="error-message">Nenhum uso registrado ainda</div>
+            <p>Este cupom ainda n\u00e3o foi utilizado em nenhum pedido.</p>
+        </div>
+
+        <!-- Tabela -->
+        <div class="table-container" th:if="${usos != null and !usos.empty}">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th th:if="${modoGeral}">Cupom</th>
+                        <th>Pedido</th>
+                        <th>Cliente</th>
+                        <th>Desconto Aplicado</th>
+                        <th>Tipo</th>
+                        <th>Data de Uso</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="uso : ${usos}">
+                        <td th:if="${modoGeral}">
+                            <a th:href="@{/cupons/uso/{id}(id=${uso.cupomId})}"
+                               class="fw-semibold text-decoration-none badge bg-primary"
+                               th:text="${uso.cupomCodigo}"></a>
+                        </td>
+                        <td>
+                            <a th:href="@{/pedidos/itens/{id}(id=${uso.pedidoId})}"
+                               class="text-decoration-none">
+                                #<span th:text="${uso.pedidoId}"></span>
+                            </a>
+                        </td>
+                        <td th:text="${uso.clienteNome}"></td>
+                        <td class="fw-semibold text-success"
+                            th:text="${#numbers.formatDecimal(uso.valorDesconto, 1, 2)}"></td>
+                        <td>
+                            <span th:if="${uso.tipoCupom == 'PERCENTUAL'}"
+                                  class="badge bg-info text-white">
+                                <i class="bi bi-percent me-1"></i>Percentual
+                            </span>
+                            <span th:unless="${uso.tipoCupom == 'PERCENTUAL'}"
+                                  class="badge bg-secondary">
+                                <i class="bi bi-currency-dollar me-1"></i>Fixo
+                            </span>
+                        </td>
+                        <td th:text="${#temporals.format(uso.dataUso, 'dd/MM/yyyy HH:mm')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div th:replace="layout :: footer"></div>
+    <div th:replace="layout :: scripts"></div>
+</body>
+</html>
