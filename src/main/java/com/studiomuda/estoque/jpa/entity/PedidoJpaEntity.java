@@ -6,6 +6,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.sql.Date;
@@ -26,8 +28,13 @@ public class PedidoJpaEntity {
     @Column(name = "data_entrega")
     private Date dataEntrega;
 
-    @Column(name = "cliente_id")
-    private Integer clienteId;
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "cliente_id")
+    private ClienteJpaEntity cliente;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "beneficio_categoria_id")
+    private BeneficioCategoriaJpaEntity beneficioAplicado;
 
     @Column(name = "funcionario_id")
     private Integer funcionarioId;
@@ -74,7 +81,9 @@ public class PedidoJpaEntity {
     public Integer getId() { return id; }
     public Date getDataRequisicao() { return dataRequisicao; }
     public Date getDataEntrega() { return dataEntrega; }
-    public Integer getClienteId() { return clienteId; }
+    public Integer getClienteId() { return cliente != null ? cliente.getId() : null; }
+    public ClienteJpaEntity getCliente() { return cliente; }
+    public BeneficioCategoriaJpaEntity getBeneficioAplicado() { return beneficioAplicado; }
     public Integer getFuncionarioId() { return funcionarioId; }
     public Integer getCupomId() { return cupomId; }
     public Double getValorDesconto() { return valorDesconto; }
@@ -90,6 +99,9 @@ public class PedidoJpaEntity {
     public Timestamp getDataAprovacaoCancelamento() { return dataAprovacaoCancelamento; }
     public List<ItemPedidoJpaEntity> getItens() { return itens; }
 
+    public void setCliente(ClienteJpaEntity cliente) { this.cliente = cliente; }
+    public void setBeneficioAplicado(BeneficioCategoriaJpaEntity beneficioAplicado) { this.beneficioAplicado = beneficioAplicado; }
+    public void setValorDesconto(Double valorDesconto) { this.valorDesconto = valorDesconto; }
     public void setStatus(String status) { this.status = status; }
     public void setCancelamentoSolicitanteId(Integer cancelamentoSolicitanteId) { this.cancelamentoSolicitanteId = cancelamentoSolicitanteId; }
     public void setCancelamentoSolicitanteNome(String cancelamentoSolicitanteNome) { this.cancelamentoSolicitanteNome = cancelamentoSolicitanteNome; }

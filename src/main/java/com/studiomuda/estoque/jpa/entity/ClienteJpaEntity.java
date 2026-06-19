@@ -7,9 +7,12 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +42,22 @@ public class ClienteJpaEntity {
     @Column(name = "dataNascimento")
     private LocalDate dataNascimento;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "faixa_fidelidade_id")
+    private FaixaFidelidadeJpaEntity faixaFidelidade;
+
+    @Column(name = "media_dias_compras")
+    private Double mediaDiasCompras;
+
+    @Column(name = "data_recalculo_fidelidade")
+    private LocalDateTime dataRecalculoFidelidade;
+
+    @OneToMany(mappedBy = "cliente", fetch = FetchType.LAZY)
+    private List<PedidoJpaEntity> pedidos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
+    private List<AcaoRetencaoJpaEntity> acoesRetencao = new ArrayList<>();
+
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
     private List<FaturaJpaEntity> faturas = new ArrayList<>();
 
@@ -65,6 +84,11 @@ public class ClienteJpaEntity {
     public List<FaturaJpaEntity> getFaturas() { return faturas; }
     public List<AcordoPagamentoJpaEntity> getAcordos() { return acordos; }
     public List<HistoricoCobrancaJpaEntity> getHistoricosCobranca() { return historicosCobranca; }
+    public FaixaFidelidadeJpaEntity getFaixaFidelidade() { return faixaFidelidade; }
+    public Double getMediaDiasCompras() { return mediaDiasCompras; }
+    public LocalDateTime getDataRecalculoFidelidade() { return dataRecalculoFidelidade; }
+    public List<PedidoJpaEntity> getPedidos() { return pedidos; }
+    public List<AcaoRetencaoJpaEntity> getAcoesRetencao() { return acoesRetencao; }
 
     public void setId(Integer id) { this.id = id; }
     public void setNome(String nome) { this.nome = nome; }
@@ -80,4 +104,7 @@ public class ClienteJpaEntity {
     public void setEstado(String estado) { this.estado = estado; }
     public void setAtivo(Boolean ativo) { this.ativo = ativo; }
     public void setDataNascimento(LocalDate dataNascimento) { this.dataNascimento = dataNascimento; }
+    public void setFaixaFidelidade(FaixaFidelidadeJpaEntity faixaFidelidade) { this.faixaFidelidade = faixaFidelidade; }
+    public void setMediaDiasCompras(Double mediaDiasCompras) { this.mediaDiasCompras = mediaDiasCompras; }
+    public void setDataRecalculoFidelidade(LocalDateTime dataRecalculoFidelidade) { this.dataRecalculoFidelidade = dataRecalculoFidelidade; }
 }

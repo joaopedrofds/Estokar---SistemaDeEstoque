@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout :: head"></head>
+<body>
+<div th:replace="layout :: menu"></div>
+<div class="page-header"><div class="container"><h1 class="page-title"><i class="bi bi-heart-pulse me-3"></i>Engajamento e Fidelidade</h1><p class="page-subtitle">Categorias, benefícios e retenção de clientes.</p></div></div>
+<div class="container py-4">
+    <div class="row g-3">
+        <div class="col-md-3"><a class="card h-100 text-decoration-none" href="/engajamento/faixas"><div class="card-body"><h5>Faixas</h5><strong class="fs-3" th:text="${#lists.size(faixas)}">0</strong></div></a></div>
+        <div class="col-md-3"><a class="card h-100 text-decoration-none" href="/engajamento/beneficios"><div class="card-body"><h5>Benefícios</h5><strong class="fs-3" th:text="${#lists.size(beneficios)}">0</strong></div></a></div>
+        <div class="col-md-3"><a class="card h-100 text-decoration-none" href="/engajamento/clientes"><div class="card-body"><h5>Clientes</h5><strong class="fs-3" th:text="${#lists.size(clientes)}">0</strong></div></a></div>
+        <div class="col-md-3"><a class="card h-100 text-decoration-none" href="/engajamento/retencao"><div class="card-body"><h5>Retenção</h5><strong class="fs-3" th:text="${#lists.size(acoes)}">0</strong></div></a></div>
+    </div>
+</div>
+<div th:replace="layout :: footer"></div><div th:replace="layout :: scripts"></div>
+</body></html>

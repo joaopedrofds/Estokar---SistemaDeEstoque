@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.SQLException;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -36,6 +37,7 @@ public class PedidoService {
     private final ProdutoJpaRepository produtoRepository;
     private final MovimentacaoEstoqueJpaRepository movimentacaoRepository;
     private final ParametroCancelamentoJpaRepository parametroCancelamentoRepository;
+    private final FidelidadeService fidelidadeService;
 
     public PedidoService() {
         this(new PedidoDAO(), new ItemPedidoDAO());
@@ -49,6 +51,7 @@ public class PedidoService {
         this.produtoRepository = null;
         this.movimentacaoRepository = null;
         this.parametroCancelamentoRepository = null;
+        this.fidelidadeService = null;
     }
 
     @Autowired
@@ -56,7 +59,8 @@ public class PedidoService {
                          ObjectProvider<ItemPedidoJpaRepository> itemPedidoRepository,
                          ObjectProvider<ProdutoJpaRepository> produtoRepository,
                          ObjectProvider<MovimentacaoEstoqueJpaRepository> movimentacaoRepository,
-                         ObjectProvider<ParametroCancelamentoJpaRepository> parametroCancelamentoRepository) {
+                         ObjectProvider<ParametroCancelamentoJpaRepository> parametroCancelamentoRepository,
+                         ObjectProvider<FidelidadeService> fidelidadeService) {
         this.pedidoDAO = null;
         this.itemPedidoDAO = null;
         this.pedidoRepository = pedidoRepository.getIfAvailable();
@@ -64,6 +68,32 @@ public class PedidoService {
         this.produtoRepository = produtoRepository.getIfAvailable();
         this.movimentacaoRepository = movimentacaoRepository.getIfAvailable();
         this.parametroCancelamentoRepository = parametroCancelamentoRepository.getIfAvailable();
+        this.fidelidadeService = fidelidadeService.getIfAvailable();
+    }
+
+    @Transactional
+    public ResultadoFechamentoPedido fecharPedido(int pedidoId) {
+        if (pedidoRepository == null || fidelidadeService == null) {
+            throw new IllegalStateException("O fechamento com fidelidade requer persistencia JPA ativa.");
+        }
+        PedidoJpaEntity pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido nao encontrado."));
+        if (PedidoDAO.STATUS_PEDIDO_CONCLUIDO.equals(normalizarStatusPedido(pedido.getStatus()))) {
+            return new ResultadoFechamentoPedido(pedidoId, BigDecimal.ZERO, pedido.getValorDesconto(),
+                    pedido.getCliente().getFaixaFidelidade() != null ? pedido.getCliente().getFaixaFidelidade().getNome() : null);
+        }
+        if (pedido.getItens().isEmpty()) {
+            throw new IllegalStateException("Adicione ao menos um item antes de finalizar o pedido.");
+        }
+        pedido.getItens().forEach(item -> item.getProduto().getValor());
+        BigDecimal descontoFidelidade = fidelidadeService.aplicarBeneficio(pedido);
+        pedido.setStatus(PedidoDAO.STATUS_PEDIDO_CONCLUIDO);
+        pedidoRepository.save(pedido);
+        fidelidadeService.recalcularCategoria(pedido.getClienteId());
+        String faixa = pedido.getCliente().getFaixaFidelidade() != null
+                ? pedido.getCliente().getFaixaFidelidade().getNome()
+                : null;
+        return new ResultadoFechamentoPedido(pedidoId, descontoFidelidade, pedido.getValorDesconto(), faixa);
     }
 
     @Transactional
@@ -383,6 +413,25 @@ public class PedidoService {
         public String getNome() {
             return nome;
         }
+    }
+
+    public static class ResultadoFechamentoPedido {
+        private final int pedidoId;
+        private final BigDecimal descontoFidelidade;
+        private final Double descontoTotal;
+        private final String faixaCliente;
+
+        public ResultadoFechamentoPedido(int pedidoId, BigDecimal descontoFidelidade, Double descontoTotal, String faixaCliente) {
+            this.pedidoId = pedidoId;
+            this.descontoFidelidade = descontoFidelidade;
+            this.descontoTotal = descontoTotal;
+            this.faixaCliente = faixaCliente;
+        }
+
+        public int getPedidoId() { return pedidoId; }
+        public BigDecimal getDescontoFidelidade() { return descontoFidelidade; }
+        public Double getDescontoTotal() { return descontoTotal; }
+        public String getFaixaCliente() { return faixaCliente; }
     }
 
     public static class ResultadoCancelamento {

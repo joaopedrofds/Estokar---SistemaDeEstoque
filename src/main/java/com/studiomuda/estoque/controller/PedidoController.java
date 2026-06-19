@@ -90,6 +90,13 @@ public class PedidoController {
 
     PedidoController(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO, ClienteDAO clienteDAO,
                      ProdutoDAO produtoDAO, FuncionarioDAO funcionarioDAO, CupomDAO cupomDAO,
+                     CupomService cupomService) {
+        this(pedidoDAO, itemPedidoDAO, clienteDAO, produtoDAO, funcionarioDAO, cupomDAO,
+                new PedidoService(pedidoDAO, itemPedidoDAO), null, cupomService);
+    }
+
+    PedidoController(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO, ClienteDAO clienteDAO,
+                     ProdutoDAO produtoDAO, FuncionarioDAO funcionarioDAO, CupomDAO cupomDAO,
                      PedidoService pedidoService, CobrancaService cobrancaService) {
         this(pedidoDAO, itemPedidoDAO, clienteDAO, produtoDAO, funcionarioDAO, cupomDAO,
                 pedidoService, cobrancaService, null);
@@ -481,6 +488,20 @@ public class PedidoController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao cancelar pedido: " + e.getMessage());
             return "redirect:/pedidos";
+        }
+    }
+
+    @PostMapping("/finalizar/{id}")
+    public String finalizarPedido(@PathVariable("id") int id, RedirectAttributes redirectAttributes) {
+        try {
+            PedidoService.ResultadoFechamentoPedido resultado = pedidoService.fecharPedido(id);
+            String faixa = resultado.getFaixaCliente() != null ? resultado.getFaixaCliente() : "Sem faixa";
+            redirectAttributes.addFlashAttribute("mensagemSucesso",
+                    "Pedido finalizado. Faixa: " + faixa + "; desconto de fidelidade: R$ " + resultado.getDescontoFidelidade() + ".");
+            return "redirect:/pedidos/itens/" + id;
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao finalizar pedido: " + e.getMessage());
+            return "redirect:/pedidos/itens/" + id;
         }
     }
 

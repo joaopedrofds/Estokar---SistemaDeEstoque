@@ -8,6 +8,12 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Itens do Pedido #<span th:text="${pedido.id}"></span></h2>
             <div class="d-flex gap-2">
+                <form th:if="${pedido.status == null || pedido.status == '' || pedido.status == 'PENDENTE'}"
+                      th:action="@{/pedidos/finalizar/{id}(id=${pedido.id})}" method="post">
+                    <button type="submit" class="btn btn-success" th:disabled="${itens.empty}">
+                        <i class="bi bi-check-circle me-2"></i>Finalizar Pedido
+                    </button>
+                </form>
                 <a th:href="@{/devolucoes/nova/{id}(id=${pedido.id})}"
                    class="btn btn-outline-warning">
                     <i class="bi bi-arrow-return-left me-2"></i>Solicitar Devolução
@@ -17,6 +23,9 @@
                 </a>
             </div>
         </div>
+
+        <div th:if="${mensagemSucesso}" class="alert alert-success" th:text="${mensagemSucesso}"></div>
+        <div th:if="${mensagemErro}" class="alert alert-danger" th:text="${mensagemErro}"></div>
         
         <div class="card mb-4">
             <div class="card-header bg-info text-white">

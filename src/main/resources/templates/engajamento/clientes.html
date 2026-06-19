@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head th:replace="layout :: head"></head><body>
+<div th:replace="layout :: menu"></div>
+<div class="page-header"><div class="container"><h1 class="page-title"><i class="bi bi-people me-3"></i>Categorização de Clientes</h1><p class="page-subtitle">Média de compras e faixa atualmente calculada.</p></div></div>
+<div class="container py-4"><div th:if="${mensagem}" class="alert alert-success" th:text="${mensagem}"></div><div th:if="${mensagemErro}" class="alert alert-danger" th:text="${mensagemErro}"></div>
+<div class="card"><div class="card-body p-0"><div class="table-responsive"><table class="table modern-table mb-0"><thead><tr><th>Cliente</th><th>Média</th><th>Faixa</th><th>Último recálculo</th><th></th></tr></thead><tbody><tr th:each="c : ${clientes}"><td th:text="${c.nome}"></td><td th:text="${c.mediaDiasCompras != null ? c.mediaDiasCompras + ' dias' : '-'}"></td><td><span class="badge bg-secondary" th:text="${c.faixaFidelidade != null ? c.faixaFidelidade.nome : 'Sem faixa'}"></span></td><td th:text="${c.dataRecalculoFidelidade != null ? c.dataRecalculoFidelidade : '-'}"></td><td class="text-end"><form th:action="@{/engajamento/clientes/{id}/recalcular(id=${c.id})}" method="post"><button class="btn btn-sm btn-outline-primary" type="submit" title="Recalcular"><i class="bi bi-arrow-repeat"></i></button></form></td></tr></tbody></table></div></div></div></div>
+<div th:replace="layout :: footer"></div><div th:replace="layout :: scripts"></div></body></html>

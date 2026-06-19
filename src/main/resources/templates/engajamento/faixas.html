@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><head th:replace="layout :: head"></head><body>
+<div th:replace="layout :: menu"></div>
+<div class="page-header"><div class="container"><h1 class="page-title"><i class="bi bi-bar-chart-steps me-3"></i>Faixas de Fidelidade</h1><p class="page-subtitle">Janelas de frequência exclusivas e não sobrepostas.</p></div></div>
+<div class="container py-4">
+    <div th:if="${mensagem}" class="alert alert-success" th:text="${mensagem}"></div><div th:if="${mensagemErro}" class="alert alert-danger" th:text="${mensagemErro}"></div>
+    <div class="row g-4"><div class="col-lg-4"><div class="card"><div class="card-header"><h5 class="mb-0">Nova Faixa</h5></div><div class="card-body">
+        <form th:action="@{/engajamento/faixas}" th:object="${faixa}" method="post">
+            <div class="mb-3"><label class="form-label" for="nome">Nome</label><input id="nome" th:field="*{nome}" class="form-control" required></div>
+            <div class="row"><div class="col-6 mb-3"><label class="form-label" for="diasMinimo">Mínimo</label><input id="diasMinimo" th:field="*{diasMinimo}" type="number" min="0" class="form-control" required></div><div class="col-6 mb-3"><label class="form-label" for="diasMaximo">Máximo</label><input id="diasMaximo" th:field="*{diasMaximo}" type="number" min="0" class="form-control" required></div></div>
+            <div class="form-check form-switch mb-3"><input id="ativa" th:field="*{ativa}" type="checkbox" class="form-check-input"><label class="form-check-label" for="ativa">Ativa</label></div>
+            <button class="btn btn-primary w-100" type="submit">Salvar</button>
+        </form>
+    </div></div></div><div class="col-lg-8"><div class="card"><div class="card-body p-0"><table class="table modern-table mb-0"><thead><tr><th>Faixa</th><th>Janela</th><th>Status</th></tr></thead><tbody><tr th:each="f : ${faixas}"><td th:text="${f.nome}"></td><td th:text="${f.diasMinimo + ' a ' + f.diasMaximo + ' dias'}"></td><td><span class="badge" th:classappend="${f.ativa} ? ' bg-success' : ' bg-secondary'" th:text="${f.ativa ? 'Ativa' : 'Inativa'}"></span></td></tr></tbody></table></div></div></div></div>
+</div><div th:replace="layout :: footer"></div><div th:replace="layout :: scripts"></div></body></html>
