@@ -32,6 +32,7 @@ CREATE TABLE parametro_estoque (
 
 CREATE TABLE ordem_compra (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo_ordem VARCHAR(40) UNIQUE,
     fornecedor_id INT NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'RASCUNHO',
     valor_total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
@@ -74,6 +75,7 @@ CREATE TABLE calendario_excecao (
 
 CREATE TABLE agendamento_remessa (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo_agendamento VARCHAR(40) UNIQUE,
     doca_id INT NOT NULL,
     distribuidora_id INT NOT NULL,
     data DATE NOT NULL,

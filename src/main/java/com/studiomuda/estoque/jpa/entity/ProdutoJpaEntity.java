@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "produto")
@@ -20,12 +21,20 @@ public class ProdutoJpaEntity {
     @Column(name = "quantidade")
     private Integer quantidade;
 
+    @Column(name = "valor")
+    private BigDecimal valor;
+
     public Integer getId() { return id; }
     public String getNome() { return nome; }
     public Integer getQuantidade() { return quantidade; }
+    public BigDecimal getValor() { return valor; }
 
     public void setQuantidade(Integer quantidade) {
         this.quantidade = quantidade;
+    }
+
+    public void setValor(BigDecimal valor) {
+        this.valor = valor;
     }
 
     public void adicionarQuantidade(int quantidade) {
