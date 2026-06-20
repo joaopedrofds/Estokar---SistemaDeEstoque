@@ -6,7 +6,6 @@ import com.studiomuda.estoque.jpa.entity.HistoricoCobrancaJpaEntity;
 import com.studiomuda.estoque.jpa.entity.PoliticaCreditoJpaEntity;
 import com.studiomuda.estoque.jpa.repository.ClienteJpaRepository;
 import com.studiomuda.estoque.service.CobrancaService;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@ConditionalOnBean(ClienteJpaRepository.class)
+// A anotação @ConditionalOnBean(ClienteJpaRepository.class) foi removida para garantir o mapeamento da rota
 @RequestMapping("/cobrancas")
 public class CobrancaController {
     private final CobrancaService cobrancaService;

@@ -19,7 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
-@ConditionalOnBean(ClienteJpaRepository.class)
+//@ConditionalOnBean(ClienteJpaRepository.class)
 public class CobrancaService {
     private static final int LIMITE_PADRAO_DIAS_ATRASO = 45;
 

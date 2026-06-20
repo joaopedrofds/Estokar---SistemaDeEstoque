@@ -21,7 +21,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
-@ConditionalOnBean(FaixaFidelidadeJpaRepository.class)
+//@ConditionalOnBean(FaixaFidelidadeJpaRepository.class)
 public class FidelidadeService {
     public static final String BENEFICIO_PERCENTUAL = "PERCENTUAL_DESCONTO";
 

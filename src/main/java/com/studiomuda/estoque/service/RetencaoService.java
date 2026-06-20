@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 @Service
-@ConditionalOnBean(AcaoRetencaoJpaRepository.class)
+//@ConditionalOnBean(AcaoRetencaoJpaRepository.class)
 public class RetencaoService {
     private static final List<String> FAIXAS_ELEGIVEIS = Arrays.asList("EM RISCO", "INATIVO");
 

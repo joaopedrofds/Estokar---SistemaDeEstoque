@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Controller
-@ConditionalOnBean(FaixaFidelidadeJpaRepository.class)
+//@ConditionalOnBean(FaixaFidelidadeJpaRepository.class)
 @RequestMapping("/engajamento")
 public class EngajamentoController {
     private final FidelidadeService fidelidadeService;
