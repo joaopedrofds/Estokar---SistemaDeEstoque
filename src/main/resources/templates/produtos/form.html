@@ -14,7 +14,7 @@
                         <span th:text="${produto.id == 0 ? 'Novo Produto' : 'Editar Produto'}"></span>
                     </h1>
                     <p class="page-subtitle">
-                        <span th:if="${produto.id == 0}">Cadastre uma nova planta preservada no Studio Muda</span>
+                        <span th:if="${produto.id == 0}">Cadastre um novo produto no Estokar</span>
                         <span th:unless="${produto.id == 0}" th:text="'Editando: ' + ${produto.nome}"></span>
                     </p>
                 </div>

@@ -1,23 +1,22 @@
 /* ================================
-   STUDIO MUDA - DESIGN SYSTEM 2.0
-   Tema: Transformação e Mudança
+   ESTOKAR - DESIGN SYSTEM 2.0
    ================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
 
 :root {
   /* === CORES PRIMÁRIAS === */
-  --primary-gradient: linear-gradient(135deg, #2D1B69 0%, #11998E 50%, #38EF7D 100%);
+  --primary-gradient: linear-gradient(135deg, #2D1B69 0%, #3f478e 50%, #1d6ab3 100%);
   --secondary-gradient: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
-  --accent-gradient: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+  --accent-gradient: linear-gradient(135deg, #FF6B6B 0%, #406b96 100%);
   
   /* === PALETA DE MUDANÇA === */
   --transformation-purple: #2D1B69; /* Metamorfose */
-  --evolution-teal: #11998E; /* Evolução */
-  --growth-green: #38EF7D; /* Crescimento */
+  --evolution-teal: #126284; /* Evolução */
+  --growth-green: #30accb; /* Crescimento */
   --innovation-blue: #667EEA; /* Inovação */
   --creativity-coral: #FF6B6B; /* Criatividade */
-  --harmony-cyan: #4ECDC4; /* Harmonia */
+  --harmony-cyan: #4e78cd; /* Harmonia */
   
   /* === TONS NEUTROS === */
   --neutral-white: #FFFFFF;
@@ -33,7 +32,7 @@
   --neutral-gray-900: #0F172A;
   
   /* === SISTEMA DE CORES === */
-  --success-color: #10B981;
+  --success-color: #1f5671;
   --warning-color: #F59E0B;
   --error-color: #EF4444;
   --info-color: #3B82F6;
@@ -107,10 +106,10 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
+  background:
     radial-gradient(circle at 20% 50%, rgba(45, 27, 105, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(17, 153, 142, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 40% 80%, rgba(56, 239, 125, 0.1) 0%, transparent 50%);
+    radial-gradient(circle at 80% 20%, rgba(18, 98, 132, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(48, 172, 203, 0.1) 0%, transparent 50%);
   pointer-events: none;
   z-index: -1;
   animation: backgroundShift 20s ease-in-out infinite;
@@ -123,8 +122,8 @@ body::before {
 
 /* === NAVBAR REDESIGNED === */
 .navbar {
-  background: linear-gradient(135deg, #2d5016 0%, #4a7c59 50%, #52b788 100%);
-  box-shadow: 0 4px 20px rgba(45, 80, 22, 0.3);
+  background: linear-gradient(135deg, #1a3779 0%, #10364f 50%, #528db7 100%);
+  box-shadow: 0 4px 20px rgba(22, 36, 80, 0.3);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: var(--space-md) 0;
@@ -234,7 +233,7 @@ body::before {
   gap: var(--space-lg);
 }
 
-.app-navbar .studio-muda-brand {
+.app-navbar .estokar-brand {
   flex: 0 0 auto;
   margin-right: var(--space-lg);
 }
@@ -825,7 +824,7 @@ body::before {
 }
 
 .alert-success {
-    background: linear-gradient(135deg, #28a745, #20c997);
+    background: linear-gradient(135deg, #2885a7, #2074c9);
     color: white;
 }
 
@@ -1057,7 +1056,7 @@ body::before {
   }
 }
 
-/* === MELHORIAS STUDIO MUDA 2.0 === */
+/* === MELHORIAS ESTOKAR 2.0 === */
 
 /* Header aprimorado */
 .page-header {
@@ -1098,15 +1097,15 @@ body::before {
   margin-bottom: 0;
 }
 
-/* Studio Muda Brand Styling */
-.studio-muda-brand {
+/* Estokar Brand Styling */
+.estokar-brand {
     display: flex;
     align-items: center;
     text-decoration: none;
     transition: all 0.3s ease;
 }
 
-.studio-muda-brand:hover {
+.estokar-brand:hover {
     transform: translateY(-2px);
     text-decoration: none;
 }
@@ -1300,27 +1299,27 @@ body::before {
     box-shadow: 0 8px 25px rgba(37, 211, 102, 0.3);
 }
 
-/* Nature-inspired Color Variables Update */
+/* Estokar Color Variables */
 :root {
-    /* Studio Muda Nature Colors */
-    --primary-color: #2d5016;       /* Deep forest green */
-    --secondary-color: #52b788;     /* Fresh green */
-    --accent-color: #95d5b2;        /* Light mint green */
-    --success-color: #40916c;       /* Growth green */
-    --warning-color: #f77f00;       /* Autumn orange */
-    --danger-color: #d00000;        /* Alert red */
-    --info-color: #0077b6;          /* Sky blue */
-    
-    /* Nature Neutrals */
-    --text-primary: #1b4332;        /* Dark forest */
-    --text-secondary: #2d5016;      /* Forest green */
+    /* Estokar Colors */
+    --primary-color: #163250;
+    --secondary-color: #5286b7;
+    --accent-color: #95a9d5;
+    --success-color: #404e91;
+    --warning-color: #f77f00;
+    --danger-color: #d00000;
+    --info-color: #0077b6;
+
+    /* Neutrals */
+    --text-primary: #1b2a43;
+    --text-secondary: #163150;
     --text-muted: #6c757d;
     --background-primary: #f8f9fa;
     --background-secondary: #e9ecef;
     --border-color: #dee2e6;
-    
+
     /* Gradients */
-    --nature-gradient: linear-gradient(135deg, #2d5016, #52b788, #95d5b2);
+    --nature-gradient: linear-gradient(135deg, #163a50, #5277b7, #959ad5);
     --earth-gradient: linear-gradient(135deg, #8b5a3c, #a0785a, #bc9a6a);
 }
 

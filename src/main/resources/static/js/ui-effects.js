@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-// UI Effects e melhorias visuais para o Sistema de Estoque Studio Muda
+// UI Effects e melhorias visuais para o Estokar
 
 document.addEventListener('DOMContentLoaded', function() {
     // Animar elementos ao entrar na viewport

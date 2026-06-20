@@ -14,7 +14,7 @@
                         <span th:text="${funcionario.id == 0 ? 'Cadastrar Funcionário' : 'Editar Funcionário'}"></span>
                     </h1>
                     <p class="page-subtitle">
-                        <span th:if="${funcionario.id == 0}">Adicione um novo membro à equipe Studio Muda</span>
+                        <span th:if="${funcionario.id == 0}">Adicione um novo membro à equipe Estokar</span>
                         <span th:unless="${funcionario.id == 0}" th:text="'Editando: ' + ${funcionario.nome}"></span>
                     </p>
                 </div>
@@ -98,7 +98,7 @@
                                             📦 Estoquista
                                         </option>
                                     </select>
-                                    <div class="form-text">Função exercida no Studio Muda</div>
+                                    <div class="form-text">Função exercida na Estokar</div>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="data_nasc" class="form-label">Data de Nascimento</label>

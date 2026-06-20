@@ -14,7 +14,7 @@
                         <span th:text="${cupom.id == 0 ? 'Novo Cupom' : 'Editar Cupom'}"></span>
                     </h1>
                     <p class="page-subtitle">
-                        <span th:if="${cupom.id == 0}">Crie um novo cupom de desconto para o Studio Muda</span>
+                        <span th:if="${cupom.id == 0}">Crie um novo cupom de desconto para o Estokar</span>
                         <span th:unless="${cupom.id == 0}" th:text="'Editando cupom: ' + ${cupom.codigo}"></span>
                     </p>
                 </div>
@@ -70,7 +70,7 @@
                                 <div class="col-md-3">
                                     <label class="form-label">Preview do Cupom</label>
                                     <div class="border rounded p-3 bg-light text-center">
-                                        <div class="fw-bold text-primary">🎁 CUPOM STUDIO MUDA</div>
+                                        <div class="fw-bold text-primary">🎁 CUPOM ESTOKAR</div>
                                         <div class="fs-5 fw-bold" th:text="${cupom.codigo != null && cupom.codigo != '' ? cupom.codigo : 'CÓDIGO'}"></div>
                                         <div class="text-success" th:text="${cupom.valor != null ? (cupom.tipoDesconto == 'PERCENTUAL' ? cupom.valor + '%' : 'R$ ' + #numbers.formatDecimal(cupom.valor, 1, 2)) + ' OFF' : 'R$ 0,00 OFF'}"></div>
                                     </div>
@@ -149,7 +149,7 @@
                                 <div class="col-12">
                                     <label for="descricao" class="form-label">Descrição</label>
                                     <textarea class="form-control" id="descricao" th:field="*{descricao}" rows="2" 
-                                              placeholder="Ex: Desconto especial para clientes do Studio Muda..."></textarea>
+                                              placeholder="Ex: Desconto especial para clientes do Estokar..."></textarea>
                                     <div class="form-text">Descrição breve do cupom (aparece na seleção)</div>
                                 </div>
                                 

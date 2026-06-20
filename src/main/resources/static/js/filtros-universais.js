@@ -1,5 +1,5 @@
 /**
- * SISTEMA DE FILTROS UNIVERSAIS - STUDIO MUDA
+ * SISTEMA DE FILTROS UNIVERSAIS - ESTOKAR
  * Filtros do lado cliente com busca em tempo real
  */
 
