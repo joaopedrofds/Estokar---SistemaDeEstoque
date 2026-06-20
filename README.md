@@ -77,7 +77,7 @@ mvn test -Dtest=CucumberTest
 
 ## 4. Guia de teste por funcionalidade
 
-Cada integrante é responsável por 2 funcionalidades. Abaixo, a rota de cada uma, o passo a passo de teste pela interface e o `.feature` correspondente.
+Abaixo, por integrante, as funcionalidades sob sua responsabilidade — a rota de cada uma, o passo a passo de teste pela interface e o `.feature` correspondente (quando há cobertura BDD). A divisão e os padrões foram conferidos contra o histórico do Git e o desenho dos módulos.
 
 > Dica: faça login conforme o perfil indicado. Ações de aprovação geralmente exigem `gerente`; configuração de parâmetros/RBAC exige `admin`.
 
@@ -105,6 +105,12 @@ Cada integrante é responsável por 2 funcionalidades. Abaixo, a rota de cada um
 - Conflito de capacidade ou data bloqueada → o sistema bloqueia e sugere as próximas janelas livres.
 - BDD: `remessas.feature`
 
+**3. Precificação Dinâmica com Margem de Lucro** — `/precificacao/simular`
+- Selecione um produto, informe custo/margem/impostos/desconto e simule → o sistema monta o custo componente a componente e sugere o preço.
+- Regras: margem desejada abaixo da mínima global → bloqueio; desconto que derrubaria a margem → bloqueio com desconto seguro calculado. Simulação aprovada pode ser aplicada ao produto.
+- BDD: `precificacao_dinamica.feature`
+- Padrão de projeto: **Iterator** (`precificacao/domain/iterator/` — composição do custo)
+
 ### Henrique
 **1. Gestão de Cobranças e Acordos** — `/cobrancas`
 - Em `/cobrancas/politicas` ajuste o limite de dias para bloqueio.
@@ -116,16 +122,28 @@ Cada integrante é responsável por 2 funcionalidades. Abaixo, a rota de cada um
 - Verifique a mudança de categoria e a geração de ações de retenção (cupom) para "Em Risco".
 - BDD: `frequencia.feature`
 
-### Guilherme Mourão
-**1. Controle de Acesso por Perfil (RBAC)** — `/acesso` *(perfil: admin)*
-- Em `/acesso/perfis` e `/acesso/permissoes`, monte a matriz perfil × recurso × operação.
-- Logue como `operador` e tente acessar um recurso negado → bloqueio + registro em log de acesso.
-- BDD: `seguranca.feature`
-- Mecanismo: interceptor de autorização na camada DAO (`security/InterceptadorAutorizacaoDao`).
+**3. Cotação e Expedição de Fretes** — `/frete`
+- Cadastre transportadoras e faixas de contingência; faça uma cotação em `/frete/cotacao` (API → cache → contingência) e gere ordens de despacho em `/frete/despachos`.
+- Regras: cliente inativo bloqueia o despacho; rate limit por vendedor nas cotações.
+- Padrão de projeto: **Proxy** (`proxy/` — `CotacaoFreteProxy` envolve `TransportadoraApiClient` com cache, contingência e controle de limite)
 
-**2. Relatório Financeiro / Indicadores Operacionais (KPIs)** — `/financeiro` e `/kpis`
-- KPIs: em `/kpis` configure uma meta (`/kpis/meta/nova/{id}`), clique em **Recalcular** → gera snapshot imutável e, se a meta for violada, **cria alerta automático**. Resolva em `/kpis/alertas`; histórico em `/kpis/snapshots`.
-- Relatório: em `/financeiro` configure categorias/templates e gere o relatório consolidado.
+### Guilherme Mourão
+
+**1. Autenticação e Segurança (Spring Security)** — `/login`
+- Base de autenticação do sistema: login/logout, proteção de rotas e papéis. Usuário anônimo em rota protegida → redirecionado para `/login`; credenciais inválidas → `/login?error=true`.
+- BDD: `seguranca.feature`
+- Arquivos: `config/SecurityConfig.java`, `security/DatabaseUserDetailsService.java`.
+
+**2. Controle de Acesso por Perfil (RBAC)** — `/acesso` *(perfil: admin)*
+- Em `/acesso/perfis` e `/acesso/permissoes`, monte a matriz perfil × recurso × operação.
+- Logue como `operador` e tente acessar um recurso negado → bloqueio (HTTP 403) + registro em `/acesso/logs`.
+- Mecanismo: interceptor de autorização na camada DAO (`security/InterceptadorAutorizacaoDao`), acionado por `Conexao.getConnection()`. Cobre o acesso via DAO/JDBC legado (não os repositórios JPA).
+
+**3. Relatório Financeiro** — `/financeiro`
+- Configure categorias (`/financeiro/categorias`) e templates (`/financeiro/templates`), gere o relatório consolidado em `/financeiro/relatorios/gerar` e exporte.
+
+**4. Indicadores Operacionais (KPIs)** — `/kpis`
+- Configure uma meta (`/kpis/meta/nova/{id}`), clique em **Recalcular** → gera snapshot imutável e, se a meta for violada, **cria alerta automático**. Resolva em `/kpis/alertas`; histórico em `/kpis/snapshots`.
 - BDD: `kpis.feature`
 - Padrão de projeto: **Decorator** (`calculo/`) na cadeia de cálculo dos indicadores.
 
@@ -139,6 +157,10 @@ Cada integrante é responsável por 2 funcionalidades. Abaixo, a rota de cada um
 - Registre saídas até o estoque cair abaixo do ponto de pedido → alerta de reposição é gerado automaticamente (sem duplicar para o mesmo produto).
 - Padrão de projeto: **Observer** (`observer/`)
 
+**3. Estratégias de Desconto / Precificação / Restituição** — pacote `strategy/`
+- Algoritmos intercambiáveis selecionados em tempo de execução (desconto fixo/percentual/volume, margem fixa, sazonalidade, restituição por crédito/troca/estorno) via classes de contexto (`ContextoDesconto`, `ContextoPrecificacao`, `ContextoRestituicao`).
+- Padrão de projeto: **Strategy** (`strategy/`)
+
 ---
 
 ## 5. Padrões de Projeto Implementados
@@ -149,12 +171,14 @@ A 2ª entrega exige **6 ou mais padrões (1 por integrante)** dentre: *Iterator,
 |---|---|---|---|
 | Decorator | ✅ | Guilherme Mourão | `calculo/` + `service/IndicadorService.java` |
 | Observer | ✅ | João Pedro Araújo | `observer/` |
-| Strategy | ✅ | (confirmar) | `strategy/` |
-| Template Method | ✅ | Claudio | `service/ajuste/AbstractAjusteEstoqueTemplate.java` (+ subclasses) |
-| Proxy | ⬜ pendente | — | *(há um interceptor de autorização em `security/InterceptadorAutorizacaoDao`, mas por inspeção de stack — não é um Proxy GoF clássico de embrulho)* |
-| Iterator | ✅ | Pibe | `precificacao/domain/iterator/` |
+| Strategy | ✅ | João Pedro Araújo | `strategy/` |
+| Template Method | ✅ | Luiz Claudio | `service/ajuste/AbstractAjusteEstoqueTemplate.java` (+ subclasses) |
+| Proxy | ✅ | Henrique Figueiredo | `proxy/` — `CotacaoFreteProxy` envolve `TransportadoraApiClient` (ambos `ServicoCotacaoFrete`) |
+| Iterator | ✅ | Luiz Felipe Nogueira | `precificacao/domain/iterator/` |
 
-> A coluna "Implementado por" reflete o histórico do Git e o desenho dos módulos; **confirme com o grupo**. O padrão **DAO** é usado em todo o projeto como decisão de arquitetura, mas **não** faz parte da lista exigida.
+> A coluna "Implementado por" reflete o histórico do Git e o desenho dos módulos. O padrão **DAO** é usado em todo o projeto como decisão de arquitetura, mas **não** faz parte da lista exigida.
+>
+> Observação: além do Proxy GoF acima, há um interceptor de autorização em `security/InterceptadorAutorizacaoDao` que age por inspeção de stack na camada DAO — é um mecanismo de RBAC, **não** um Proxy GoF clássico de embrulho.
 
 ### Detalhe — Decorator (cálculo de indicadores)
 Cadeia empilhável sobre o cálculo "cru" do indicador, mantendo a mesma interface em cada camada:
@@ -168,6 +192,12 @@ Cadeia empilhável sobre o cálculo "cru" do indicador, mantendo a mesma interfa
 
 ### Detalhe — Template Method (ajuste de estoque)
 `AbstractAjusteEstoqueTemplate.processarSolicitacao()` define o esqueleto `final` do algoritmo; as subclasses (`AjustePorSobra/Perda/Avaria/Correcao`) implementam os passos `abstract`.
+
+### Detalhe — Proxy (cotação de frete)
+`ServicoCotacaoFrete` (Subject) é a interface comum; `TransportadoraApiClient` (RealSubject) faz a chamada real à transportadora; `CotacaoFreteProxy` (Proxy) implementa a mesma interface e adiciona cache por hash de parâmetros, fallback de contingência e controle de limite de cotações antes de delegar ao real.
+
+### Detalhe — Strategy (descontos / precificação / restituição)
+Famílias de algoritmos intercambiáveis sob uma interface comum (`EstrategiaDesconto`, `EstrategiaPrecificacao`, `RestituicaoStrategy`), selecionados em tempo de execução pelas classes de contexto em `strategy/`.
 
 ---
 

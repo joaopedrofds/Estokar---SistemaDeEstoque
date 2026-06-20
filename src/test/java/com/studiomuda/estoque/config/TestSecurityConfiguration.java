@@ -14,21 +14,21 @@ public class TestSecurityConfiguration {
     @Bean
     @Primary
     public UserDetailsService userDetailsService() {
-        UserDetails diretor = User.withUsername("diretor")
-                .password("{noop}Diretor@123")
-                .roles("DIRETOR")
+        UserDetails admin = User.withUsername("admin")
+                .password("{noop}Admin@123")
+                .roles("ADMINISTRADOR")
                 .build();
 
-        UserDetails auxiliar = User.withUsername("auxiliar")
-                .password("{noop}Auxiliar@123")
-                .roles("AUXILIAR")
+        UserDetails gerente = User.withUsername("gerente")
+                .password("{noop}Gerente@123")
+                .roles("GERENTE_OPERACIONAL")
                 .build();
 
-        UserDetails estoquista = User.withUsername("estoquista")
-                .password("{noop}Estoque@123")
-                .roles("ESTOQUISTA")
+        UserDetails operador = User.withUsername("operador")
+                .password("{noop}Operador@123")
+                .roles("OPERADOR_VENDEDOR")
                 .build();
 
-        return new InMemoryUserDetailsManager(diretor, auxiliar, estoquista);
+        return new InMemoryUserDetailsManager(admin, gerente, operador);
     }
 }

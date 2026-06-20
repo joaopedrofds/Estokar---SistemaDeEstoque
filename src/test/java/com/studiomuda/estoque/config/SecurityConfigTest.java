@@ -34,23 +34,23 @@ class SecurityConfigTest {
     }
 
     @Test
-    @WithMockUser(roles = "DIRETOR")
-    void devePermitirAcessoDashboardParaDiretor() throws Exception {
+    @WithMockUser(roles = "ADMINISTRADOR")
+    void devePermitirAcessoDashboardParaAdministrador() throws Exception {
         mockMvc.perform(get("/dashboard"))
                 .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser(roles = "ESTOQUISTA")
-    void deveBloquearAcessoDashboardParaEstoquista() throws Exception {
-        mockMvc.perform(get("/dashboard"))
+    @WithMockUser(roles = "OPERADOR_VENDEDOR")
+    void deveBloquearAcessoFuncionariosParaOperador() throws Exception {
+        mockMvc.perform(get("/funcionarios"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser(roles = "AUXILIAR")
-    void deveBloquearAcessoCuponsParaAuxiliar() throws Exception {
-        mockMvc.perform(get("/cupons"))
+    @WithMockUser(roles = "OPERADOR_VENDEDOR")
+    void deveBloquearAcessoPrecificacaoParaOperador() throws Exception {
+        mockMvc.perform(get("/precificacao/simular"))
                 .andExpect(status().isForbidden());
     }
 }
