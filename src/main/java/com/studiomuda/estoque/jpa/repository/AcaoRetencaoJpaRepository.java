@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface AcaoRetencaoJpaRepository extends JpaRepository<AcaoRetencaoJpaEntity, Integer> {
     List<AcaoRetencaoJpaEntity> findAllByOrderByDataCriacaoDesc();
     Optional<AcaoRetencaoJpaEntity> findFirstByClienteIdAndAtivaTrue(Integer clienteId);
+    long countByFaixaId(Integer faixaId);
 }

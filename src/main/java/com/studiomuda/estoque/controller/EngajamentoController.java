@@ -45,6 +45,7 @@ public class EngajamentoController {
     public String faixas(Model model) {
         model.addAttribute("faixa", new FaixaFidelidadeJpaEntity());
         model.addAttribute("faixas", fidelidadeService.listarFaixas());
+        model.addAttribute("editando", false);
         return "engajamento/faixas";
     }
 
@@ -59,11 +60,50 @@ public class EngajamentoController {
         return "redirect:/engajamento/faixas";
     }
 
+    @GetMapping("/faixas/{id}/editar")
+    public String editarFaixa(@PathVariable Integer id, Model model) {
+        try {
+            FaixaFidelidadeJpaEntity faixa = fidelidadeService.buscarFaixaPorId(id);
+            model.addAttribute("faixa", faixa);
+            model.addAttribute("faixas", fidelidadeService.listarFaixas());
+            model.addAttribute("editando", true);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            model.addAttribute("faixa", new FaixaFidelidadeJpaEntity());
+            model.addAttribute("faixas", fidelidadeService.listarFaixas());
+        }
+        return "engajamento/faixas";
+    }
+
+    @PostMapping("/faixas/{id}/alternar-status")
+    public String alternarStatusFaixa(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            FaixaFidelidadeJpaEntity faixa = fidelidadeService.alternarStatusFaixa(id);
+            redirectAttributes.addFlashAttribute("mensagem",
+                    "Faixa \"" + faixa.getNome() + "\" " + (faixa.getAtiva() ? "ativada" : "desativada") + " com sucesso!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
+        }
+        return "redirect:/engajamento/faixas";
+    }
+
+    @PostMapping("/faixas/{id}/excluir")
+    public String excluirFaixa(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            fidelidadeService.excluirFaixa(id);
+            redirectAttributes.addFlashAttribute("mensagem", "Faixa excluida com sucesso!");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
+        }
+        return "redirect:/engajamento/faixas";
+    }
+
     @GetMapping("/beneficios")
     public String beneficios(Model model) {
         model.addAttribute("beneficio", new BeneficioCategoriaJpaEntity());
         model.addAttribute("beneficios", fidelidadeService.listarBeneficios());
         model.addAttribute("faixas", fidelidadeService.listarFaixas());
+        model.addAttribute("editando", false);
         return "engajamento/beneficios";
     }
 
@@ -75,6 +115,47 @@ public class EngajamentoController {
             fidelidadeService.salvarBeneficio(beneficio, faixaId);
             redirectAttributes.addFlashAttribute("mensagem", "Beneficio salvo.");
         } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
+        }
+        return "redirect:/engajamento/beneficios";
+    }
+
+    @GetMapping("/beneficios/{id}/editar")
+    public String editarBeneficio(@PathVariable Integer id, Model model) {
+        try {
+            BeneficioCategoriaJpaEntity beneficio = fidelidadeService.buscarBeneficioPorId(id);
+            model.addAttribute("beneficio", beneficio);
+            model.addAttribute("beneficios", fidelidadeService.listarBeneficios());
+            model.addAttribute("faixas", fidelidadeService.listarFaixas());
+            model.addAttribute("editando", true);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("mensagemErro", e.getMessage());
+            model.addAttribute("beneficio", new BeneficioCategoriaJpaEntity());
+            model.addAttribute("beneficios", fidelidadeService.listarBeneficios());
+            model.addAttribute("faixas", fidelidadeService.listarFaixas());
+            model.addAttribute("editando", false);
+        }
+        return "engajamento/beneficios";
+    }
+
+    @PostMapping("/beneficios/{id}/alternar-status")
+    public String alternarStatusBeneficio(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            BeneficioCategoriaJpaEntity beneficio = fidelidadeService.alternarStatusBeneficio(id);
+            redirectAttributes.addFlashAttribute("mensagem",
+                    "Beneficio \"" + beneficio.getDescricao() + "\" " + (beneficio.getAtivo() ? "ativado" : "pausado") + " com sucesso!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
+        }
+        return "redirect:/engajamento/beneficios";
+    }
+
+    @PostMapping("/beneficios/{id}/excluir")
+    public String excluirBeneficio(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        try {
+            fidelidadeService.excluirBeneficio(id);
+            redirectAttributes.addFlashAttribute("mensagem", "Beneficio excluido com sucesso!");
+        } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
         }
         return "redirect:/engajamento/beneficios";

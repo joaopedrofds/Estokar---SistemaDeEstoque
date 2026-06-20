@@ -13,4 +13,6 @@ public interface PedidoJpaRepository extends JpaRepository<PedidoJpaEntity, Inte
 
     @Query("select p.dataRequisicao from PedidoJpaEntity p where p.cliente.id = :clienteId and upper(p.status) = 'CONCLUIDO' and p.dataRequisicao is not null order by p.dataRequisicao desc")
     List<Date> listarDatasComprasConfirmadas(@Param("clienteId") Integer clienteId);
+
+    long countByBeneficioAplicadoId(Integer beneficioId);
 }

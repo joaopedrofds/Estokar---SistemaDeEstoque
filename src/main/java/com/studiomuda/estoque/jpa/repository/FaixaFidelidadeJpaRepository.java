@@ -12,7 +12,7 @@ public interface FaixaFidelidadeJpaRepository extends JpaRepository<FaixaFidelid
     List<FaixaFidelidadeJpaEntity> findAllByOrderByDiasMinimoAsc();
 
     @Query("select f from FaixaFidelidadeJpaEntity f where f.ativa = true and f.diasMinimo <= :media and f.diasMaximo >= :media order by f.diasMinimo asc")
-    Optional<FaixaFidelidadeJpaEntity> buscarPorMedia(@Param("media") double media);
+    Optional<FaixaFidelidadeJpaEntity> buscarPorMedia(@Param("media") int media);
 
     @Query("select count(f) from FaixaFidelidadeJpaEntity f where f.ativa = true and (:id is null or f.id <> :id) and f.diasMinimo <= :maximo and f.diasMaximo >= :minimo")
     long contarSobreposicoes(@Param("id") Integer id, @Param("minimo") int minimo, @Param("maximo") int maximo);

@@ -3,10 +3,25 @@
 <div th:replace="layout :: menu"></div>
 <div class="page-header"><div class="container"><h1 class="page-title"><i class="bi bi-percent me-3"></i>Benefícios por Categoria</h1><p class="page-subtitle">Descontos aplicados automaticamente no fechamento do pedido.</p></div></div>
 <div class="container py-4"><div th:if="${mensagem}" class="alert alert-success" th:text="${mensagem}"></div><div th:if="${mensagemErro}" class="alert alert-danger" th:text="${mensagemErro}"></div>
-<div class="row g-4"><div class="col-lg-4"><div class="card"><div class="card-header"><h5 class="mb-0">Novo Benefício</h5></div><div class="card-body"><form th:action="@{/engajamento/beneficios}" th:object="${beneficio}" method="post">
-<div class="mb-3"><label class="form-label" for="faixaId">Faixa</label><select id="faixaId" name="faixaId" class="form-select" required><option th:each="f : ${faixas}" th:value="${f.id}" th:text="${f.nome}"></option></select></div>
+<div class="row g-4"><div class="col-lg-4"><div class="card"><div class="card-header"><h5 class="mb-0" th:text="${editando} ? 'Editar Benefício' : 'Novo Benefício'">Novo Benefício</h5></div><div class="card-body"><form th:action="@{/engajamento/beneficios}" th:object="${beneficio}" method="post">
+<input type="hidden" th:if="${editando}" th:field="*{id}">
+<div class="mb-3"><label class="form-label" for="faixaId">Faixa</label><select id="faixaId" name="faixaId" class="form-select" required><option th:each="f : ${faixas}" th:value="${f.id}" th:text="${f.nome}" th:selected="${beneficio.faixa != null and beneficio.faixa.id == f.id}"></option></select></div>
 <div class="mb-3"><label class="form-label" for="percentualDesconto">Desconto percentual</label><input id="percentualDesconto" th:field="*{percentualDesconto}" type="number" min="0" max="100" step="0.01" class="form-control" required></div>
 <div class="mb-3"><label class="form-label" for="descricao">Descrição</label><textarea id="descricao" th:field="*{descricao}" class="form-control" rows="2"></textarea></div>
-<div class="form-check form-switch mb-3"><input id="ativo" th:field="*{ativo}" type="checkbox" class="form-check-input"><label for="ativo" class="form-check-label">Ativo</label></div><button class="btn btn-primary w-100" type="submit">Salvar</button></form></div></div></div>
-<div class="col-lg-8"><div class="card"><div class="card-body p-0"><table class="table modern-table mb-0"><thead><tr><th>Faixa</th><th>Benefício</th><th>Descrição</th><th>Status</th></tr></thead><tbody><tr th:each="b : ${beneficios}"><td th:text="${b.faixa.nome}"></td><td th:text="${b.percentualDesconto + '%'}"></td><td th:text="${b.descricao}"></td><td><span class="badge" th:classappend="${b.ativo} ? ' bg-success' : ' bg-secondary'" th:text="${b.ativo ? 'Ativo' : 'Inativo'}"></span></td></tr></tbody></table></div></div></div></div></div>
+<div class="form-check form-switch mb-3"><input id="ativo" th:field="*{ativo}" type="checkbox" class="form-check-input"><label for="ativo" class="form-check-label">Ativo</label></div><button class="btn btn-primary w-100" type="submit" th:text="${editando} ? 'Salvar Alterações' : 'Salvar'">Salvar</button>
+<a th:if="${editando}" href="/engajamento/beneficios" class="btn btn-outline-secondary w-100 mt-2">Cancelar</a></form></div></div></div>
+<div class="col-lg-8"><div class="card"><div class="card-body p-0"><table class="table modern-table mb-0"><thead><tr><th>Faixa</th><th>Benefício</th><th>Descrição</th><th>Status</th><th>Ações</th></tr></thead><tbody><tr th:each="b : ${beneficios}"><td th:text="${b.faixa.nome}"></td><td th:text="${b.percentualDesconto + '%'}"></td><td th:text="${b.descricao}"></td><td><span class="badge" th:classappend="${b.ativo} ? ' bg-success' : ' bg-secondary'" th:text="${b.ativo ? 'Ativo' : 'Inativo'}"></span></td>
+<td>
+<div class="btn-group btn-group-sm">
+<a th:href="@{/engajamento/beneficios/{id}/editar(id=${b.id})}" class="btn btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a>
+<form th:action="@{/engajamento/beneficios/{id}/alternar-status(id=${b.id})}" method="post" style="display:inline;">
+<button type="submit" class="btn btn-outline-warning" th:if="${b.ativo}" title="Pausar"><i class="bi bi-pause-circle"></i></button>
+<button type="submit" class="btn btn-outline-success" th:unless="${b.ativo}" title="Ativar"><i class="bi bi-play-circle"></i></button>
+</form>
+<form th:action="@{/engajamento/beneficios/{id}/excluir(id=${b.id})}" method="post" style="display:inline;" onsubmit="return confirm('Tem certeza que deseja excluir este beneficio? Esta acao nao pode ser desfeita.');">
+<button type="submit" class="btn btn-outline-danger" title="Excluir"><i class="bi bi-trash"></i></button>
+</form>
+</div>
+</td>
+</tr></tbody></table></div></div></div></div></div>
 <div th:replace="layout :: footer"></div><div th:replace="layout :: scripts"></div></body></html>

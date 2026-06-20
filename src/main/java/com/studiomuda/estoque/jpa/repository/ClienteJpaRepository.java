@@ -11,4 +11,5 @@ public interface ClienteJpaRepository extends JpaRepository<ClienteJpaEntity, In
     List<ClienteJpaEntity> findAllByOrderByNomeAsc();
     @Query("select c from ClienteJpaEntity c where upper(c.faixaFidelidade.nome) in ('EM RISCO', 'INATIVO') order by c.nome")
     List<ClienteJpaEntity> buscarElegiveisRetencao();
+    long countByFaixaFidelidadeId(Integer faixaId);
 }

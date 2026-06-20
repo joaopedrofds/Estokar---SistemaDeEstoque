@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface BeneficioCategoriaJpaRepository extends JpaRepository<BeneficioCategoriaJpaEntity, Integer> {
     List<BeneficioCategoriaJpaEntity> findAllByOrderByFaixaDiasMinimoAsc();
     Optional<BeneficioCategoriaJpaEntity> findFirstByFaixaIdAndAtivoTrueAndTipoOrderByIdAsc(Integer faixaId, String tipo);
+    long countByFaixaId(Integer faixaId);
 }

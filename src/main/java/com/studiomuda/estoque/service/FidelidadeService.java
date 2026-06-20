@@ -5,6 +5,7 @@ import com.studiomuda.estoque.jpa.entity.ClienteJpaEntity;
 import com.studiomuda.estoque.jpa.entity.FaixaFidelidadeJpaEntity;
 import com.studiomuda.estoque.jpa.entity.ItemPedidoJpaEntity;
 import com.studiomuda.estoque.jpa.entity.PedidoJpaEntity;
+import com.studiomuda.estoque.jpa.repository.AcaoRetencaoJpaRepository;
 import com.studiomuda.estoque.jpa.repository.BeneficioCategoriaJpaRepository;
 import com.studiomuda.estoque.jpa.repository.ClienteJpaRepository;
 import com.studiomuda.estoque.jpa.repository.FaixaFidelidadeJpaRepository;
@@ -29,15 +30,18 @@ public class FidelidadeService {
     private final BeneficioCategoriaJpaRepository beneficioRepository;
     private final ClienteJpaRepository clienteRepository;
     private final PedidoJpaRepository pedidoRepository;
+    private final AcaoRetencaoJpaRepository acaoRetencaoRepository;
 
     public FidelidadeService(FaixaFidelidadeJpaRepository faixaRepository,
                              BeneficioCategoriaJpaRepository beneficioRepository,
                              ClienteJpaRepository clienteRepository,
-                             PedidoJpaRepository pedidoRepository) {
+                             PedidoJpaRepository pedidoRepository,
+                             AcaoRetencaoJpaRepository acaoRetencaoRepository) {
         this.faixaRepository = faixaRepository;
         this.beneficioRepository = beneficioRepository;
         this.clienteRepository = clienteRepository;
         this.pedidoRepository = pedidoRepository;
+        this.acaoRetencaoRepository = acaoRetencaoRepository;
     }
 
     @Transactional(readOnly = true)
@@ -64,6 +68,35 @@ public class FidelidadeService {
         return faixaRepository.save(faixa);
     }
 
+    @Transactional(readOnly = true)
+    public BeneficioCategoriaJpaEntity buscarBeneficioPorId(Integer id) {
+        return beneficioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Beneficio nao encontrado."));
+    }
+
+    @Transactional
+    public BeneficioCategoriaJpaEntity alternarStatusBeneficio(Integer id) {
+        BeneficioCategoriaJpaEntity beneficio = beneficioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Beneficio nao encontrado."));
+        beneficio.setAtivo(!beneficio.getAtivo());
+        return beneficioRepository.save(beneficio);
+    }
+
+    @Transactional
+    public void excluirBeneficio(Integer id) {
+        BeneficioCategoriaJpaEntity beneficio = beneficioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Beneficio nao encontrado."));
+
+        long pedidosVinculados = pedidoRepository.countByBeneficioAplicadoId(id);
+        if (pedidosVinculados > 0) {
+            throw new IllegalStateException(
+                    "Este beneficio ja foi aplicado em " + pedidosVinculados
+                            + " pedido(s) e nao pode ser excluido. Use pausar/desativar em vez de excluir.");
+        }
+
+        beneficioRepository.delete(beneficio);
+    }
+
     @Transactional
     public BeneficioCategoriaJpaEntity salvarBeneficio(BeneficioCategoriaJpaEntity beneficio, Integer faixaId) {
         FaixaFidelidadeJpaEntity faixa = faixaRepository.findById(faixaId)
@@ -84,7 +117,13 @@ public class FidelidadeService {
                 .orElseThrow(() -> new IllegalArgumentException("Cliente nao encontrado."));
         List<Date> datas = pedidoRepository.listarDatasComprasConfirmadas(clienteId);
         double media = calcularMediaDias(datas);
-        FaixaFidelidadeJpaEntity faixa = faixaRepository.buscarPorMedia(media).orElse(null);
+        // Arredonda a média para inteiro (dias) antes de comparar com faixas de dias inteiros.
+        // diasMinimo/diasMaximo são Integer na entidade, e a query usa o mesmo :param em
+        // comparações contra ambos os lados — Hibernate 5.x infere o tipo do primeiro bind
+        // resolvido e falha se receber double. Como faixas representam janelas de dias inteiros,
+        // o arredondamento da média é semanticamente correto.
+        int mediaInt = (int) Math.round(media);
+        FaixaFidelidadeJpaEntity faixa = faixaRepository.buscarPorMedia(mediaInt).orElse(null);
         cliente.setMediaDiasCompras(media);
         cliente.setFaixaFidelidade(faixa);
         cliente.setDataRecalculoFidelidade(LocalDateTime.now());
@@ -134,6 +173,41 @@ public class FidelidadeService {
             return BigDecimal.ZERO;
         }
         return item.getProduto().getValor().multiply(BigDecimal.valueOf(item.getQuantidade()));
+    }
+
+    @Transactional(readOnly = true)
+    public FaixaFidelidadeJpaEntity buscarFaixaPorId(Integer id) {
+        return faixaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Faixa de fidelidade nao encontrada."));
+    }
+
+    @Transactional
+    public void excluirFaixa(Integer id) {
+        FaixaFidelidadeJpaEntity faixa = faixaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Faixa de fidelidade nao encontrada."));
+
+        long beneficiosVinculados = beneficioRepository.countByFaixaId(id);
+        long clientesVinculados = clienteRepository.countByFaixaFidelidadeId(id);
+        long acoesVinculadas = acaoRetencaoRepository.countByFaixaId(id);
+
+        if (beneficiosVinculados > 0 || clientesVinculados > 0 || acoesVinculadas > 0) {
+            throw new IllegalStateException(
+                    "Esta faixa possui vinculos (" +
+                            (beneficiosVinculados > 0 ? beneficiosVinculados + " beneficio(s), " : "") +
+                            (clientesVinculados > 0 ? clientesVinculados + " cliente(s), " : "") +
+                            (acoesVinculadas > 0 ? acoesVinculadas + " acao(oes) de retencao, " : "") +
+                            "). Desative-a em vez de excluir, ou primeiro reatribua/exclua os vinculos.");
+        }
+
+        faixaRepository.delete(faixa);
+    }
+
+    @Transactional
+    public FaixaFidelidadeJpaEntity alternarStatusFaixa(Integer id) {
+        FaixaFidelidadeJpaEntity faixa = faixaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Faixa de fidelidade nao encontrada."));
+        faixa.setAtiva(!faixa.getAtiva());
+        return faixaRepository.save(faixa);
     }
 
     private void validarFaixa(FaixaFidelidadeJpaEntity faixa) {
