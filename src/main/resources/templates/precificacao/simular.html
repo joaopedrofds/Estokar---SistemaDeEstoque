@@ -4,147 +4,286 @@
 <body>
 <div th:replace="layout :: menu"></div>
 
-<div th:fragment="content">
 <section class="page-header">
     <div class="container">
-        <h1 class="page-title"><i class="bi bi-calculator me-3"></i>Simulador de Preço</h1>
-        <p class="page-subtitle">Calcule o preço ideal antes de aplicar — veja a margem e a justificativa</p>
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="page-title"><i class="bi bi-cash-coin me-3"></i>Precificação Dinâmica com Margem de Lucro</h1>
+                <p class="page-subtitle">Calcule preço de venda com custo de compra, margem, impostos, despesas operacionais e limite de desconto.</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="/precificacao/regras" class="btn btn-outline me-2"><i class="bi bi-sliders me-2"></i>Políticas</a>
+                <a href="/precificacao/historico" class="btn btn-outline"><i class="bi bi-clock-history me-2"></i>Histórico</a>
+            </div>
+        </div>
     </div>
 </section>
 
 <div class="container my-4">
-    <div th:if="${param.sucesso != null}" class="alert alert-success">
-        <i class="bi bi-check-circle me-2"></i>Preço aplicado com sucesso! Histórico atualizado.
-    </div>
-    <div th:if="${mensagemErro}" class="alert alert-danger" th:text="${mensagemErro}"></div>
+    <div th:if="${sucesso}" class="alert alert-success"><i class="bi bi-check-circle me-2"></i><span th:text="${sucesso}"></span></div>
+    <div th:if="${mensagemErro}" class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i><span th:text="${mensagemErro}"></span></div>
 
-    <!-- Seletor de produto -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form th:action="@{/precificacao/simular}" method="get">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-8">
-                        <label class="form-label fw-semibold">Selecione o Produto para Simular</label>
-                        <select class="form-select form-select-lg" name="produtoId"
-                                onchange="this.form.action='/precificacao/simular/'+this.value; this.form.submit()">
-                            <option value="">— Escolha um produto —</option>
-                            <option th:each="p : ${produtos}"
-                                    th:value="${p.id}"
-                                    th:text="${p.nome + ' (R$ ' + #numbers.formatDecimal(p.valor,1,2) + ')'}"
-                                    th:selected="${p.id == produtoSelecionado}"></option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <a href="/precificacao/regras" class="btn btn-outline-secondary w-100">
-                            <i class="bi bi-sliders me-2"></i>Gerenciar Regras
-                        </a>
-                    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Produtos no banco</div>
+                    <div class="fs-3 fw-bold text-primary" th:text="${kpis.totalProdutos}">0</div>
+                    <div class="small text-muted">Base JPA Produto</div>
                 </div>
-            </form>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Políticas ativas</div>
+                    <div class="fs-3 fw-bold text-success" th:text="${kpis.politicasAtivas}">0</div>
+                    <div class="small text-muted">Regras próprias por produto</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Simulações aprovadas</div>
+                    <div class="fs-3 fw-bold text-success" th:text="${kpis.simulacoesAprovadas}">0</div>
+                    <div class="small text-muted">Inclui preços aplicados</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="text-muted small">Margem média simulada</div>
+                    <div class="fs-3 fw-bold text-info"><span th:text="${#numbers.formatDecimal(kpis.margemMedia,1,2)}">0</span>%</div>
+                    <div class="small text-muted">Calculada do histórico</div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Resultado da simulação -->
-    <div th:if="${resultado != null}">
-
-        <!-- Card de resultado -->
-        <div class="card mb-4"
-             th:classappend="${resultado.aprovado} ? 'border-success' : 'border-danger'">
-            <div class="card-header"
-                 th:classappend="${resultado.aprovado} ? 'bg-success bg-opacity-10' : 'bg-danger bg-opacity-10'">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <span th:if="${resultado.aprovado}">
-                            <i class="bi bi-check-circle-fill text-success me-2"></i>
-                            Simulação APROVADA — <span th:text="${resultado.produtoNome}"></span>
-                        </span>
-                        <span th:unless="${resultado.aprovado}">
-                            <i class="bi bi-x-circle-fill text-danger me-2"></i>
-                            Simulação BLOQUEADA — <span th:text="${resultado.produtoNome}"></span>
-                        </span>
-                    </h5>
-                    <span th:if="${resultado.aprovado}" class="badge bg-success fs-6">✅ APROVADO</span>
-                    <span th:unless="${resultado.aprovado}" class="badge bg-danger fs-6">❌ BLOQUEADO</span>
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 105px; z-index: 1;">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-calculator me-2 text-success"></i>Nova simulação</h5>
                 </div>
-            </div>
-            <div class="card-body">
-                <div class="row g-4">
-                    <div class="col-md-3 text-center">
-                        <div class="text-muted small">Preço Atual</div>
-                        <div class="fs-4 fw-bold"
-                             th:text="${#numbers.formatCurrency(resultado.precoAtual)}"></div>
-                    </div>
-                    <div class="col-md-1 text-center d-flex align-items-center justify-content-center">
-                        <i class="bi bi-arrow-right fs-3 text-muted"></i>
-                    </div>
-                    <div class="col-md-3 text-center">
-                        <div class="text-muted small">Preço Sugerido</div>
-                        <div class="fs-4 fw-bold"
-                             th:classappend="${resultado.aprovado} ? 'text-success' : 'text-danger'"
-                             th:text="${#numbers.formatCurrency(resultado.precoSugerido)}"></div>
-                        <div class="small"
-                             th:classappend="${resultado.variacaoPercent >= 0} ? 'text-success' : 'text-danger'">
-                            <span th:if="${resultado.variacaoPercent >= 0}">▲</span>
-                            <span th:unless="${resultado.variacaoPercent >= 0}">▼</span>
-                            <span th:text="${#numbers.formatDecimal(resultado.variacaoPercent, 1, 1) + '%'}"></span>
+                <div class="card-body">
+                    <form th:action="@{/precificacao/simular}" method="post" id="simuladorForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Produto *</label>
+                            <select class="form-select" name="produtoId" id="produtoSelect" required>
+                                <option value="">Selecione um produto...</option>
+                                <option th:each="p : ${produtos}"
+                                        th:value="${p.id}"
+                                        th:data-preco="${p.precoAtual}"
+                                        th:data-custo="${p.custoCompra}"
+                                        th:text="${p.nome + ' | Estoque: ' + p.quantidade + ' | Preço: R$ ' + #numbers.formatDecimal(p.precoAtual,1,2)}"
+                                        th:selected="${p.id == produtoSelecionado}"></option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="col-md-3 text-center">
-                        <div class="text-muted small">Margem Calculada</div>
-                        <div class="fs-4 fw-bold"
-                             th:classappend="${resultado.margemCalculada >= resultado.margemMinima} ? 'text-success' : 'text-danger'"
-                             th:text="${#numbers.formatDecimal(resultado.margemCalculada, 1, 1) + '%'}"></div>
-                        <div class="small text-muted">
-                            Mínimo: <span th:text="${resultado.margemMinima + '%'}"></span>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Custo de compra</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">R$</span>
+                                    <input type="number" step="0.01" min="0.01" class="form-control live-calc" name="custoCompra" id="custoCompra" placeholder="Ex: 18.50">
+                                </div>
+                                <div class="form-text">Usa o custo salvo no produto se ficar vazio.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Margem de lucro desejada (%)</label>
+                                <input type="number" step="0.01" min="0" max="99.99" class="form-control live-calc" name="margemLucroDesejada" id="margem" th:value="${params.margemPadraoLucro}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Impostos (%)</label>
+                                <input type="number" step="0.01" min="0" max="100" class="form-control live-calc" name="aliquotaImpostos" id="impostos" th:value="${params.impostoPadraoPercentual}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Despesas operacionais (%)</label>
+                                <input type="number" step="0.01" min="0" max="100" class="form-control live-calc" name="percentualDespesasOperacionais" id="despesas" th:value="${params.despesaOperacionalPadraoPercentual}">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Desconto máximo permitido (%)</label>
+                                <input type="number" step="0.01" min="0" max="100" class="form-control live-calc" name="descontoMaximoPermitido" id="desconto" th:value="${params.descontoMaximoGlobal}">
+                                <div class="form-text">O motor bloqueia descontos que derrubem a margem abaixo do mínimo global.</div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-2 text-center">
-                        <div class="text-muted small">Estratégia</div>
-                        <div class="badge bg-primary mt-1"
-                             th:text="${resultado.tipoEstrategia}"></div>
-                    </div>
-                </div>
 
-                <!-- Justificativa -->
-                <div class="alert mt-3"
-                     th:classappend="${resultado.aprovado} ? 'alert-success' : 'alert-danger'">
-                    <i class="bi bi-info-circle me-2"></i>
-                    <span th:text="${resultado.justificativa}"></span>
-                </div>
+                        <div class="alert alert-light border mt-3" id="previewBox">
+                            <div class="small text-muted mb-1">Prévia local antes de salvar no banco</div>
+                            <div class="d-flex justify-content-between"><span>Custo total estimado:</span><strong id="previewCusto">R$ 0,00</strong></div>
+                            <div class="d-flex justify-content-between"><span>Preço sugerido:</span><strong id="previewPreco">R$ 0,00</strong></div>
+                            <div class="d-flex justify-content-between"><span>Margem mínima global:</span><strong><span th:text="${params.margemMinimaGlobal}">30</span>%</strong></div>
+                        </div>
 
-                <!-- Preço mínimo se bloqueado -->
-                <div class="alert alert-warning" th:unless="${resultado.aprovado}">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <strong>Preço mínimo para manter margem de
-                        <span th:text="${resultado.margemMinima}"></span>%:
-                    </strong>
-                    <span class="fw-bold"
-                          th:text="${#numbers.formatCurrency(resultado.precoMinimo)}"></span>
-                </div>
-
-                <!-- Botão aplicar (só se aprovado) -->
-                <div th:if="${resultado.aprovado}" class="text-end mt-3">
-                    <form th:action="@{/precificacao/aplicar}" method="post"
-                          style="display:inline">
-                        <input type="hidden" name="produtoId"
-                               th:value="${resultado.produtoId}">
-                        <input type="hidden" name="precoNovo"
-                               th:value="${resultado.precoSugerido}">
-                        <button type="submit" class="btn btn-success btn-lg"
-                                onclick="return confirm('Confirma a aplicação do preço R$ ' + this.form.precoNovo.value + '?')">
-                            <i class="bi bi-check-lg me-2"></i>
-                            Aplicar Preço —
-                            <span th:text="${#numbers.formatCurrency(resultado.precoSugerido)}"></span>
+                        <button class="btn btn-success btn-lg w-100" type="submit">
+                            <i class="bi bi-database-check me-2"></i>Calcular e gravar simulação JPA
                         </button>
                     </form>
                 </div>
             </div>
         </div>
+
+        <div class="col-lg-7">
+            <div th:if="${resultado != null}" class="card shadow-sm border-0 mb-4"
+                 th:classappend="${resultado.aprovado} ? ' border-success' : ' border-danger'">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0" th:text="${resultado.produtoNome}">Produto</h5>
+                        <small class="text-muted">Simulação #<span th:text="${resultado.simulacaoId}"></span> salva no banco de dados</small>
+                    </div>
+                    <span th:if="${resultado.aprovado}" class="badge bg-success fs-6">APROVADO</span>
+                    <span th:unless="${resultado.aprovado}" class="badge bg-danger fs-6" th:text="${resultado.status.descricao}">BLOQUEADO</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 text-center mb-4">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3">
+                                <div class="text-muted small">Preço atual</div>
+                                <div class="fs-4 fw-bold" th:text="${#numbers.formatCurrency(resultado.precoAtual)}">R$ 0,00</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-success bg-opacity-10 rounded-3">
+                                <div class="text-muted small">Preço sugerido</div>
+                                <div class="fs-4 fw-bold text-success" th:text="${#numbers.formatCurrency(resultado.precoSugerido)}">R$ 0,00</div>
+                                <div class="small" th:classappend="${resultado.variacaoPercentual.compareTo(T(java.math.BigDecimal).ZERO) >= 0} ? 'text-success' : 'text-danger'">
+                                    <span th:text="${#numbers.formatDecimal(resultado.variacaoPercentual,1,2)}">0</span>% vs atual
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-info bg-opacity-10 rounded-3">
+                                <div class="text-muted small">Margem real</div>
+                                <div class="fs-4 fw-bold text-info"><span th:text="${#numbers.formatDecimal(resultado.margemReal,1,2)}">0</span>%</div>
+                                <div class="small text-muted">Mínimo: <span th:text="${resultado.margemMinimaGlobal}"></span>%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert" th:classappend="${resultado.aprovado} ? 'alert-success' : 'alert-danger'">
+                        <i class="bi bi-info-circle me-2"></i><span th:text="${resultado.justificativa}"></span>
+                    </div>
+
+                    <h6 class="fw-bold mt-4"><i class="bi bi-list-ol me-2"></i>Composição do custo via Iterator</h6>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                            <tr>
+                                <th>Ordem</th>
+                                <th>Componente</th>
+                                <th>Percentual</th>
+                                <th>Base</th>
+                                <th class="text-end">Valor</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="c : ${resultado.componentes}">
+                                <td><span class="badge bg-secondary" th:text="${c.ordem}">1</span></td>
+                                <td>
+                                    <strong th:text="${c.nome}">Custo</strong>
+                                    <div class="small text-muted" th:text="${c.tipo.descricao}">Tipo</div>
+                                </td>
+                                <td><span th:text="${#numbers.formatDecimal(c.percentual,1,2)}">0</span>%</td>
+                                <td th:text="${#numbers.formatCurrency(c.baseCalculo)}">R$ 0,00</td>
+                                <td class="text-end fw-semibold" th:text="${#numbers.formatCurrency(c.valor)}">R$ 0,00</td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <th colspan="4" class="text-end">Custo total</th>
+                                <th class="text-end" th:text="${#numbers.formatCurrency(resultado.custoTotal)}">R$ 0,00</th>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="row g-3 mt-3">
+                        <div class="col-md-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <div class="small text-muted">Preço mínimo operacional</div>
+                                <div class="fw-bold" th:text="${#numbers.formatCurrency(resultado.precoMinimoPermitido)}">R$ 0,00</div>
+                                <div class="small text-muted">Menor preço para manter a margem mínima global.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded-3 p-3 h-100">
+                                <div class="small text-muted">Desconto máximo efetivo</div>
+                                <div class="fw-bold"><span th:text="${#numbers.formatDecimal(resultado.descontoMaximoEfetivo,1,2)}">0</span>%</div>
+                                <div class="small text-muted">Solicitado: <span th:text="${resultado.descontoMaximoSolicitado}"></span>%.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${resultado.aprovado}" class="text-end mt-4">
+                        <form th:action="@{/precificacao/aplicar/{id}(id=${resultado.simulacaoId})}" method="post" style="display:inline">
+                            <button type="submit" class="btn btn-success btn-lg" onclick="return confirm('Aplicar preço sugerido no produto?')">
+                                <i class="bi bi-check-lg me-2"></i>Aplicar preço no cadastro do produto
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-activity me-2 text-primary"></i>Últimas simulações gravadas</h5>
+                    <a href="/precificacao/historico" class="btn btn-sm btn-outline-primary">Ver tudo</a>
+                </div>
+                <div class="card-body p-0">
+                    <div th:if="${simulacoesRecentes.empty}" class="p-4 text-center text-muted">Nenhuma simulação no banco ainda.</div>
+                    <div class="table-responsive" th:unless="${simulacoesRecentes.empty}">
+                        <table class="table mb-0 align-middle">
+                            <thead><tr><th>Produto</th><th>Preço</th><th>Margem</th><th>Status</th><th>Data</th></tr></thead>
+                            <tbody>
+                            <tr th:each="s : ${simulacoesRecentes}">
+                                <td th:text="${s.produtoNome}">Produto</td>
+                                <td th:text="${#numbers.formatCurrency(s.precoSugerido)}">R$ 0,00</td>
+                                <td><span th:text="${#numbers.formatDecimal(s.margemReal,1,2)}">0</span>%</td>
+                                <td>
+                                    <span class="badge" th:classappend="${s.aprovado || s.aplicado} ? 'bg-success' : 'bg-danger'" th:text="${s.status.descricao}">Status</span>
+                                </td>
+                                <td th:text="${#temporals.format(s.dataSimulacao, 'dd/MM HH:mm')}">data</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 </div>
 
 <div th:replace="layout :: footer"></div>
 <div th:replace="layout :: scripts"></div>
+<script>
+(function () {
+    function parseNumber(value) {
+        if (!value) return 0;
+        return parseFloat(String(value).replace(',', '.')) || 0;
+    }
+    function money(value) {
+        return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+    function recalc() {
+        const select = document.getElementById('produtoSelect');
+        const selected = select && select.options[select.selectedIndex];
+        const custoSelect = selected ? parseNumber(selected.getAttribute('data-custo')) : 0;
+        const custo = parseNumber(document.getElementById('custoCompra').value) || custoSelect;
+        const margem = parseNumber(document.getElementById('margem').value);
+        const impostos = parseNumber(document.getElementById('impostos').value);
+        const despesas = parseNumber(document.getElementById('despesas').value);
+        const custoTotal = custo + (custo * impostos / 100) + (custo * despesas / 100);
+        const divisor = 1 - (margem / 100);
+        const preco = divisor > 0 ? custoTotal / divisor : 0;
+        document.getElementById('previewCusto').textContent = money(custoTotal);
+        document.getElementById('previewPreco').textContent = money(preco);
+    }
+    document.querySelectorAll('.live-calc, #produtoSelect').forEach(el => el.addEventListener('input', recalc));
+    document.querySelectorAll('.live-calc, #produtoSelect').forEach(el => el.addEventListener('change', recalc));
+    recalc();
+})();
+</script>
 </body>
 </html>

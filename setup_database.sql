@@ -1,19 +1,97 @@
--- Recriação completa do banco de dados
 DROP DATABASE IF EXISTS studiomuda;
 CREATE DATABASE studiomuda;
 USE studiomuda;
-
--- Tabela de produtos
+CREATE USER IF NOT EXISTS 'estokar'@'localhost' IDENTIFIED BY 'estokar123';
+GRANT ALL PRIVILEGES ON studiomuda.* TO 'estokar'@'localhost';
+FLUSH PRIVILEGES;
 CREATE TABLE produto (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,                        -- Nome do produto
-    descricao TEXT,                                    -- Descrição opcional
-    tipo VARCHAR(50),                                  -- Tipo/categoria
-    quantidade INT DEFAULT 0,                          -- Quantidade em estoque
-    valor DECIMAL(10,2) NOT NULL DEFAULT 0.00          -- Valor unitário
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    tipo VARCHAR(50),
+    quantidade INT DEFAULT 0,
+    valor DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    custo DECIMAL(10,2) NOT NULL DEFAULT 0.00
 );
 
--- Tabelas de suprimentos e reposicao inteligente
+CREATE TABLE precificacao_parametro (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    margem_minima_global DECIMAL(8,2) NOT NULL DEFAULT 30.00,
+    desconto_maximo_global DECIMAL(8,2) NOT NULL DEFAULT 20.00,
+    margem_padrao_lucro DECIMAL(8,2) NOT NULL DEFAULT 45.00,
+    imposto_padrao_percentual DECIMAL(8,2) NOT NULL DEFAULT 8.50,
+    despesa_operacional_padrao_percentual DECIMAL(8,2) NOT NULL DEFAULT 12.00,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE precificacao_politica (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    produto_id INT NOT NULL,
+    margem_lucro_desejada DECIMAL(8,2) NOT NULL,
+    aliquota_impostos DECIMAL(8,2) NOT NULL,
+    percentual_despesas_operacionais DECIMAL(8,2) NOT NULL,
+    desconto_maximo_permitido DECIMAL(8,2) NOT NULL,
+    ativa BOOLEAN NOT NULL DEFAULT TRUE,
+    observacao VARCHAR(300),
+    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
+);
+
+CREATE TABLE precificacao_simulacao (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    produto_id INT NOT NULL,
+    produto_nome VARCHAR(150) NOT NULL,
+    preco_atual DECIMAL(12,2) NOT NULL,
+    custo_compra DECIMAL(12,2) NOT NULL,
+    valor_impostos DECIMAL(12,2) NOT NULL,
+    valor_despesas_operacionais DECIMAL(12,2) NOT NULL,
+    custo_total DECIMAL(12,2) NOT NULL,
+    preco_sugerido DECIMAL(12,2) NOT NULL,
+    preco_minimo_permitido DECIMAL(12,2) NOT NULL,
+    margem_lucro_desejada DECIMAL(8,2) NOT NULL,
+    margem_minima_global DECIMAL(8,2) NOT NULL,
+    margem_real DECIMAL(8,2) NOT NULL,
+    desconto_maximo_solicitado DECIMAL(8,2) NOT NULL,
+    desconto_maximo_efetivo DECIMAL(8,2) NOT NULL,
+    status VARCHAR(30) NOT NULL,
+    justificativa TEXT,
+    usuario_responsavel VARCHAR(80) NOT NULL,
+    aplicado BOOLEAN NOT NULL DEFAULT FALSE,
+    data_simulacao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_aplicacao TIMESTAMP NULL,
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
+);
+
+CREATE TABLE precificacao_componente (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    simulacao_id BIGINT NOT NULL,
+    nome VARCHAR(120) NOT NULL,
+    tipo VARCHAR(40) NOT NULL,
+    percentual DECIMAL(8,2) NOT NULL,
+    valor DECIMAL(12,2) NOT NULL,
+    base_calculo DECIMAL(12,2) NOT NULL,
+    ordem INT NOT NULL,
+    FOREIGN KEY (simulacao_id) REFERENCES precificacao_simulacao(id) ON DELETE CASCADE
+);
+
+CREATE TABLE historico_preco (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    produto_id INT NOT NULL,
+    preco_anterior DECIMAL(10,2) NOT NULL,
+    preco_novo DECIMAL(10,2) NOT NULL,
+    percentual_variacao DECIMAL(8,2),
+    usuario_responsavel VARCHAR(80),
+    data_alteracao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
+);
+
+CREATE INDEX idx_precificacao_politica_produto ON precificacao_politica(produto_id, ativa);
+CREATE INDEX idx_precificacao_politica_atualizado ON precificacao_politica(atualizado_em);
+CREATE INDEX idx_precificacao_simulacao_produto ON precificacao_simulacao(produto_id, data_simulacao);
+CREATE INDEX idx_precificacao_simulacao_status ON precificacao_simulacao(status, data_simulacao);
+CREATE INDEX idx_precificacao_componente_simulacao ON precificacao_componente(simulacao_id, ordem);
+CREATE INDEX idx_historico_preco_produto_data ON historico_preco(produto_id, data_alteracao);
 CREATE TABLE fornecedor (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(120) NOT NULL,
@@ -51,7 +129,6 @@ CREATE TABLE item_ordem_compra (
     FOREIGN KEY (produto_id) REFERENCES produto(id)
 );
 
--- Tabelas de roteirizacao de remessas
 CREATE TABLE doca (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -89,15 +166,14 @@ CREATE TABLE agendamento_remessa (
 CREATE INDEX idx_agendamento_remessa_doca_data ON agendamento_remessa(doca_id, data, horario, status);
 CREATE INDEX idx_calendario_excecao_data ON calendario_excecao(data, ativa);
 
--- Tabela de funcionários
 CREATE TABLE funcionario (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,                        -- Nome do funcionário
-    cpf VARCHAR(11) NOT NULL UNIQUE,                   -- CPF (único)
-    cargo VARCHAR(50),                                 -- Cargo no sistema
-    data_nasc DATE,                                    -- Data de nascimento
-    telefone VARCHAR(20),                              -- Telefone de contato
-    ativo BOOLEAN DEFAULT TRUE,                        -- Ativo/inativo
+    nome VARCHAR(100) NOT NULL,
+    cpf VARCHAR(11) NOT NULL UNIQUE,
+    cargo VARCHAR(50),
+    data_nasc DATE,
+    telefone VARCHAR(20),
+    ativo BOOLEAN DEFAULT TRUE,
     cep VARCHAR(10),
     rua VARCHAR(100),
     numero VARCHAR(10),
@@ -106,15 +182,14 @@ CREATE TABLE funcionario (
     estado VARCHAR(2)
 );
 
--- Tabela de clientes
 CREATE TABLE cliente (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,                         -- Nome do cliente
-    cpf_cnpj VARCHAR(20) NOT NULL UNIQUE,               -- CPF ou CNPJ (único)
+    nome VARCHAR(100) NOT NULL,
+    cpf_cnpj VARCHAR(20) NOT NULL UNIQUE,
     telefone VARCHAR(20) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    tipo VARCHAR(2) NOT NULL,                           -- PF ou PJ
-    ativo BOOLEAN DEFAULT TRUE,                         -- Exclusão lógica
+    tipo VARCHAR(2) NOT NULL,
+    ativo BOOLEAN DEFAULT TRUE,
     cep VARCHAR(10),
     rua VARCHAR(100),
     numero VARCHAR(10),
@@ -124,30 +199,28 @@ CREATE TABLE cliente (
     dataNascimento DATE
 );
 
--- Tabela de cupons
 CREATE TABLE cupom (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    codigo VARCHAR(20) NOT NULL UNIQUE,                -- Código único
+    codigo VARCHAR(20) NOT NULL UNIQUE,
     descricao TEXT,
-    valor DECIMAL(10,2) NOT NULL,                      -- Valor do desconto
+    valor DECIMAL(10,2) NOT NULL,
     data_inicio DATE,
     validade DATE,
     condicoes_uso TEXT
 );
 
--- Tabela de pedidos
 CREATE TABLE pedido (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    data_requisicao DATE,                              -- Data do pedido
-    data_entrega DATE,                                 -- Data de entrega
-    itens TEXT,                                        -- Itens (legado)
-    cliente_id INT,                                    -- Cliente associado
-    funcionario_id INT,                                -- Funcionário associado à venda
-    cupom_id INT,                                      -- Cupom de desconto aplicado
-    valor_desconto DECIMAL(10,2) DEFAULT 0.00,         -- Valor do desconto aplicado
-    status VARCHAR(40) NOT NULL DEFAULT 'PENDENTE',    -- PENDENTE, CONCLUIDO, CANCELADO, CANCELAMENTO_PENDENTE_APROVACAO
-    status_pagamento VARCHAR(20) NOT NULL DEFAULT 'PENDENTE', -- PENDENTE ou PAGO
-    data_pagamento DATE,                               -- Data de quitação
+    data_requisicao DATE,
+    data_entrega DATE,
+    itens TEXT,
+    cliente_id INT,
+    funcionario_id INT,
+    cupom_id INT,
+    valor_desconto DECIMAL(10,2) DEFAULT 0.00,
+    status VARCHAR(40) NOT NULL DEFAULT 'PENDENTE',
+    status_pagamento VARCHAR(20) NOT NULL DEFAULT 'PENDENTE',
+    data_pagamento DATE,
     cancelamento_solicitante_id INT NULL,
     cancelamento_solicitante_nome VARCHAR(120) NULL,
     justificativa_cancelamento VARCHAR(300) NULL,
@@ -159,7 +232,6 @@ CREATE TABLE pedido (
     FOREIGN KEY (funcionario_id) REFERENCES funcionario(id)
 );
 
--- Criar índices para melhorar a performance das consultas em pedidos
 CREATE INDEX idx_pedido_funcionario ON pedido(funcionario_id);
 CREATE INDEX idx_pedido_cupom ON pedido(cupom_id);
 CREATE INDEX idx_pedido_cliente_pagamento ON pedido(cliente_id, status_pagamento, data_requisicao);
@@ -223,17 +295,15 @@ CREATE TABLE historico_ajuste_estoque (
 CREATE INDEX idx_solicitacao_ajuste_status_data ON solicitacao_ajuste_estoque(status, data_solicitacao);
 CREATE INDEX idx_historico_ajuste_solicitacao_data ON historico_ajuste_estoque(solicitacao_id, data_evento);
 
--- Tabela de movimentações de estoque
 CREATE TABLE movimentacao_estoque (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    id_produto INT,                                    -- Produto afetado
-    tipo VARCHAR(20),                                  -- Entrada/Saída
-    quantidade INT,                                    -- Quantidade movida
-    motivo TEXT,                                       -- Motivo
-    data DATE                                          -- Data da movimentação
+    id_produto INT,
+    tipo VARCHAR(20),
+    quantidade INT,
+    motivo TEXT,
+    data DATE
 );
 
--- Tabela de histórico de alterações no estoque
 CREATE TABLE historico_estoque (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_produto INT,
@@ -284,7 +354,6 @@ CREATE TABLE contagem_item (
 CREATE INDEX idx_sessao_inventario_setor_status ON sessao_inventario(setor, status);
 CREATE INDEX idx_contagem_item_sessao_produto_data ON contagem_item(sessao_id, produto_id, data_contagem);
 
--- Tabela intermediária de itens dos pedidos
 CREATE TABLE item_pedido (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_pedido INT,
@@ -294,7 +363,6 @@ CREATE TABLE item_pedido (
     FOREIGN KEY (id_produto) REFERENCES produto(id)
 );
 
--- Tabela de alertas financeiros por inadimplência
 CREATE TABLE alerta_financeiro (
     id INT AUTO_INCREMENT PRIMARY KEY,
     cliente_id INT NOT NULL,
@@ -309,7 +377,6 @@ CREATE TABLE alerta_financeiro (
 
 CREATE INDEX idx_alerta_financeiro_resolvido ON alerta_financeiro(resolvido, data_alerta);
 
--- Tabela de devoluções
 CREATE TABLE devolucao (
     id INT AUTO_INCREMENT PRIMARY KEY,
     pedido_id INT NOT NULL,
@@ -328,7 +395,6 @@ CREATE INDEX idx_devolucao_pedido ON devolucao(pedido_id);
 CREATE INDEX idx_devolucao_cliente ON devolucao(cliente_id);
 CREATE INDEX idx_devolucao_status ON devolucao(status);
 
--- Tabela de itens de devolução
 CREATE TABLE devolucao_item (
     id INT AUTO_INCREMENT PRIMARY KEY,
     devolucao_id INT NOT NULL,
@@ -338,7 +404,6 @@ CREATE TABLE devolucao_item (
     FOREIGN KEY (produto_id) REFERENCES produto(id)
 );
 
--- Tabelas de controle de acesso por perfil
 CREATE TABLE perfil_acesso (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(80) NOT NULL UNIQUE,
@@ -387,7 +452,6 @@ CREATE TABLE log_acesso (
 CREATE INDEX idx_permissao_perfil_lookup ON permissao_perfil(perfil_id, recurso, operacao, permitido);
 CREATE INDEX idx_log_acesso_data ON log_acesso(data_hora, resultado);
 
--- Módulo: Relatório Financeiro por Período
 CREATE TABLE categoria_financeira (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(120) NOT NULL UNIQUE,
@@ -485,7 +549,6 @@ CREATE TABLE lancamento_ajuste (
 CREATE INDEX idx_relatorio_gerado_periodo ON relatorio_gerado(data_inicio, data_fim, data_geracao);
 CREATE INDEX idx_lancamento_ajuste_data ON lancamento_ajuste(data_lancamento, categoria_id);
 
--- Tabela de histórico de alterações no funcionário
 CREATE TABLE historico_funcionario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_funcionario INT,
@@ -495,7 +558,6 @@ CREATE TABLE historico_funcionario (
     data_alteracao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabela de histórico de alterações no cliente
 CREATE TABLE historico_cliente (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT,
@@ -505,7 +567,6 @@ CREATE TABLE historico_cliente (
     data_alteracao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Trigger de auditoria para funcionário
 DELIMITER $$
 CREATE TRIGGER trg_log_funcionario_geral
 AFTER UPDATE ON funcionario
@@ -553,7 +614,6 @@ BEGIN
 END$$
 DELIMITER ;
 
--- Trigger de auditoria para cliente
 DELIMITER $$
 CREATE TRIGGER trg_log_cliente
 AFTER UPDATE ON cliente
@@ -601,22 +661,19 @@ BEGIN
 END$$
 DELIMITER ;
 
--- Trigger para atualizar valor_desconto quando um cupom é alterado
 DELIMITER $$
 CREATE TRIGGER trg_atualiza_desconto_pedido
 AFTER UPDATE ON cupom
 FOR EACH ROW
 BEGIN
-    -- Atualiza o valor do desconto nos pedidos que usam este cupom se o valor do cupom foi alterado
     IF OLD.valor <> NEW.valor THEN
-        UPDATE pedido 
+        UPDATE pedido
         SET valor_desconto = NEW.valor
         WHERE cupom_id = NEW.id;
     END IF;
 END$$
 DELIMITER ;
 
--- Procedure para buscar cliente por CPF ou CNPJ
 DELIMITER $$
 CREATE PROCEDURE buscar_cliente_por_cpf_cnpj(IN p_cpf_cnpj VARCHAR(20))
 BEGIN
@@ -624,11 +681,10 @@ BEGIN
 END$$
 DELIMITER ;
 
--- Dados iniciais do RBAC (Controle de Acesso por Perfil)
 INSERT INTO perfil_acesso (nome, descricao, ativo) VALUES
-('ADMINISTRADOR', 'Perfil responsável por governança completa de acessos e cadastros.', TRUE),
-('GERENTE_OPERACIONAL', 'Perfil com operação supervisionada e permissões de aprovação.', TRUE),
-('OPERADOR_VENDEDOR', 'Perfil de execução diária com permissões restritas.', TRUE);
+('ADMINISTRADOR', 'Perfil responsÃ¡vel por governanÃ§a completa de acessos e cadastros.', TRUE),
+('GERENTE_OPERACIONAL', 'Perfil com operaÃ§Ã£o supervisionada e permissÃµes de aprovaÃ§Ã£o.', TRUE),
+('OPERADOR_VENDEDOR', 'Perfil de execuÃ§Ã£o diÃ¡ria com permissÃµes restritas.', TRUE);
 
 INSERT INTO usuario_acesso (username, nome, senha, ativo) VALUES
 ('admin', 'Administrador do Sistema', '{noop}Admin@123', TRUE),
@@ -717,16 +773,15 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (3, 'API', 'LEITURA', TRUE),
 (3, 'HOME', 'LEITURA', TRUE);
 
--- Dados iniciais do módulo financeiro
 INSERT INTO categoria_financeira (nome, tipo, origem_sistema, descricao, ativo) VALUES
-('Venda de Produto', 'RECEITA', 'PEDIDO_PAGO', 'Receita consolidada de pedidos pagos no período.', TRUE),
-('Devolução', 'DESPESA', 'MOVIMENTACAO_ENTRADA_DEVOLUCAO', 'Estornos e devoluções registradas via movimentação de entrada.', TRUE),
-('Custo de Reposição', 'DESPESA', 'MOVIMENTACAO_SAIDA', 'Custo estimado de saídas de estoque no período.', TRUE),
-('Ajuste Manual', 'RECEITA', 'LANCAMENTO_AJUSTE', 'Lançamentos manuais de correção vinculados ao plano de contas.', TRUE);
+('Venda de Produto', 'RECEITA', 'PEDIDO_PAGO', 'Receita consolidada de pedidos pagos no perÃ­odo.', TRUE),
+('DevoluÃ§Ã£o', 'DESPESA', 'MOVIMENTACAO_ENTRADA_DEVOLUCAO', 'Estornos e devoluÃ§Ãµes registradas via movimentaÃ§Ã£o de entrada.', TRUE),
+('Custo de ReposiÃ§Ã£o', 'DESPESA', 'MOVIMENTACAO_SAIDA', 'Custo estimado de saÃ­das de estoque no perÃ­odo.', TRUE),
+('Ajuste Manual', 'RECEITA', 'LANCAMENTO_AJUSTE', 'LanÃ§amentos manuais de correÃ§Ã£o vinculados ao plano de contas.', TRUE);
 
 INSERT INTO template_relatorio (nome, descricao, periodo_padrao, agrupamento, ativo) VALUES
-('Demonstrativo Mensal', 'Consolidação padrão mensal com margem e ticket médio.', 'MES', 'MES', TRUE),
-('Fechamento Semanal', 'Visão semanal para acompanhamento operacional.', 'SEMANA', 'SEMANA', TRUE);
+('Demonstrativo Mensal', 'ConsolidaÃ§Ã£o padrÃ£o mensal com margem e ticket mÃ©dio.', 'MES', 'MES', TRUE),
+('Fechamento Semanal', 'VisÃ£o semanal para acompanhamento operacional.', 'SEMANA', 'SEMANA', TRUE);
 
 INSERT INTO template_categoria (template_id, categoria_id)
 SELECT t.id, c.id
@@ -737,7 +792,7 @@ WHERE t.nome = 'Demonstrativo Mensal';
 INSERT INTO template_categoria (template_id, categoria_id)
 SELECT t.id, c.id
 FROM template_relatorio t
-JOIN categoria_financeira c ON c.nome IN ('Venda de Produto', 'Custo de Reposição', 'Ajuste Manual')
+JOIN categoria_financeira c ON c.nome IN ('Venda de Produto', 'Custo de ReposiÃ§Ã£o', 'Ajuste Manual')
 WHERE t.nome = 'Fechamento Semanal';
 
 INSERT INTO template_indicador (template_id, indicador)
@@ -751,13 +806,12 @@ SELECT id, 'MARGEM_BRUTA' FROM template_relatorio WHERE nome = 'Fechamento Seman
 UNION ALL
 SELECT id, 'TICKET_MEDIO' FROM template_relatorio WHERE nome = 'Fechamento Semanal';
 
--- Módulo de KPIs Operacionais (Gestão de Indicadores Operacionais com Metas e Alertas Persistidos)
 CREATE TABLE IF NOT EXISTS indicador_operacional (
     id INT AUTO_INCREMENT PRIMARY KEY,
     codigo VARCHAR(40) NOT NULL UNIQUE,
     nome VARCHAR(120) NOT NULL,
     descricao VARCHAR(255),
-    tipo_calculo VARCHAR(30) NOT NULL,   -- TICKET_MEDIO, ESTOQUE_CRITICO, TAXA_CANCELAMENTO, SEM_ESTOQUE
+    tipo_calculo VARCHAR(30) NOT NULL,
     periodo_padrao VARCHAR(10) NOT NULL DEFAULT 'MES',
     ativo BOOLEAN DEFAULT TRUE
 );
@@ -767,7 +821,7 @@ CREATE TABLE IF NOT EXISTS meta_indicador (
     indicador_id INT NOT NULL,
     valor_alvo DECIMAL(14,4) NOT NULL,
     limite_critico DECIMAL(14,4) NOT NULL,
-    operador VARCHAR(20) NOT NULL DEFAULT 'MAIOR_IGUAL', -- MAIOR_IGUAL ou MENOR_IGUAL
+    operador VARCHAR(20) NOT NULL DEFAULT 'MAIOR_IGUAL',
     vigencia_inicio DATE NOT NULL,
     vigencia_fim DATE NULL,
     ativo BOOLEAN DEFAULT TRUE,
@@ -792,11 +846,11 @@ CREATE TABLE IF NOT EXISTS alerta_indicador (
     id INT AUTO_INCREMENT PRIMARY KEY,
     indicador_id INT NOT NULL,
     snapshot_id INT NOT NULL,
-    tipo_violacao VARCHAR(20) NOT NULL,   -- ABAIXO_META, ACIMA_CRITICO
+    tipo_violacao VARCHAR(20) NOT NULL,
     valor_esperado DECIMAL(14,4) NOT NULL,
     valor_encontrado DECIMAL(14,4) NOT NULL,
     mensagem TEXT NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'ATIVO', -- ATIVO, RESOLVIDO
+    status VARCHAR(20) NOT NULL DEFAULT 'ATIVO',
     resolvido_por VARCHAR(60) NULL,
     observacao TEXT NULL,
     data_alerta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -808,17 +862,17 @@ CREATE TABLE IF NOT EXISTS alerta_indicador (
 CREATE INDEX idx_snapshot_indicador_periodo ON snapshot_indicador(indicador_id, periodo_inicio, periodo_fim);
 CREATE INDEX idx_alerta_indicador_status ON alerta_indicador(status, data_alerta);
 
--- Inserção de dados iniciais para os indicadores operacionais
 INSERT IGNORE INTO indicador_operacional (codigo, nome, descricao, tipo_calculo, periodo_padrao, ativo) VALUES
-('TICKET_MEDIO', 'Ticket Médio de Vendas', 'Média de faturamento por pedido finalizado.', 'TICKET_MEDIO', 'MES', TRUE),
-('PRODUTOS_CRITICOS', 'Produtos em Estoque Crítico', 'Quantidade de produtos com estoque igual ou abaixo do ponto de pedido.', 'ESTOQUE_CRITICO', 'MES', TRUE),
-('TAXA_CANCELAMENTO', 'Taxa de Cancelamento', 'Percentual de pedidos cancelados em relação ao total de pedidos.', 'TAXA_CANCELAMENTO', 'MES', TRUE),
+('TICKET_MEDIO', 'Ticket MÃ©dio de Vendas', 'MÃ©dia de faturamento por pedido finalizado.', 'TICKET_MEDIO', 'MES', TRUE),
+('PRODUTOS_CRITICOS', 'Produtos em Estoque CrÃ­tico', 'Quantidade de produtos com estoque igual ou abaixo do ponto de pedido.', 'ESTOQUE_CRITICO', 'MES', TRUE),
+('TAXA_CANCELAMENTO', 'Taxa de Cancelamento', 'Percentual de pedidos cancelados em relaÃ§Ã£o ao total de pedidos.', 'TAXA_CANCELAMENTO', 'MES', TRUE),
 ('PRODUTOS_SEM_ESTOQUE', 'Produtos Sem Estoque', 'Quantidade de produtos ativos com saldo zerado no estoque.', 'SEM_ESTOQUE', 'MES', TRUE);
 
--- Inserção de metas padrão para cada indicador
 INSERT IGNORE INTO meta_indicador (indicador_id, valor_alvo, limite_critico, operador, vigencia_inicio, vigencia_fim, ativo)
-VALUES 
+VALUES
 ((SELECT id FROM indicador_operacional WHERE codigo = 'TICKET_MEDIO'), 150.0000, 100.0000, 'MAIOR_IGUAL', '2026-01-01', NULL, TRUE),
 ((SELECT id FROM indicador_operacional WHERE codigo = 'PRODUTOS_CRITICOS'), 0.0000, 3.0000, 'MENOR_IGUAL', '2026-01-01', NULL, TRUE),
 ((SELECT id FROM indicador_operacional WHERE codigo = 'TAXA_CANCELAMENTO'), 5.0000, 10.0000, 'MENOR_IGUAL', '2026-01-01', NULL, TRUE),
 ((SELECT id FROM indicador_operacional WHERE codigo = 'PRODUTOS_SEM_ESTOQUE'), 0.0000, 2.0000, 'MENOR_IGUAL', '2026-01-01', NULL, TRUE);
+
+

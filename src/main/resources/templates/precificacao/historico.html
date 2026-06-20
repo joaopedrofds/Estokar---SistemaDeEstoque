@@ -8,80 +8,86 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-md-8">
-                <h1 class="page-title"><i class="bi bi-clock-history me-3"></i>Histórico de Simulações</h1>
-                <p class="page-subtitle">Auditoria completa de todas as simulações de preço realizadas</p>
+                <h1 class="page-title"><i class="bi bi-clock-history me-3"></i>Histórico de Precificações</h1>
+                <p class="page-subtitle">Auditoria JPA com custo, impostos, despesas, margem e status de cada simulação.</p>
             </div>
             <div class="col-md-4 text-md-end">
-                <a href="/precificacao/simular" class="btn btn-outline">
-                    <i class="bi bi-calculator me-2"></i>Nova Simulação
-                </a>
+                <a href="/precificacao/simular" class="btn btn-outline"><i class="bi bi-plus-circle me-2"></i>Nova simulação</a>
             </div>
         </div>
     </div>
 </section>
 
 <div class="container my-4">
-    <!-- Filtros -->
+    <div th:if="${sucesso}" class="alert alert-success"><i class="bi bi-check-circle me-2"></i><span th:text="${sucesso}"></span></div>
+    <div th:if="${mensagemErro}" class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i><span th:text="${mensagemErro}"></span></div>
+
     <div class="d-flex gap-2 mb-4 flex-wrap">
-        <a href="/precificacao/historico" class="btn btn-sm"
-           th:classappend="${statusFiltro == null} ? 'btn-primary' : 'btn-outline-secondary'">Todas</a>
-        <a href="/precificacao/historico?status=APROVADO" class="btn btn-sm"
-           th:classappend="${statusFiltro == 'APROVADO'} ? 'btn-success' : 'btn-outline-success'">Aprovadas</a>
-        <a href="/precificacao/historico?status=BLOQUEADO" class="btn btn-sm"
-           th:classappend="${statusFiltro == 'BLOQUEADO'} ? 'btn-danger' : 'btn-outline-danger'">Bloqueadas</a>
-        <a href="/precificacao/historico?status=APLICADO" class="btn btn-sm"
-           th:classappend="${statusFiltro == 'APLICADO'} ? 'btn-primary' : 'btn-outline-primary'">Aplicadas</a>
+        <a href="/precificacao/historico" class="btn btn-sm" th:classappend="${statusFiltro == null} ? 'btn-primary' : 'btn-outline-secondary'">Todas</a>
+        <a href="/precificacao/historico?status=APROVADO" class="btn btn-sm" th:classappend="${statusFiltro == 'APROVADO'} ? 'btn-success' : 'btn-outline-success'">Aprovadas</a>
+        <a href="/precificacao/historico?status=APLICADO" class="btn btn-sm" th:classappend="${statusFiltro == 'APLICADO'} ? 'btn-success' : 'btn-outline-success'">Aplicadas</a>
+        <a href="/precificacao/historico?status=BLOQUEADO_MARGEM" class="btn btn-sm" th:classappend="${statusFiltro == 'BLOQUEADO_MARGEM'} ? 'btn-danger' : 'btn-outline-danger'">Bloqueio margem</a>
+        <a href="/precificacao/historico?status=BLOQUEADO_DESCONTO" class="btn btn-sm" th:classappend="${statusFiltro == 'BLOQUEADO_DESCONTO'} ? 'btn-danger' : 'btn-outline-danger'">Bloqueio desconto</a>
     </div>
 
-    <div class="error-state" th:if="${simulacoes.empty}">
-        <div class="error-icon"><i class="bi bi-clock-history"></i></div>
-        <div class="error-message">Nenhuma simulação registrada</div>
-    </div>
-
-    <div class="table-container" th:unless="${simulacoes.empty}">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Produto</th>
-                    <th>Estratégia</th>
-                    <th>Preço Atual</th>
-                    <th>Preço Sugerido</th>
-                    <th>Margem</th>
-                    <th>Status</th>
-                    <th>Responsável</th>
-                    <th>Data</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="s : ${simulacoes}">
-                    <td th:text="${s.produtoNome}"></td>
-                    <td>
-                        <span th:switch="${s.tipoEstrategia}">
-                            <span th:case="'MARGEM_FIXA'" class="badge bg-success">💰 Margem</span>
-                            <span th:case="'DESCONTO_VOLUME'" class="badge bg-warning text-dark">📦 Volume</span>
-                            <span th:case="'SAZONALIDADE'" class="badge bg-info text-white">🌱 Sazon.</span>
-                            <span th:case="*" class="badge bg-secondary" th:text="${s.tipoEstrategia}"></span>
-                        </span>
-                    </td>
-                    <td th:text="${#numbers.formatCurrency(s.precoAtual)}"></td>
-                    <td class="fw-semibold" th:text="${#numbers.formatCurrency(s.precoSugerido)}"></td>
-                    <td>
-                        <span th:text="${#numbers.formatDecimal(s.margemCalculada,1,1) + '%'}"
-                              th:classappend="${s.margemCalculada >= 30} ? 'text-success fw-semibold' : 'text-danger fw-semibold'">
-                        </span>
-                    </td>
-                    <td>
-                        <span th:switch="${s.status}">
-                            <span th:case="'APROVADO'" class="badge bg-success">✅ Aprovado</span>
-                            <span th:case="'BLOQUEADO'" class="badge bg-danger">❌ Bloqueado</span>
-                            <span th:case="'APLICADO'" class="badge bg-primary">✓ Aplicado</span>
-                        </span>
-                    </td>
-                    <td th:text="${s.usuarioResponsavel}"></td>
-                    <td th:text="${#temporals.format(s.dataSimulacao, 'dd/MM HH:mm')}"></td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div th:if="${simulacoes.empty}" class="p-5 text-center text-muted">
+                <i class="bi bi-database-x display-4 d-block mb-3"></i>
+                Nenhuma simulação encontrada.
+            </div>
+            <div class="table-responsive" th:unless="${simulacoes.empty}">
+                <table class="table align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Produto</th>
+                        <th>Custo total</th>
+                        <th>Preço sugerido</th>
+                        <th>Margem</th>
+                        <th>Desconto seguro</th>
+                        <th>Status</th>
+                        <th>Usuário</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s : ${simulacoes}">
+                        <td class="text-muted" th:text="${s.simulacaoId}">1</td>
+                        <td>
+                            <strong th:text="${s.produtoNome}">Produto</strong>
+                            <div class="small text-muted">Atual: <span th:text="${#numbers.formatCurrency(s.precoAtual)}"></span></div>
+                        </td>
+                        <td>
+                            <span th:text="${#numbers.formatCurrency(s.custoTotal)}">R$ 0,00</span>
+                            <div class="small text-muted">Compra: <span th:text="${#numbers.formatCurrency(s.custoCompra)}"></span></div>
+                        </td>
+                        <td class="fw-semibold" th:text="${#numbers.formatCurrency(s.precoSugerido)}">R$ 0,00</td>
+                        <td>
+                            <span class="badge" th:classappend="${s.margemReal.compareTo(s.margemMinimaGlobal) >= 0} ? 'bg-success' : 'bg-danger'">
+                                <span th:text="${#numbers.formatDecimal(s.margemReal,1,2)}">0</span>%
+                            </span>
+                            <div class="small text-muted">mín. <span th:text="${s.margemMinimaGlobal}"></span>%</div>
+                        </td>
+                        <td><span th:text="${#numbers.formatDecimal(s.descontoMaximoEfetivo,1,2)}">0</span>%</td>
+                        <td>
+                            <span class="badge" th:classappend="${s.aprovado || s.aplicado} ? 'bg-success' : 'bg-danger'" th:text="${s.status.descricao}">Status</span>
+                            <div class="small text-muted" th:text="${s.justificativa}">justificativa</div>
+                        </td>
+                        <td th:text="${s.usuarioResponsavel}">user</td>
+                        <td th:text="${#temporals.format(s.dataSimulacao, 'dd/MM/yyyy HH:mm')}">data</td>
+                        <td>
+                            <form th:if="${s.aprovado && !s.aplicado}" th:action="@{/precificacao/aplicar/{id}(id=${s.simulacaoId})}" method="post">
+                                <button class="btn btn-sm btn-success" onclick="return confirm('Aplicar este preço?')"><i class="bi bi-check-lg"></i></button>
+                            </form>
+                            <span th:if="${s.aplicado}" class="badge bg-success">Aplicado</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 

@@ -1,124 +1,186 @@
 package com.studiomuda.estoque.controller;
 
-import com.studiomuda.estoque.model.*;
-import com.studiomuda.estoque.repository.ProdutoRepository;
-import com.studiomuda.estoque.service.PrecificacaoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.studiomuda.estoque.precificacao.application.command.SalvarParametrosPrecificacaoCommand;
+import com.studiomuda.estoque.precificacao.application.command.SalvarPoliticaPrecificacaoCommand;
+import com.studiomuda.estoque.precificacao.application.command.SimularPrecoCommand;
+import com.studiomuda.estoque.precificacao.application.dto.PainelPrecificacaoView;
+import com.studiomuda.estoque.precificacao.application.dto.ResultadoPrecificacaoView;
+import com.studiomuda.estoque.precificacao.application.service.PrecificacaoDinamicaApplicationService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Controller da camada de apresentação para o motor de precificação.
- * Camada: Apresentação (Arquitetura Limpa)
+ * Controller de apresentação da funcionalidade 3.
+ * Mantém compatibilidade com as rotas antigas e expõe o fluxo novo baseado em JPA.
  */
 @Controller
 @RequestMapping("/precificacao")
 public class PrecificacaoController {
 
-    @Autowired private PrecificacaoService precificacaoService;
-    @Autowired private ProdutoRepository produtoRepository;
+    private final PrecificacaoDinamicaApplicationService service;
 
-    // ─── Regras ──────────────────────────────────────────────────────────────
-
-    @GetMapping("/regras")
-    public String listarRegras(Model model) {
-        List<RegraPrecificacao> regras = precificacaoService.listarRegras();
-        // Enriquecer com nome do produto
-        regras.forEach(r -> produtoRepository.findById(r.getProdutoId())
-            .ifPresent(p -> r.setProdutoNome(p.getNome())));
-        model.addAttribute("regras", regras);
-        model.addAttribute("produtos", produtoRepository.findAll());
-        model.addAttribute("novaRegra", new RegraPrecificacao());
-        return "precificacao/regras";
+    public PrecificacaoController(PrecificacaoDinamicaApplicationService service) {
+        this.service = service;
     }
 
-    @PostMapping("/regras/salvar")
-    public String salvarRegra(@ModelAttribute RegraPrecificacao regra) {
-        precificacaoService.salvarRegra(regra);
-        return "redirect:/precificacao/regras?sucesso=salvo";
+    @GetMapping
+    public String index() {
+        return "redirect:/precificacao/simular";
     }
-
-    @PostMapping("/regras/excluir/{id}")
-    public String excluirRegra(@PathVariable int id) {
-        precificacaoService.excluirRegra(id);
-        return "redirect:/precificacao/regras?sucesso=excluido";
-    }
-
-    // ─── Simulador ───────────────────────────────────────────────────────────
 
     @GetMapping("/simular")
-    public String formSimular(Model model) {
-        model.addAttribute("produtos", produtoRepository.findAll());
+    public String telaSimulador(@RequestParam(required = false) Integer produtoId, Model model) {
+        carregarPainel(model);
+        if (produtoId != null) {
+            model.addAttribute("produtoSelecionado", produtoId);
+        }
         return "precificacao/simular";
     }
 
     @GetMapping("/simular/{produtoId}")
-    public String simularPorProduto(@PathVariable int produtoId,
-                                     Authentication auth, Model model) {
+    public String simularPorProduto(@PathVariable int produtoId, Authentication auth, Model model) {
+        carregarPainel(model);
+        model.addAttribute("produtoSelecionado", produtoId);
+        SimularPrecoCommand command = new SimularPrecoCommand();
+        command.setProdutoId(produtoId);
         try {
-            String usuario = auth != null ? auth.getName() : "sistema";
-            ResultadoSimulacao resultado = precificacaoService.simular(produtoId, usuario);
+            ResultadoPrecificacaoView resultado = service.simular(command, usuario(auth));
             model.addAttribute("resultado", resultado);
-            model.addAttribute("produtos", produtoRepository.findAll());
-            model.addAttribute("produtoSelecionado", produtoId);
-            return "precificacao/simular";
         } catch (Exception e) {
             model.addAttribute("mensagemErro", "Erro ao simular: " + e.getMessage());
-            model.addAttribute("produtos", produtoRepository.findAll());
-            return "precificacao/simular";
         }
+        return "precificacao/simular";
     }
 
-    @PostMapping("/aplicar")
-    public String aplicarPreco(@RequestParam int produtoId,
-                                @RequestParam double precoNovo,
-                                Authentication auth,
-                                RedirectAttributes redirect) {
-        String usuario = auth != null ? auth.getName() : "sistema";
+    @PostMapping("/simular")
+    public String simular(@ModelAttribute SimularPrecoCommand command,
+                          Authentication auth,
+                          Model model) {
+        carregarPainel(model);
+        model.addAttribute("produtoSelecionado", command.getProdutoId());
         try {
-            precificacaoService.aplicarPreco(produtoId, precoNovo, usuario);
-            redirect.addFlashAttribute("sucesso", "Preço aplicado com sucesso! Histórico atualizado.");
-            return "redirect:/precificacao/simular/" + produtoId + "?sucesso=aplicado";
-        } catch (IllegalStateException e) {
-            redirect.addFlashAttribute("mensagemErro", e.getMessage());
-            return "redirect:/precificacao/simular/" + produtoId;
+            ResultadoPrecificacaoView resultado = service.simular(command, usuario(auth));
+            model.addAttribute("resultado", resultado);
+        } catch (Exception e) {
+            model.addAttribute("mensagemErro", "Erro ao simular: " + e.getMessage());
         }
+        return "precificacao/simular";
     }
 
-    // ─── Histórico ───────────────────────────────────────────────────────────
+    @PostMapping("/aplicar/{id}")
+    public String aplicarPrecoPorSimulacao(@PathVariable("id") Long simulacaoId,
+                                           Authentication auth,
+                                           RedirectAttributes redirect) {
+        try {
+            service.aplicarPreco(simulacaoId, usuario(auth));
+            redirect.addFlashAttribute("sucesso", "Preço aplicado com sucesso! Histórico atualizado.");
+        } catch (Exception e) {
+            redirect.addFlashAttribute("mensagemErro", e.getMessage());
+        }
+        return "redirect:/precificacao/historico";
+    }
+
+    /**
+     * Compatibilidade com a rota antiga que aplicava preço diretamente pelo produto.
+     */
+    @PostMapping("/aplicar")
+    public String aplicarPrecoLegado(@RequestParam int produtoId,
+                                     @RequestParam double precoNovo,
+                                     Authentication auth,
+                                     RedirectAttributes redirect) {
+        try {
+            service.aplicarPrecoLegado(produtoId, java.math.BigDecimal.valueOf(precoNovo), usuario(auth));
+            redirect.addFlashAttribute("sucesso", "Preço aplicado com sucesso! Histórico atualizado.");
+        } catch (Exception e) {
+            redirect.addFlashAttribute("mensagemErro", e.getMessage());
+        }
+        return "redirect:/precificacao/simular/" + produtoId;
+    }
+
+    @GetMapping("/regras")
+    public String regras(Model model) {
+        carregarPainel(model);
+        model.addAttribute("novaPolitica", service.novaPoliticaPadrao());
+        return "precificacao/regras";
+    }
+
+    @GetMapping("/regras/editar/{id}")
+    public String editarRegra(@PathVariable Long id, Model model) {
+        carregarPainel(model);
+        model.addAttribute("novaPolitica", service.carregarPoliticaParaEdicao(id));
+        model.addAttribute("modoEdicao", true);
+        return "precificacao/regras";
+    }
+
+    @PostMapping("/regras/salvar")
+    public String salvarRegra(@ModelAttribute SalvarPoliticaPrecificacaoCommand command,
+                              RedirectAttributes redirect) {
+        try {
+            service.salvarPolitica(command);
+            redirect.addFlashAttribute("sucesso", command.getId() == null
+                    ? "Política salva com sucesso!"
+                    : "Política atualizada com sucesso!");
+        } catch (Exception e) {
+            redirect.addFlashAttribute("mensagemErro", e.getMessage());
+        }
+        return "redirect:/precificacao/regras";
+    }
+
+    @PostMapping("/regras/excluir/{id}")
+    public String excluirRegra(@PathVariable Long id, RedirectAttributes redirect) {
+        try {
+            service.excluirPolitica(id);
+            redirect.addFlashAttribute("sucesso", "Política desativada com sucesso!");
+        } catch (Exception e) {
+            redirect.addFlashAttribute("mensagemErro", e.getMessage());
+        }
+        return "redirect:/precificacao/regras";
+    }
 
     @GetMapping("/historico")
-    public String historico(@RequestParam(required = false) String status,
-                             Model model) {
-        List<SimulacaoPreco> simulacoes = status != null && !status.isEmpty()
-            ? precificacaoService.listarSimulacoes().stream()
-                .filter(s -> status.equals(s.getStatus())).collect(Collectors.toList())
-            : precificacaoService.listarSimulacoes();
-
-        simulacoes.forEach(s -> produtoRepository.findById(s.getProdutoId())
-            .ifPresent(p -> s.setProdutoNome(p.getNome())));
-
-        model.addAttribute("simulacoes", simulacoes);
+    public String historico(@RequestParam(required = false) String status, Model model) {
+        model.addAttribute("simulacoes", service.listarHistorico(status));
         model.addAttribute("statusFiltro", status);
         return "precificacao/historico";
     }
 
-    // ─── Parâmetros ──────────────────────────────────────────────────────────
-
     @GetMapping("/parametros")
     public String parametros(Model model) {
-        model.addAttribute("params", precificacaoService.buscarParametros());
+        model.addAttribute("params", service.buscarParametros());
         return "precificacao/parametros";
     }
 
     @PostMapping("/parametros/salvar")
-    public String salvarParametros(@ModelAttribute ParametroPrecificacao params) {
-        precificacaoService.salvarParametros(params);
-        return "redirect:/precificacao/parametros?sucesso=salvo";
+    public String salvarParametros(@ModelAttribute SalvarParametrosPrecificacaoCommand command,
+                                   RedirectAttributes redirect) {
+        try {
+            service.salvarParametros(command);
+            redirect.addFlashAttribute("sucesso", "Parâmetros atualizados com sucesso!");
+        } catch (Exception e) {
+            redirect.addFlashAttribute("mensagemErro", e.getMessage());
+        }
+        return "redirect:/precificacao/parametros";
+    }
+
+    private void carregarPainel(Model model) {
+        PainelPrecificacaoView painel = service.montarPainel();
+        model.addAttribute("painel", painel);
+        model.addAttribute("produtos", painel.getProdutos());
+        model.addAttribute("politicas", painel.getPoliticas());
+        model.addAttribute("simulacoesRecentes", painel.getSimulacoesRecentes());
+        model.addAttribute("kpis", painel.getKpis());
+        model.addAttribute("params", painel.getParametros());
+    }
+
+    private String usuario(Authentication auth) {
+        return auth != null ? auth.getName() : "sistema";
     }
 }
