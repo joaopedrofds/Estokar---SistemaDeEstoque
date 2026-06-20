@@ -2,18 +2,47 @@ package com.studiomuda.estoque.model;
 
 import java.time.LocalDate;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+@Entity
+@Table(name = "meta_indicador")
 public class MetaIndicador {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
+
+    @Column(name = "indicador_id")
     private int indicadorId;
+
+    @Column(name = "valor_alvo")
     private double valorAlvo;
+
+    @Column(name = "limite_critico")
     private double limiteCritico;
+
+    @Column(name = "operador")
     private String operador; // MAIOR_IGUAL, MENOR_IGUAL
+
+    @Column(name = "vigencia_inicio")
     private LocalDate vigenciaInicio;
+
+    @Column(name = "vigencia_fim")
     private LocalDate vigenciaFim;
+
+    @Column(name = "ativo")
     private boolean ativo;
-    
-    // Nome do indicador para facilitar exibições na interface
+
+    // Nome do indicador para facilitar exibições na interface (não persistido)
+    @Transient
     private String indicadorNome;
+    @Transient
     private String indicadorCodigo;
 
     public MetaIndicador() {}

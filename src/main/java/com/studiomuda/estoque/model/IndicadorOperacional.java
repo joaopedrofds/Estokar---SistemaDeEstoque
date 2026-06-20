@@ -1,12 +1,36 @@
 package com.studiomuda.estoque.model;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "indicador_operacional")
 public class IndicadorOperacional {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
+
+    @Column(name = "codigo")
     private String codigo;
+
+    @Column(name = "nome")
     private String nome;
+
+    @Column(name = "descricao")
     private String descricao;
+
+    @Column(name = "tipo_calculo")
     private String tipoCalculo;
+
+    @Column(name = "periodo_padrao")
     private String periodoPadrao;
+
+    @Column(name = "ativo")
     private boolean ativo;
 
     public IndicadorOperacional() {}

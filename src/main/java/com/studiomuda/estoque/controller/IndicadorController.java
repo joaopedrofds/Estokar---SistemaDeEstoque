@@ -1,11 +1,6 @@
 package com.studiomuda.estoque.controller;
 
-import com.studiomuda.estoque.dao.AlertaIndicadorDAO;
-import com.studiomuda.estoque.dao.IndicadorOperacionalDAO;
-import com.studiomuda.estoque.dao.MetaIndicadorDAO;
-import com.studiomuda.estoque.dao.SnapshotIndicadorDAO;
 import com.studiomuda.estoque.dao.UsuarioAcessoDAO;
-import com.studiomuda.estoque.model.AlertaIndicador;
 import com.studiomuda.estoque.model.IndicadorOperacional;
 import com.studiomuda.estoque.model.MetaIndicador;
 import com.studiomuda.estoque.model.UsuarioAcesso;
@@ -17,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
@@ -25,30 +19,27 @@ import java.util.List;
 @Controller
 @RequestMapping("/kpis")
 public class IndicadorController {
-    private final IndicadorOperacionalDAO indicadorDAO = new IndicadorOperacionalDAO();
-    private final MetaIndicadorDAO metaDAO = new MetaIndicadorDAO();
-    private final SnapshotIndicadorDAO snapshotDAO = new SnapshotIndicadorDAO();
-    private final AlertaIndicadorDAO alertaDAO = new AlertaIndicadorDAO();
+    private final IndicadorService indicadorService;
     private final UsuarioAcessoDAO usuarioDAO = new UsuarioAcessoDAO();
-    private final IndicadorService indicadorService = new IndicadorService();
+
+    public IndicadorController(IndicadorService indicadorService) {
+        this.indicadorService = indicadorService;
+    }
 
     @GetMapping
     public String index(Model model) {
         try {
-            List<IndicadorOperacional> indicadores = indicadorDAO.listarTodos();
+            List<IndicadorOperacional> indicadores = indicadorService.listarIndicadores();
             model.addAttribute("indicadores", indicadores);
-            
-            // Adicionar metas ativas atuais
+
+            // Meta vigente e último snapshot por indicador
             for (IndicadorOperacional ind : indicadores) {
-                MetaIndicador meta = metaDAO.buscarAtivaPorIndicador(ind.getId());
-                model.addAttribute("meta_" + ind.getId(), meta);
-                
-                // Buscar último snapshot para exibir valor atualizado
-                model.addAttribute("ultimo_snap_" + ind.getId(), snapshotDAO.buscarUltimoPorIndicador(ind.getId()));
+                model.addAttribute("meta_" + ind.getId(), indicadorService.buscarMetaVigente(ind.getId()));
+                model.addAttribute("ultimo_snap_" + ind.getId(), indicadorService.buscarUltimoSnapshot(ind.getId()));
             }
-            
-            model.addAttribute("alertasAtivosCount", alertaDAO.listarPorStatus("ATIVO").size());
-        } catch (SQLException e) {
+
+            model.addAttribute("alertasAtivosCount", indicadorService.listarAlertas("ATIVO").size());
+        } catch (Exception e) {
             model.addAttribute("mensagemErro", "Erro ao carregar indicadores: " + e.getMessage());
         }
         return "kpis/lista";
@@ -57,23 +48,23 @@ public class IndicadorController {
     @GetMapping("/alertas")
     public String alertas(Model model) {
         try {
-            model.addAttribute("alertasAtivos", alertaDAO.listarPorStatus("ATIVO"));
-            model.addAttribute("alertasResolvidos", alertaDAO.listarPorStatus("RESOLVIDO"));
-        } catch (SQLException e) {
+            model.addAttribute("alertasAtivos", indicadorService.listarAlertas("ATIVO"));
+            model.addAttribute("alertasResolvidos", indicadorService.listarAlertas("RESOLVIDO"));
+        } catch (Exception e) {
             model.addAttribute("mensagemErro", "Erro ao carregar alertas: " + e.getMessage());
         }
         return "kpis/alertas";
     }
 
     @PostMapping("/alertas/resolver")
-    public String resolverAlerta(@RequestParam int id, 
-                                 @RequestParam String observacao, 
+    public String resolverAlerta(@RequestParam int id,
+                                 @RequestParam String observacao,
                                  RedirectAttributes redirectAttributes) {
         try {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            alertaDAO.resolverAlerta(id, username, observacao);
+            indicadorService.resolverAlerta(id, username, observacao);
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Alerta operacional resolvido e registrado com sucesso!");
-        } catch (SQLException e) {
+        } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao resolver alerta: " + e.getMessage());
         }
         return "redirect:/kpis/alertas";
@@ -82,8 +73,8 @@ public class IndicadorController {
     @GetMapping("/snapshots")
     public String snapshots(Model model) {
         try {
-            model.addAttribute("snapshots", snapshotDAO.listarTodos());
-        } catch (SQLException e) {
+            model.addAttribute("snapshots", indicadorService.listarSnapshots());
+        } catch (Exception e) {
             model.addAttribute("mensagemErro", "Erro ao carregar histórico de snapshots: " + e.getMessage());
         }
         return "kpis/snapshots";
@@ -103,7 +94,7 @@ public class IndicadorController {
 
             int recalculados = indicadorService.recalcularTodos(inicio, fim, usuarioId, username);
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Recálculo de todos os " + recalculados + " indicadores finalizado com sucesso!");
-        } catch (SQLException e) {
+        } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao recalcular indicadores: " + e.getMessage());
         }
         return "redirect:/kpis";
@@ -112,12 +103,12 @@ public class IndicadorController {
     @GetMapping("/meta/nova/{indicadorId}")
     public String formMeta(@PathVariable int indicadorId, Model model) {
         try {
-            IndicadorOperacional ind = indicadorDAO.buscarPorId(indicadorId);
+            IndicadorOperacional ind = indicadorService.buscarIndicador(indicadorId);
             if (ind == null) {
                 return "redirect:/kpis";
             }
-            
-            MetaIndicador meta = metaDAO.buscarAtivaPorIndicador(indicadorId);
+
+            MetaIndicador meta = indicadorService.buscarMetaVigente(indicadorId);
             if (meta == null) {
                 meta = new MetaIndicador();
                 meta.setIndicadorId(indicadorId);
@@ -125,11 +116,11 @@ public class IndicadorController {
                 meta.setVigenciaInicio(LocalDate.now());
                 meta.setAtivo(true);
             }
-            
+
             model.addAttribute("indicador", ind);
             model.addAttribute("meta", meta);
             model.addAttribute("operadores", List.of("MAIOR_IGUAL", "MENOR_IGUAL"));
-        } catch (SQLException e) {
+        } catch (Exception e) {
             model.addAttribute("mensagemErro", "Erro ao carregar formulário de metas: " + e.getMessage());
         }
         return "kpis/form-meta";
@@ -154,14 +145,10 @@ public class IndicadorController {
             meta.setVigenciaFim(vigenciaFim);
             meta.setAtivo(ativo);
 
-            metaDAO.inserir(meta);
-            
-            if (ativo) {
-                metaDAO.desativarOutrasMetas(indicadorId, meta.getId());
-            }
-            
+            indicadorService.salvarMeta(meta);
+
             redirectAttributes.addFlashAttribute("mensagemSucesso", "Meta de indicadores operacionais configurada e persistida no banco com sucesso!");
-        } catch (SQLException e) {
+        } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensagemErro", "Erro ao salvar meta: " + e.getMessage());
         }
         return "redirect:/kpis";

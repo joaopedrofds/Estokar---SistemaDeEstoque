@@ -3,19 +3,51 @@ package com.studiomuda.estoque.model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+@Entity
+@Table(name = "snapshot_indicador")
 public class SnapshotIndicador {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
+
+    @Column(name = "indicador_id")
     private int indicadorId;
+
+    @Column(name = "valor_calculado")
     private double valorCalculado;
+
+    @Column(name = "periodo_inicio")
     private LocalDate periodoInicio;
+
+    @Column(name = "periodo_fim")
     private LocalDate periodoFim;
+
+    @Column(name = "executado_por_id")
     private Integer executadoPorId;
+
+    @Column(name = "executado_por")
     private String executadoPor;
+
+    // Preenchido pelo banco (DEFAULT CURRENT_TIMESTAMP)
+    @Column(name = "data_execucao", insertable = false, updatable = false)
     private LocalDateTime dataExecucao;
+
+    @Column(name = "detalhe_rastreio")
     private String detalheRastreio;
 
-    // Nome do indicador para exibição
+    // Nome do indicador para exibição (não persistido)
+    @Transient
     private String indicadorNome;
+    @Transient
     private String indicadorCodigo;
 
     public SnapshotIndicador() {}

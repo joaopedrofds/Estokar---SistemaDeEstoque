@@ -2,22 +2,60 @@ package com.studiomuda.estoque.model;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+@Entity
+@Table(name = "alerta_indicador")
 public class AlertaIndicador {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
+
+    @Column(name = "indicador_id")
     private int indicadorId;
+
+    @Column(name = "snapshot_id")
     private int snapshotId;
+
+    @Column(name = "tipo_violacao")
     private String tipoViolacao; // ABAIXO_META, ACIMA_CRITICO
+
+    @Column(name = "valor_esperado")
     private double valorEsperado;
+
+    @Column(name = "valor_encontrado")
     private double valorEncontrado;
+
+    @Column(name = "mensagem")
     private String mensagem;
+
+    @Column(name = "status")
     private String status; // ATIVO, RESOLVIDO
+
+    @Column(name = "resolvido_por")
     private String resolvidoPor;
+
+    @Column(name = "observacao")
     private String observacao;
+
+    // Preenchido pelo banco (DEFAULT CURRENT_TIMESTAMP)
+    @Column(name = "data_alerta", insertable = false, updatable = false)
     private LocalDateTime dataAlerta;
+
+    @Column(name = "data_resolucao")
     private LocalDateTime dataResolucao;
 
-    // Campos auxiliares para UI
+    // Campos auxiliares para UI (não persistido)
+    @Transient
     private String indicadorNome;
+    @Transient
     private String indicadorCodigo;
 
     public AlertaIndicador() {}
