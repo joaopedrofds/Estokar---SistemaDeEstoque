@@ -122,6 +122,9 @@ public final class InterceptadorAutorizacaoDao {
         if (nomeClasse.contains("Devolucao")) {
             return RecursoAcesso.DEVOLUCAO;
         }
+        if (nomeClasse.contains("Frete") || nomeClasse.contains("Despacho") || nomeClasse.contains("Transportadora") || nomeClasse.contains("Contingencia") || nomeClasse.contains("Cotacao")) {
+            return RecursoAcesso.FRETE;
+        }
         if (nomeClasse.contains("Financeiro")
                 || nomeClasse.contains("Relatorio")
                 || nomeClasse.contains("CategoriaFinanceira")

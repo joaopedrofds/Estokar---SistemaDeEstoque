@@ -14,6 +14,7 @@ public enum RecursoAcesso {
     KPI("KPI"),
     DEVOLUCAO("Devoluções"),
     FINANCEIRO("Relatórios financeiros"),
+    FRETE("Cotação e Expedição de Fretes"),
     ACESSO("Administração de acesso"),
     API("API"),
     HOME("Home");
