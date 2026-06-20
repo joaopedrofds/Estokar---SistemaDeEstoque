@@ -2,47 +2,33 @@ ContextMap EstokarMap {
     type = SYSTEM_LANDSCAPE
     state = AS_IS
 
-    // Declaração dos Contextos do Sistema
     contains VendasContext
     contains EstoqueContext
     contains ClienteContext
     contains RHContext
-    
     contains SuprimentosContext
     contains LogisticaContext
     contains DistribuidoraContext
+    contains CobrancaContext
+    contains EngajamentoContext
+    contains FreteContext
+    contains PrecificacaoContext
 
-    // =========================================================
-    // RELAÇÕES ENTRE OS CONTEXTOS (Upstream -> Downstream)
-    // =========================================================
-    
-    // Vendas precisa consultar Estoque para saber se há produto
     EstoqueContext [U] -> [D] VendasContext
-
-    // Vendas precisa consultar Cliente para saber se ele está bloqueado por inadimplência
     ClienteContext [U] -> [D] VendasContext
-
-    // Vendas precisa saber qual funcionário fez o registro
     RHContext [U] -> [D] VendasContext
-
-    // Suprimentos precisa monitorar o volume do Estoque fixo para acionar o Ponto de Pedido
     EstoqueContext [U] -> [D] SuprimentosContext
-
-    // Logística precisa dos dados do Estoque para planejar a transferência física de mercadorias
     EstoqueContext [U] -> [D] LogisticaContext
-
-    // Logística precisa das informações e prioridades das Distribuidoras para calcular rotas e resolver conflitos
     DistribuidoraContext [U] -> [D] LogisticaContext
+    ClienteContext [U] -> [D] CobrancaContext
+    ClienteContext [U] -> [D] EngajamentoContext
+    VendasContext [U] -> [D] FreteContext
+    EstoqueContext [U] -> [D] PrecificacaoContext
 }
 
-/* =========================================================
-   DEFINIÇÃO DOS BOUNDED CONTEXTS (SUBDOMÍNIOS)
-   ========================================================= */
-
 BoundedContext EstoqueContext {
-    domainVisionStatement = "Subdomínio Core: Gerencia o catálogo de produtos e a 
-    movimentação de entrada e saída do estoque fixo central."
-    
+    domainVisionStatement = "Subdominio Core: Gerencia o catalogo de produtos e a movimentacao de entrada e saida do estoque fixo central."
+
     Aggregate EstoqueAggregate {
         Entity Produto
         Entity MovimentacaoEstoque
@@ -50,9 +36,8 @@ BoundedContext EstoqueContext {
 }
 
 BoundedContext VendasContext {
-    domainVisionStatement = "Subdomínio Core: Gerencia o ciclo de vida 
-    dos pedidos, faturamento e aplicação de cupons promocionais."
-    
+    domainVisionStatement = "Subdominio Core: Gerencia o ciclo de vida dos pedidos, faturamento e aplicacao de cupons promocionais."
+
     Aggregate PedidoAggregate {
         Entity Pedido
         Entity ItemPedido
@@ -61,61 +46,156 @@ BoundedContext VendasContext {
 }
 
 BoundedContext ClienteContext {
-    domainVisionStatement = "Subdomínio de Suporte: Gerencia os perfis dos 
-    clientes, métricas de fidelização (frequência) e bloqueio de devedores."
-    
+    domainVisionStatement = "Subdominio de Suporte: Gerencia os perfis dos clientes, metricas de fidelizacao e bloqueio de devedores."
+
     Aggregate ClienteAggregate {
         Entity Cliente
-        // Regras de negócio de Henrique Tefile:
-        // - Bloqueio por Inadimplência
-        // - Análise de Frequência de Compras
     }
 }
 
 BoundedContext RHContext {
-    domainVisionStatement = "Subdomínio Genérico: Gerencia o cadastro de 
-    funcionários, papéis e segurança/login do sistema."
-    
+    domainVisionStatement = "Subdominio Generico: Gerencia o cadastro de funcionarios, papeis e seguranca/login do sistema."
+
     Aggregate FuncionarioAggregate {
         Entity Funcionario
     }
 }
 
-    
 BoundedContext SuprimentosContext {
-    domainVisionStatement = "Subdomínio de Apoio: Responsável pelo Controle 
-    Inteligente de Reposição. Intercepta a necessidade do estoque central, 
-    avalia lead time e gera Ordens de Compra otimizadas."
-    
+    domainVisionStatement = "Subdominio de Apoio: Responsavel pelo controle inteligente de reposicao. Intercepta a necessidade do estoque central, avalia lead time e gera ordens de compra otimizadas."
+
     Aggregate OrdemCompraAggregate {
         Entity OrdemCompra
         Entity Fornecedor
-        // Regras de negócio da Funcionalidade 9:
-        // - Cálculo dinâmico de Ponto de Pedido (baseado em lead time)
-        // - Seleção automatizada do melhor fornecedor (custo/prazo)
     }
 }
 
 BoundedContext LogisticaContext {
-    domainVisionStatement = "Subdomínio de Apoio: Gerencia a roteirização, 
-    capacidade física das docas e resolução de conflitos de agendamento de remessas."
-    
+    domainVisionStatement = "Subdominio de Apoio: Gerencia a roteirizacao, capacidade fisica das docas e resolucao de conflitos de agendamento de remessas."
+
     Aggregate AgendamentoAggregate {
         Entity AgendamentoRemessa
         Entity Doca
-        // Regras de negócio da Funcionalidade 10:
-        // - Verificação de sobreposição de horários e volume nas docas
-        // - Sugestão automática de 3 janelas de horários viáveis
     }
 }
 
 BoundedContext DistribuidoraContext {
-    domainVisionStatement = "Subdomínio Core: Gerencia os dados, 
-    localizações e níveis de prioridade das múltiplas distribuidoras 
-    parceiras que são abastecidas pelo estoque fixo."
-    
+    domainVisionStatement = "Subdominio Core: Gerencia os dados, localizacoes e niveis de prioridade das multiplas distribuidoras parceiras que sao abastecidas pelo estoque fixo."
+
     Aggregate DistribuidoraAggregate {
         Entity Distribuidora
         Entity NivelPrioridade
+    }
+}
+
+BoundedContext CobrancaContext {
+    type = FEATURE
+    domainVisionStatement = "Subdominio de Suporte: gerencia politicas de credito, acordos de pagamento, faturas em atraso e o bloqueio automatico de vendas para clientes inadimplentes."
+    knowledgeLevel = CONCRETE
+
+    Aggregate CobrancaAggregate {
+        knowledgeLevel = CONCRETE
+
+        Entity ClienteCobranca {
+            aggregateRoot
+            int id
+        }
+
+        Entity PoliticaCredito {
+            int id
+        }
+
+        Entity AcordoPagamento {
+            int id
+        }
+
+        Entity Fatura {
+            int id
+        }
+
+        Entity HistoricoCobranca {
+            int id
+        }
+    }
+}
+
+BoundedContext EngajamentoContext {
+    type = FEATURE
+    domainVisionStatement = "Subdominio de Suporte: recalcula frequencia de compras, classifica clientes em faixas de fidelidade e dispara acoes de retencao e beneficios automaticamente."
+    knowledgeLevel = CONCRETE
+
+    Aggregate EngajamentoAggregate {
+        knowledgeLevel = CONCRETE
+
+        Entity ClienteEngajamento {
+            aggregateRoot
+            int id
+        }
+
+        Entity FaixaFidelidade {
+            int id
+        }
+
+        Entity BeneficioCategoria {
+            int id
+        }
+
+        Entity AcaoRetencao {
+            int id
+        }
+    }
+}
+
+BoundedContext FreteContext {
+    type = FEATURE
+    domainVisionStatement = "Subdominio de Apoio: realiza cotacao de fretes, registra logs de consulta, suporta contingencia via tabela local e gera ordens de despacho com validacao de autorizacao."
+    knowledgeLevel = CONCRETE
+
+    Aggregate FreteAggregate {
+        knowledgeLevel = CONCRETE
+
+        Entity LogCotacao {
+            aggregateRoot
+            int id
+        }
+
+        Entity OrdemDespacho {
+            int id
+        }
+
+        Entity TabelaContingencia {
+            int id
+        }
+
+        Entity Transportadora {
+            int id
+        }
+    }
+}
+
+BoundedContext PrecificacaoContext {
+    type = FEATURE
+    domainVisionStatement = "Subdominio de Apoio: calcula preco sugerido com base no custo de compra, impostos, despesas operacionais e margens de lucro persistidas em banco, mantendo historico de simulacoes e politicas de precificacao."
+    knowledgeLevel = CONCRETE
+
+    Aggregate PrecificacaoAggregate {
+        knowledgeLevel = CONCRETE
+
+        Entity SimulacaoPrecificacao {
+            aggregateRoot
+            int id
+        }
+
+        Entity ParametroPrecificacao {
+            int id
+        }
+
+        Entity PoliticaPrecificacao {
+            int id
+        }
+
+        Entity ComponentePrecificacao {
+            int id
+        }
     }
 }

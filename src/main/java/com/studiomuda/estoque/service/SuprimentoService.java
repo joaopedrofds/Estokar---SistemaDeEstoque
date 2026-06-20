@@ -13,6 +13,7 @@ import com.studiomuda.estoque.jpa.repository.ParametroEstoqueJpaRepository;
 import com.studiomuda.estoque.jpa.repository.ProdutoJpaRepository;
 import com.studiomuda.estoque.model.OrdemCompra;
 import com.studiomuda.estoque.model.ParametroEstoque;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,7 @@ public class SuprimentoService {
         this(suprimentoDAO, null, null, null, null, null);
     }
 
+    @Autowired
     public SuprimentoService(ObjectProvider<ProdutoJpaRepository> produtoRepositoryProvider,
                              ObjectProvider<FornecedorJpaRepository> fornecedorRepositoryProvider,
                              ObjectProvider<ParametroEstoqueJpaRepository> parametroRepositoryProvider,

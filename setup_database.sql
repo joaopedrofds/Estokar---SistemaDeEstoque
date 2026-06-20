@@ -682,9 +682,9 @@ END$$
 DELIMITER ;
 
 INSERT INTO perfil_acesso (nome, descricao, ativo) VALUES
-('ADMINISTRADOR', 'Perfil responsÃ¡vel por governanÃ§a completa de acessos e cadastros.', TRUE),
-('GERENTE_OPERACIONAL', 'Perfil com operaÃ§Ã£o supervisionada e permissÃµes de aprovaÃ§Ã£o.', TRUE),
-('OPERADOR_VENDEDOR', 'Perfil de execuÃ§Ã£o diÃ¡ria com permissÃµes restritas.', TRUE);
+('ADMINISTRADOR', 'Perfil responsável por governança completa de acessos e cadastros.', TRUE),
+('GERENTE_OPERACIONAL', 'Perfil com operação supervisionada e permissões de aprovação.', TRUE),
+('OPERADOR_VENDEDOR', 'Perfil de execução diária com permissões restritas.', TRUE);
 
 INSERT INTO usuario_acesso (username, nome, senha, ativo) VALUES
 ('admin', 'Administrador do Sistema', '{noop}Admin@123', TRUE),
@@ -774,14 +774,14 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (3, 'HOME', 'LEITURA', TRUE);
 
 INSERT INTO categoria_financeira (nome, tipo, origem_sistema, descricao, ativo) VALUES
-('Venda de Produto', 'RECEITA', 'PEDIDO_PAGO', 'Receita consolidada de pedidos pagos no perÃ­odo.', TRUE),
-('DevoluÃ§Ã£o', 'DESPESA', 'MOVIMENTACAO_ENTRADA_DEVOLUCAO', 'Estornos e devoluÃ§Ãµes registradas via movimentaÃ§Ã£o de entrada.', TRUE),
-('Custo de ReposiÃ§Ã£o', 'DESPESA', 'MOVIMENTACAO_SAIDA', 'Custo estimado de saÃ­das de estoque no perÃ­odo.', TRUE),
-('Ajuste Manual', 'RECEITA', 'LANCAMENTO_AJUSTE', 'LanÃ§amentos manuais de correÃ§Ã£o vinculados ao plano de contas.', TRUE);
+('Venda de Produto', 'RECEITA', 'PEDIDO_PAGO', 'Receita consolidada de pedidos pagos no período.', TRUE),
+('Devolução', 'DESPESA', 'MOVIMENTACAO_ENTRADA_DEVOLUCAO', 'Estornos e devoluções registradas via movimentação de entrada.', TRUE),
+('Custo de Reposição', 'DESPESA', 'MOVIMENTACAO_SAIDA', 'Custo estimado de saídas de estoque no período.', TRUE),
+('Ajuste Manual', 'RECEITA', 'LANCAMENTO_AJUSTE', 'Lançamentos manuais de correção vinculados ao plano de contas.', TRUE);
 
 INSERT INTO template_relatorio (nome, descricao, periodo_padrao, agrupamento, ativo) VALUES
-('Demonstrativo Mensal', 'ConsolidaÃ§Ã£o padrÃ£o mensal com margem e ticket mÃ©dio.', 'MES', 'MES', TRUE),
-('Fechamento Semanal', 'VisÃ£o semanal para acompanhamento operacional.', 'SEMANA', 'SEMANA', TRUE);
+('Demonstrativo Mensal', 'Consolidação padrão mensal com margem e ticket médio.', 'MES', 'MES', TRUE),
+('Fechamento Semanal', 'Visão semanal para acompanhamento operacional.', 'SEMANA', 'SEMANA', TRUE);
 
 INSERT INTO template_categoria (template_id, categoria_id)
 SELECT t.id, c.id
@@ -792,7 +792,7 @@ WHERE t.nome = 'Demonstrativo Mensal';
 INSERT INTO template_categoria (template_id, categoria_id)
 SELECT t.id, c.id
 FROM template_relatorio t
-JOIN categoria_financeira c ON c.nome IN ('Venda de Produto', 'Custo de ReposiÃ§Ã£o', 'Ajuste Manual')
+JOIN categoria_financeira c ON c.nome IN ('Venda de Produto', 'Custo de Reposição', 'Ajuste Manual')
 WHERE t.nome = 'Fechamento Semanal';
 
 INSERT INTO template_indicador (template_id, indicador)
@@ -863,9 +863,9 @@ CREATE INDEX idx_snapshot_indicador_periodo ON snapshot_indicador(indicador_id, 
 CREATE INDEX idx_alerta_indicador_status ON alerta_indicador(status, data_alerta);
 
 INSERT IGNORE INTO indicador_operacional (codigo, nome, descricao, tipo_calculo, periodo_padrao, ativo) VALUES
-('TICKET_MEDIO', 'Ticket MÃ©dio de Vendas', 'MÃ©dia de faturamento por pedido finalizado.', 'TICKET_MEDIO', 'MES', TRUE),
-('PRODUTOS_CRITICOS', 'Produtos em Estoque CrÃ­tico', 'Quantidade de produtos com estoque igual ou abaixo do ponto de pedido.', 'ESTOQUE_CRITICO', 'MES', TRUE),
-('TAXA_CANCELAMENTO', 'Taxa de Cancelamento', 'Percentual de pedidos cancelados em relaÃ§Ã£o ao total de pedidos.', 'TAXA_CANCELAMENTO', 'MES', TRUE),
+('TICKET_MEDIO', 'Ticket Médio de Vendas', 'Média de faturamento por pedido finalizado.', 'TICKET_MEDIO', 'MES', TRUE),
+('PRODUTOS_CRITICOS', 'Produtos em Estoque Crítico', 'Quantidade de produtos com estoque igual ou abaixo do ponto de pedido.', 'ESTOQUE_CRITICO', 'MES', TRUE),
+('TAXA_CANCELAMENTO', 'Taxa de Cancelamento', 'Percentual de pedidos cancelados em relação ao total de pedidos.', 'TAXA_CANCELAMENTO', 'MES', TRUE),
 ('PRODUTOS_SEM_ESTOQUE', 'Produtos Sem Estoque', 'Quantidade de produtos ativos com saldo zerado no estoque.', 'SEM_ESTOQUE', 'MES', TRUE);
 
 INSERT IGNORE INTO meta_indicador (indicador_id, valor_alvo, limite_critico, operador, vigencia_inicio, vigencia_fim, ativo)

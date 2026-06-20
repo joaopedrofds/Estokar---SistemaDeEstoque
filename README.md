@@ -152,7 +152,7 @@ A 2ª entrega exige **6 ou mais padrões (1 por integrante)** dentre: *Iterator,
 | Strategy | ✅ | (confirmar) | `strategy/` |
 | Template Method | ✅ | Claudio | `service/ajuste/AbstractAjusteEstoqueTemplate.java` (+ subclasses) |
 | Proxy | ⬜ pendente | — | *(há um interceptor de autorização em `security/InterceptadorAutorizacaoDao`, mas por inspeção de stack — não é um Proxy GoF clássico de embrulho)* |
-| Iterator | ⬜ pendente | — | — |
+| Iterator | ✅ | Pibe | `precificacao/domain/iterator/` |
 
 > A coluna "Implementado por" reflete o histórico do Git e o desenho dos módulos; **confirme com o grupo**. O padrão **DAO** é usado em todo o projeto como decisão de arquitetura, mas **não** faz parte da lista exigida.
 
