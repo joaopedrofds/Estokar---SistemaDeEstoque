@@ -21,3 +21,11 @@ Funcionalidade: Precificacao dinamica com margem de lucro
     Quando o sistema calcula a precificacao dinamica
     Entao o status deve ser "BLOQUEADO_MARGEM"
     E a justificativa deve conter "abaixo da margem minima global"
+
+  Cenario: Simulacao bloqueada quando o desconto compromete a margem minima
+    Dado um produto de id 3 com preco atual de 120.00 e custo de compra de 60.00
+    E uma politica com margem desejada de 35.00, impostos de 8.00, despesas operacionais de 7.00 e desconto maximo de 30.00
+    E uma margem minima global de 30.00 e desconto maximo global de 30.00
+    Quando o sistema calcula a precificacao dinamica
+    Entao o status deve ser "BLOQUEADO_DESCONTO"
+    E a justificativa deve conter "desconto seguro calculado"

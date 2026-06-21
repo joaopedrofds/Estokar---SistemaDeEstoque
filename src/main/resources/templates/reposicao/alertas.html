@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="layout :: html(~{::content})">
+<div th:fragment="content" class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Alertas de reposicao</h1>
+            <p class="text-muted mb-0">Monitora produtos abaixo do ponto de pedido e registra a tratativa.</p>
+        </div>
+        <form th:action="@{/reposicao/alertas/verificar}" method="post">
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-bell-fill me-2"></i>Verificar reposicao
+            </button>
+        </form>
+    </div>
+
+    <div th:if="${mensagem}" class="alert alert-success" th:text="${mensagem}"></div>
+    <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white border-0 pt-4">
+            <h2 class="h5 mb-0">Alertas ativos</h2>
+        </div>
+        <div class="card-body">
+            <div th:if="${alertasAtivos.empty}" class="text-muted">Nenhum alerta ativo no momento.</div>
+            <div th:if="${!alertasAtivos.empty}" class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Fornecedor</th>
+                        <th>Estoque</th>
+                        <th>Ponto de pedido</th>
+                        <th>Sugestao</th>
+                        <th>Criado em</th>
+                        <th>Ação</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="alerta : ${alertasAtivos}">
+                        <td th:text="${alerta.produtoNome}">Produto</td>
+                        <td th:text="${alerta.fornecedorNome}">Fornecedor</td>
+                        <td th:text="${alerta.estoqueAtual}">0</td>
+                        <td th:text="${alerta.pontoPedido}">0</td>
+                        <td th:text="${alerta.quantidadeSugerida}">0</td>
+                        <td th:text="${#temporals.format(alerta.criadoEm, 'dd/MM/yyyy HH:mm')}">-</td>
+                        <td>
+                            <form th:action="@{/reposicao/alertas/resolver}" method="post" class="d-flex gap-2">
+                                <input type="hidden" name="id" th:value="${alerta.id}">
+                                <input type="text" name="observacao" class="form-control form-control-sm" placeholder="Observacao">
+                                <button type="submit" class="btn btn-sm btn-outline-success">Resolver</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 pt-4">
+            <h2 class="h5 mb-0">Historico resolvido</h2>
+        </div>
+        <div class="card-body">
+            <div th:if="${alertasResolvidos.empty}" class="text-muted">Nenhum alerta resolvido registrado.</div>
+            <div th:if="${!alertasResolvidos.empty}" class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Status</th>
+                        <th>Observacao</th>
+                        <th>Resolvido em</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="alerta : ${alertasResolvidos}">
+                        <td th:text="${alerta.produtoNome}">Produto</td>
+                        <td><span class="badge text-bg-success" th:text="${alerta.status}">RESOLVIDO</span></td>
+                        <td th:text="${alerta.observacao}">Observacao</td>
+                        <td th:text="${alerta.resolvidoEm != null ? #temporals.format(alerta.resolvidoEm, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

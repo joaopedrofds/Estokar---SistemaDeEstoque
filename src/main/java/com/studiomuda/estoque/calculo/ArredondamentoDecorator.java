@@ -1,6 +1,6 @@
 package com.studiomuda.estoque.calculo;
 
-import com.studiomuda.estoque.model.IndicadorOperacional;
+import com.studiomuda.estoque.indicadores.domain.IndicadorOperacional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

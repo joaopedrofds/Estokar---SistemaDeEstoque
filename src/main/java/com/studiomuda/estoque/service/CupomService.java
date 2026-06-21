@@ -3,12 +3,10 @@ package com.studiomuda.estoque.service;
 import com.studiomuda.estoque.model.Cupom;
 import com.studiomuda.estoque.repository.CupomRepository;
 import com.studiomuda.estoque.observer.CupomDomainEvent;
-import com.studiomuda.estoque.observer.CupomUsoObserver;
 import com.studiomuda.estoque.observer.ObservadorDeCupom;
 import com.studiomuda.estoque.strategy.ContextoDesconto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,14 +22,13 @@ import java.util.Optional;
 public class CupomService {
 
     private final CupomRepository cupomRepository;
-    private final List<ObservadorDeCupom> observadores = new ArrayList<>();
+    private final List<ObservadorDeCupom> observadores;
 
-    public CupomService(CupomRepository cupomRepository) {
+    public CupomService(CupomRepository cupomRepository,
+                        List<ObservadorDeCupom> observadores) {
         this.cupomRepository = cupomRepository;
+        this.observadores = List.copyOf(observadores);
     }
-
-    public void registrarObservador(ObservadorDeCupom obs) { observadores.add(obs); }
-    public void removerObservador(ObservadorDeCupom obs)   { observadores.remove(obs); }
 
     private void notificar(CupomDomainEvent evento) {
         for (ObservadorDeCupom obs : observadores) obs.aoAplicarCupom(evento);

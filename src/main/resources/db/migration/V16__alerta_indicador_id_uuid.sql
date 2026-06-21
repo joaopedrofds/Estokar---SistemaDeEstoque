@@ -1,0 +1,11 @@
+-- E-14: converte alerta_indicador.id de INT AUTO_INCREMENT para VARCHAR(36),
+-- alinhando o agregado AlertaIndicador ao padrão PetCollar (identidade por
+-- AlertaIndicadorId String/UUID).
+--
+-- Nenhuma FK referencia alerta_indicador.id (confirmado em
+-- information_schema.key_column_usage, referenced_table_name='alerta_indicador'),
+-- portanto a migração é um simples MODIFY da coluna, sem drop/recreate de FK.
+-- As FKs de saída (indicador_id -> indicador_operacional, snapshot_id ->
+-- snapshot_indicador) não são afetadas. As linhas existentes mantêm os ids
+-- antigos convertidos para texto ("1".."N").
+ALTER TABLE alerta_indicador MODIFY COLUMN id VARCHAR(36) NOT NULL;

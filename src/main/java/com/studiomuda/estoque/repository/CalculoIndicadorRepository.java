@@ -1,6 +1,6 @@
 package com.studiomuda.estoque.repository;
 
-import com.studiomuda.estoque.model.IndicadorOperacional;
+import com.studiomuda.estoque.indicadores.infrastructure.persistence.IndicadorOperacionalJpa;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,11 +11,11 @@ import java.time.LocalDate;
 /**
  * Repositório de leitura para o cálculo dos indicadores a partir das transações reais
  * (pedido, item_pedido, produto). Usa consultas nativas porque os indicadores agregam
- * dados de várias tabelas; está ancorado em {@link IndicadorOperacional} apenas por
+ * dados de várias tabelas; está ancorado em {@link IndicadorOperacionalJpa} apenas por
  * exigência do Spring Data (a entidade não é usada nas consultas).
  */
 @Repository
-public interface CalculoIndicadorRepository extends JpaRepository<IndicadorOperacional, Integer> {
+public interface CalculoIndicadorRepository extends JpaRepository<IndicadorOperacionalJpa, String> {
 
     @Query(nativeQuery = true, value =
             "SELECT COALESCE(AVG(sub.total), 0) FROM (" +

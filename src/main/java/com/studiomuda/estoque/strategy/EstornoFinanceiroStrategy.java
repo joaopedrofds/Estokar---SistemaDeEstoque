@@ -1,11 +1,13 @@
 package com.studiomuda.estoque.strategy;
 
 import com.studiomuda.estoque.model.Devolucao;
+import org.springframework.stereotype.Component;
 
 /**
  * ConcreteStrategy — registra estorno financeiro manual (ex: estorno em cartão).
  * Padrão de Design: Strategy (GoF) — ConcreteStrategy
  */
+@Component
 public class EstornoFinanceiroStrategy implements RestituicaoStrategy {
 
     @Override

@@ -1,11 +1,13 @@
 package com.studiomuda.estoque.strategy;
 
 import com.studiomuda.estoque.model.Devolucao;
+import org.springframework.stereotype.Component;
 
 /**
  * ConcreteStrategy — marca devolução para troca física no balcão.
  * Padrão de Design: Strategy (GoF) — ConcreteStrategy
  */
+@Component
 public class TrocaProdutoStrategy implements RestituicaoStrategy {
 
     @Override

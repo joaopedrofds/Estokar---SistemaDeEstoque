@@ -43,7 +43,8 @@ class PedidoControllerInadimplenciaTest {
         // Create mock CupomRepository and CupomService
         CupomRepository cupomRepository = mock(CupomRepository.class);
         when(cupomRepository.findById(0)).thenReturn(Optional.empty());
-        CupomService cupomService = new CupomService(cupomRepository);
+        CupomService cupomService = new CupomService(
+                cupomRepository, java.util.Collections.emptyList());
 
         this.controller = new PedidoController(
                 pedidoDAO,

@@ -3,15 +3,24 @@ package com.studiomuda.estoque.strategy;
 import com.studiomuda.estoque.model.CreditoCliente;
 import com.studiomuda.estoque.model.Devolucao;
 import com.studiomuda.estoque.repository.CreditoClienteRepository;
-import com.studiomuda.estoque.util.SpringContextUtil;
-import java.math.BigDecimal;
+import org.springframework.stereotype.Component;
+
+import java.sql.Date;
+import java.time.LocalDate;
 
 /**
  * ConcreteStrategy — gera crédito em loja para o cliente usar em compras futuras.
  * Padrão de Design: Strategy (GoF) — ConcreteStrategy
  * Migrado para usar JPA Repository (CreditoClienteRepository).
  */
+@Component
 public class CreditoLojaStrategy implements RestituicaoStrategy {
+
+    private final CreditoClienteRepository creditoRepo;
+
+    public CreditoLojaStrategy(CreditoClienteRepository creditoRepo) {
+        this.creditoRepo = creditoRepo;
+    }
 
     @Override
     public void executar(Devolucao devolucao) {
@@ -23,10 +32,9 @@ public class CreditoLojaStrategy implements RestituicaoStrategy {
         credito.setClienteId(devolucao.getClienteId());
         credito.setDevolucaoId(devolucao.getId());
         credito.setValor(valorCredito);
-        credito.setStatus("DISPONIVEL");
-
-        // Usar JPA Repository via SpringContextUtil
-        CreditoClienteRepository creditoRepo = SpringContextUtil.getBean(CreditoClienteRepository.class);
+        credito.setSaldo(valorCredito);
+        credito.setStatus("ATIVO");
+        credito.setValidade(Date.valueOf(LocalDate.now().plusMonths(6)));
         creditoRepo.save(credito);
 
         System.out.println("[CreditoLojaStrategy] Crédito de " + valorCredito +

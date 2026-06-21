@@ -1,6 +1,6 @@
 package com.studiomuda.estoque.calculo;
 
-import com.studiomuda.estoque.model.IndicadorOperacional;
+import com.studiomuda.estoque.indicadores.domain.IndicadorOperacional;
 
 import java.sql.SQLException;
 import java.time.LocalDate;

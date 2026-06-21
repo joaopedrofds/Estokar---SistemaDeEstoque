@@ -9,7 +9,7 @@
   --primary-gradient: linear-gradient(135deg, #2D1B69 0%, #3f478e 50%, #1d6ab3 100%);
   --secondary-gradient: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
   --accent-gradient: linear-gradient(135deg, #FF6B6B 0%, #406b96 100%);
-  
+
   /* === PALETA DE MUDANÇA === */
   --transformation-purple: #2D1B69; /* Metamorfose */
   --evolution-teal: #126284; /* Evolução */
@@ -17,7 +17,7 @@
   --innovation-blue: #667EEA; /* Inovação */
   --creativity-coral: #FF6B6B; /* Criatividade */
   --harmony-cyan: #4e78cd; /* Harmonia */
-  
+
   /* === TONS NEUTROS === */
   --neutral-white: #FFFFFF;
   --neutral-light: #F8FAFC;
@@ -30,42 +30,42 @@
   --neutral-gray-700: #334155;
   --neutral-gray-800: #1E293B;
   --neutral-gray-900: #0F172A;
-  
+
   /* === SISTEMA DE CORES === */
   --success-color: #1f5671;
   --warning-color: #F59E0B;
   --error-color: #EF4444;
   --info-color: #3B82F6;
-  
+
   /* === FUNDOS E SUPERFÍCIES === */
   --background-primary: #FFFFFF;
   --background-secondary: #F8FAFC;
   --background-tertiary: #F1F5F9;
   --glass-bg: rgba(255, 255, 255, 0.25);
   --glass-border: rgba(255, 255, 255, 0.18);
-  
+
   /* === SOMBRAS === */
   --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-strong: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-glow: 0 0 20px rgba(45, 27, 105, 0.3);
-  
+
   /* === BORDAS === */
   --border-radius-sm: 6px;
   --border-radius: 12px;
   --border-radius-lg: 16px;
   --border-radius-xl: 24px;
   --border-radius-full: 9999px;
-  
+
   /* === TRANSIÇÕES === */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   /* === TIPOGRAFIA === */
   --font-display: 'Playfair Display', serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  
+
   /* === ESPAÇAMENTOS === */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
@@ -1002,12 +1002,12 @@ body::before {
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
-  
+
   .actions-toolbar {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .actions-left,
   .actions-right {
     justify-content: center;
@@ -1019,23 +1019,23 @@ body::before {
     margin: var(--space-sm);
     padding: var(--space-lg);
   }
-  
+
   .dashboard-title {
     font-size: 2.5rem;
   }
-  
+
   .section-title {
     font-size: 1.8rem;
   }
-  
+
   .kpi-value {
     font-size: 2.5rem;
   }
-  
+
   .navbar-brand {
     font-size: 1.25rem;
   }
-  
+
   .btn {
     padding: var(--space-sm) var(--space-lg);
     font-size: 0.8rem;
@@ -1046,11 +1046,11 @@ body::before {
   .dashboard-title {
     font-size: 2rem;
   }
-  
+
   .kpi-value {
     font-size: 2rem;
   }
-  
+
   .chart-container {
     min-height: 250px;
   }
@@ -1143,7 +1143,7 @@ body::before {
 
 /* Enhanced Navbar for Landscaping Theme */
 .navbar {
-    background: linear-gradient(135deg, #2d5016 0%, #4a7c59 50%, #52b788 100%);
+    background: linear-gradient(135deg, #1e2970 0%, #354f7d 50%, #52a0b7 100%);
     box-shadow: 0 4px 20px rgba(45, 80, 22, 0.3);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -1348,22 +1348,22 @@ body::before {
     .brand-text {
         display: none;
     }
-    
+
     .brand-logo {
         height: 40px;
         margin-right: 0;
     }
-    
+
     .footer-brand {
         flex-direction: column;
         text-align: center;
         gap: 0.5rem;
     }
-    
+
     .footer-brand-text {
         align-items: center;
     }
-    
+
     .social-icons {
         justify-content: center;
         margin-top: 1rem;
@@ -1795,7 +1795,7 @@ body::before {
     .page-header .page-title {
         font-size: 1.5rem;
     }
-    
+
     .page-header .page-subtitle {
         font-size: 1rem;
     }
@@ -1900,20 +1900,20 @@ body::before {
     .page-title {
         font-size: 2rem;
     }
-    
+
     .page-subtitle {
         font-size: 1rem;
     }
-    
+
     .action-buttons {
         flex-direction: column;
         gap: 0.25rem;
     }
-    
+
     .modern-table {
         font-size: 0.875rem;
     }
-    
+
     .avatar-circle {
         width: 35px;
         height: 35px;
@@ -2094,13 +2094,13 @@ textarea.form-control-lg {
         position: relative;
         top: auto;
     }
-    
+
     .avatar-lg {
         width: 60px;
         height: 60px;
         font-size: 2rem;
     }
-    
+
     .input-group-lg .input-group-text,
     .input-group-lg .form-control,
     .form-control-lg {

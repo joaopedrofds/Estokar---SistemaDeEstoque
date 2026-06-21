@@ -51,6 +51,11 @@ public class RemessasStepDefinitions {
         when(remessaDAO.somarVolumeConfirmado(2, data)).thenReturn(0);
     }
 
+    @E("o horario solicitado ja esta ocupado")
+    public void horarioSolicitadoJaEstaOcupado() throws Exception {
+        when(remessaDAO.existeAgendamentoNoHorario(1, data, "08:00")).thenReturn(true);
+    }
+
     @Quando("solicito uma remessa de {int} paletes para a doca principal")
     public void solicitoRemessa(Integer volume) throws Exception {
         AgendamentoRemessa agendamento = new AgendamentoRemessa();
@@ -66,6 +71,11 @@ public class RemessasStepDefinitions {
     @Então("o agendamento da remessa deve ser bloqueado")
     public void agendamentoDeveSerBloqueado() {
         assertFalse(resultado.isSucesso());
+    }
+
+    @Então("o agendamento da remessa deve ser confirmado")
+    public void agendamentoDeveSerConfirmado() {
+        assertTrue(resultado.isSucesso());
     }
 
     @E("o sistema deve sugerir uma janela alternativa na doca {string}")

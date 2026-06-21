@@ -2,11 +2,11 @@ package com.studiomuda.estoque.service;
 
 import com.studiomuda.estoque.model.Produto;
 import com.studiomuda.estoque.repository.ProdutoRepository;
+import com.studiomuda.estoque.observer.HistoricoPrecosObserver;
 import com.studiomuda.estoque.observer.ObservadorDePreco;
 import com.studiomuda.estoque.observer.PrecoDomainEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,14 +21,13 @@ import java.util.Optional;
 public class ProdutoService {
 
     private final ProdutoRepository produtoRepository;
-    private final List<ObservadorDePreco> observadores = new ArrayList<>();
+    private final List<ObservadorDePreco> observadores;
 
-    public ProdutoService(ProdutoRepository produtoRepository) {
+    public ProdutoService(ProdutoRepository produtoRepository,
+                          HistoricoPrecosObserver historicoPrecosObserver) {
         this.produtoRepository = produtoRepository;
+        this.observadores = List.of(historicoPrecosObserver);
     }
-
-    public void registrarObservador(ObservadorDePreco obs) { observadores.add(obs); }
-    public void removerObservador(ObservadorDePreco obs)   { observadores.remove(obs); }
 
     private void notificar(PrecoDomainEvent evento) {
         for (ObservadorDePreco obs : observadores) obs.aoAlterarPreco(evento);

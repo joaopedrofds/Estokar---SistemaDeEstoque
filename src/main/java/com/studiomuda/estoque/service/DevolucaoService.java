@@ -2,19 +2,13 @@ package com.studiomuda.estoque.service;
 
 import com.studiomuda.estoque.repository.DevolucaoRepository;
 import com.studiomuda.estoque.repository.ItemDevolucaoRepository;
-import com.studiomuda.estoque.repository.CreditoClienteRepository;
 import com.studiomuda.estoque.model.Devolucao;
 import com.studiomuda.estoque.model.ItemDevolucao;
-import com.studiomuda.estoque.model.CreditoCliente;
-import com.studiomuda.estoque.observer.CreditoClienteObserver;
 import com.studiomuda.estoque.observer.DevolucaoDomainEvent;
-import com.studiomuda.estoque.observer.EstoqueDevolucaoObserver;
 import com.studiomuda.estoque.observer.ObservadorDeDevolucao;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,23 +23,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class DevolucaoService {
 
-    @Autowired
-    private DevolucaoRepository devolucaoRepository;
+    private final DevolucaoRepository devolucaoRepository;
+    private final ItemDevolucaoRepository itemRepository;
+    private final List<ObservadorDeDevolucao> observadores;
 
-    @Autowired
-    private ItemDevolucaoRepository itemRepository;
-
-    @Autowired
-    private CreditoClienteRepository creditoRepository;
-
-    private final List<ObservadorDeDevolucao> observadores = new ArrayList<>();
-
-    public DevolucaoService() {
-        registrarObservador(new EstoqueDevolucaoObserver());
-        registrarObservador(new CreditoClienteObserver());
+    public DevolucaoService(DevolucaoRepository devolucaoRepository,
+                            ItemDevolucaoRepository itemRepository,
+                            List<ObservadorDeDevolucao> observadores) {
+        this.devolucaoRepository = devolucaoRepository;
+        this.itemRepository = itemRepository;
+        this.observadores = List.copyOf(observadores);
     }
-
-    public void registrarObservador(ObservadorDeDevolucao obs) { observadores.add(obs); }
 
     private void notificar(DevolucaoDomainEvent evento) {
         for (ObservadorDeDevolucao obs : observadores) obs.aoAprovarDevolucao(evento);

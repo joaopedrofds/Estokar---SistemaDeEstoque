@@ -68,7 +68,7 @@
                                 <td colspan="5" class="text-center py-4 text-muted">Nenhum ajuste registrado.</td>
                             </tr>
                             <tr th:each="aj : ${ajustes}" class="table-warning">
-                                <td th:text="${#dates.format(aj.dataLancamento, 'dd/MM/yyyy')}"></td>
+                                <td th:text="${#temporals.format(aj.dataLancamento, 'dd/MM/yyyy')}"></td>
                                 <td>
                                     <span th:text="${aj.categoriaNome}"></span>
                                     <small class="text-muted d-block" th:text="${aj.categoriaTipo}"></small>

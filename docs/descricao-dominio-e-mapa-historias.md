@@ -1,129 +1,130 @@
-# Descricao do dominio e mapa de historias do usuario
+# Descrição do domínio e mapa de histórias do usuário
 
-## 1. Descricao do dominio usando linguagem onipresente
+## Linguagem onipresente
 
-O projeto Estokar organiza o negocio em varios contextos de dominio que compartilham uma linguagem comum entre negocio e tecnologia.
+O Estokar controla o ciclo comercial e operacional de uma distribuidora. Os
+termos abaixo são usados no código, nas telas, nos cenários BDD e na conversa
+com os usuários:
 
-### Termos principais do dominio
+- **Produto**: item comercializável com custo, preço e saldo.
+- **Movimentação de estoque**: entrada ou saída que altera o saldo do produto.
+- **Pedido**: venda composta por itens, cliente, cupom e estado de pagamento.
+- **Cancelamento**: encerramento de pedido com estorno idempotente do estoque.
+- **Inventário**: sessão de contagem física que identifica divergências.
+- **Ajuste de estoque**: correção automática ou sujeita à aprovação gerencial.
+- **Ponto de pedido**: consumo durante o lead time acrescido da margem de segurança.
+- **Ordem de compra**: sugestão de reposição que nasce como rascunho.
+- **Remessa**: agendamento logístico sujeito à capacidade e disponibilidade da doca.
+- **Cotação de frete**: cálculo obtido por API, cache ou tabela de contingência.
+- **Fatura**: obrigação financeira do cliente com vencimento e status.
+- **Acordo de pagamento**: negociação que pode liberar uma venda bloqueada.
+- **Faixa de fidelidade**: classificação por frequência de compra.
+- **Ação de retenção**: benefício gerado para cliente em risco.
+- **Simulação de preço**: cálculo auditável de custo, margem e preço sugerido.
+- **Perfil de acesso**: conjunto de permissões atribuídas a usuários.
+- **Permissão**: concessão de uma operação sobre um recurso.
+- **Template de relatório**: configuração das categorias e indicadores consolidados.
+- **Meta de indicador**: objetivo operacional comparado ao valor calculado.
+- **Snapshot de indicador**: registro imutável de um cálculo de KPI.
+- **Alerta de indicador**: violação ativa de uma meta operacional.
+- **Histórico de preço**: registro do valor anterior, novo valor e variação.
+- **Estratégia de desconto/restituição**: algoritmo selecionado conforme o tipo da operação.
 
-- `Produto`: item controlado no estoque, com custo, preco, saldo e historico.
-- `Estoque`: controle de entrada, saida e disponibilidade dos produtos.
-- `Pedido`: solicitacao de compra ou venda que movimenta o fluxo operacional.
-- `Cliente`: entidade comercial que concentra dados cadastrais, comportamento e relacionamento.
-- `Cupom`: beneficio promocional aplicado em vendas ou em estrategias de retencao.
-- `Cobranca`: controle de faturas, acordos, politicas de credito e bloqueio de inadimplencia.
-- `Engajamento`: classificacao de fidelidade, frequencia de compras e acoes de retencao.
-- `Suprimentos`: reposicao inteligente, analise de necessidade e geracao de ordens de compra.
-- `Remessa`: organizacao logistica de saida de mercadorias e ocupacao de docas.
-- `Frete`: cotacao de transporte, contingencia de consulta e despacho autorizado.
-- `Precificacao`: calculo do preco sugerido com base em custo, impostos, despesas e margem.
+## Mapa de histórias por funcionalidade
 
-### Linguagem onipresente por contexto
+### E-01 — Cancelamento de pedido com estorno
 
-#### Estoque
+- Como operador, quero cancelar um pedido para interromper a venda.
+- Como gestor, quero aprovar cancelamentos acima da alçada.
+- Como sistema, quero impedir estorno duplicado do mesmo pedido.
 
-- Quando o usuario registra uma movimentacao, o saldo do produto e atualizado.
-- Quando o saldo fica abaixo do minimo, o sistema gera alerta de reposicao.
-- Quando ha ajuste de inventario, a quantidade fisica passa a ser a referencia.
+### E-02 — Inventário periódico
 
-#### Vendas
+- Como estoquista, quero abrir uma sessão de inventário por setor.
+- Como operador, quero registrar a contagem física dos produtos.
+- Como gestor, quero impedir sessões simultâneas no mesmo escopo.
 
-- Um pedido e composto por itens de pedido e pode usar cupom.
-- O faturamento depende do ciclo do pedido e das regras de negocio da venda.
+### E-03 — Ajuste de estoque
 
-#### Clientes
+- Como sistema, quero aplicar automaticamente diferenças dentro da tolerância.
+- Como gestor, quero aprovar perdas acima da alçada.
+- Como sistema, quero impedir ajustes que deixem saldo negativo.
 
-- O cliente pode ser classificado por comportamento de compra e risco.
-- O cliente inadimplente pode ser bloqueado para venda ate regularizacao.
+### E-04 — Suprimentos e compras
 
-#### Cobranca
+- Como comprador, quero configurar lead time e margem de segurança.
+- Como comprador, quero gerar ordens de compra em rascunho antes da ruptura.
+- Como gestor, quero aprovar ou rejeitar uma ordem de compra.
 
-- Uma politica de credito define limites e prazo para bloqueio.
-- Um acordo de pagamento permite manter o cliente habilitado mesmo com atraso.
-- Uma fatura registra valor, vencimento, status e historico de cobranca.
+### E-05 — Remessas e docas
 
-#### Engajamento
+- Como gestor logístico, quero agendar remessas em docas disponíveis.
+- Como sistema, quero bloquear excesso de capacidade e choque de horário.
+- Como operador, quero receber sugestões de janelas alternativas.
 
-- A frequencia de compra determina a faixa de fidelidade.
-- Uma faixa de fidelidade pode liberar beneficio.
-- Uma acao de retencao e disparada quando o cliente entra em risco.
+### E-06 — Precificação dinâmica
 
-#### Suprimentos
+- Como gestor, quero configurar parâmetros e políticas de preço.
+- Como gestor, quero simular preço preservando a margem mínima.
+- Como gestor, quero aplicar uma simulação aprovada e manter seu histórico.
 
-- A ordem de compra nasce da necessidade de reposicao.
-- O lead time e usado para prever o momento certo de comprar.
-- O fornecedor influencia custo, prazo e disponibilidade.
+### E-07 — Cobrança e inadimplência
 
-#### Logistica e frete
+- Como gestor, quero registrar faturas e políticas de crédito.
+- Como sistema, quero bloquear clientes com atraso superior ao limite.
+- Como gestor, quero criar acordos que liberem clientes regularizados.
 
-- A remessa precisa respeitar capacidade de doca e janela de agendamento.
-- A cotacao de frete pode usar contingencia quando a integracao externa falha.
-- Uma ordem de despacho so pode ser gerada com validacao de autorizacao.
+### E-08 — Engajamento e fidelidade
 
-#### Precificacao
+- Como gestor, quero classificar clientes pela frequência de compra.
+- Como gestor, quero cadastrar benefícios por faixa.
+- Como sistema, quero gerar ações de retenção para clientes em risco.
 
-- O custo do produto serve de base para a simulacao.
-- A margem de lucro desejada define o preco sugerido.
-- A politica de precificacao pode variar por produto.
-- O historico de simulacao registra quem calculou, aprovou e aplicou o preco.
+### E-09 — Cotação e expedição de fretes
 
-## 2. Mapa de historias do usuario
+- Como operador, quero cotar frete por peso, dimensões e CEP.
+- Como sistema, quero reutilizar cache e contingência quando necessário.
+- Como gestor, quero gerar uma ordem de despacho apenas para operação autorizada.
 
-### Epic 1 - Cadastro e operacao de estoque
+### E-10 — Autenticação e segurança
 
-- Como usuario, quero cadastrar produtos para manter o catalogo atualizado.
-- Como usuario, quero registrar entradas e saidas para acompanhar o saldo em tempo real.
-- Como usuario, quero visualizar o historico de movimentacoes para auditar o estoque.
+- Como usuário, quero autenticar com login e senha.
+- Como sistema, quero proteger rotas e encerrar sessões com segurança.
+- Como administrador, quero inativar credenciais sem remover auditoria.
 
-### Epic 2 - Vendas e relacionamento com cliente
+### E-11 — Controle de acesso por perfil
 
-- Como usuario, quero criar pedidos com itens para registrar uma venda.
-- Como usuario, quero aplicar cupons para conceder beneficios promocionais.
-- Como usuario, quero consultar clientes para acompanhar o relacionamento comercial.
+- Como administrador, quero cadastrar perfis e usuários.
+- Como administrador, quero conceder operações por recurso.
+- Como auditor, quero consultar tentativas permitidas e negadas.
 
-### Epic 3 - Cobranca e inadimplencia
+### E-12 — Relatório financeiro
 
-- Como gestor, quero cadastrar politicas de credito para controlar bloqueios.
-- Como gestor, quero registrar faturas em atraso para acompanhar pendencias.
-- Como gestor, quero criar acordos de pagamento para liberar clientes com restricao.
-- Como gestor, quero consultar o historico de cobranca para auditar as decisoes tomadas.
+- Como gestor, quero categorizar receitas, custos e ajustes.
+- Como gestor, quero configurar templates de relatório.
+- Como gestor, quero consolidar resultado, margem e comparação entre períodos.
 
-### Epic 4 - Engajamento e fidelizacao
+### E-13 — Indicadores operacionais
 
-- Como gestor, quero classificar clientes por faixa de fidelidade para premiar recorrencia.
-- Como gestor, quero cadastrar beneficios por categoria para incentivar novas compras.
-- Como gestor, quero disparar acoes de retencao quando o cliente estiver em risco.
+- Como gestor, quero configurar metas para KPIs.
+- Como sistema, quero gerar snapshots imutáveis e alertas de violação.
+- Como gestor, quero resolver alertas com observação auditável.
 
-### Epic 5 - Suprimentos e reposicao
+### E-14 — Rastreabilidade de preços
 
-- Como comprador, quero gerar ordens de compra para evitar ruptura de estoque.
-- Como comprador, quero analisar fornecedores para escolher a melhor opcao.
-- Como comprador, quero acompanhar a recomendacao de reposicao para agir antes da falta.
+- Como gestor, quero registrar toda alteração efetiva de preço.
+- Como auditor, quero consultar valor anterior, novo e responsável.
+- Como sistema, quero ignorar salvamentos que não alterem o preço.
 
-### Epic 6 - Logistica e frete
+### E-15 — Estratégias de desconto e restituição
 
-- Como usuario, quero cotar fretes para comparar o custo de envio.
-- Como usuario, quero registrar despachos para acompanhar a saida da mercadoria.
-- Como usuario, quero consultar o historico de cotacoes para verificar tentativas anteriores.
-- Como usuario, quero manter uma tabela de contingencia para operar quando a cotacao externa estiver indisponivel.
+- Como operador, quero aplicar desconto fixo ou percentual conforme o cupom.
+- Como gestor, quero escolher crédito, troca ou estorno numa devolução.
+- Como sistema, quero validar limites antes de executar a estratégia.
 
-### Epic 7 - Precificacao dinamica
+## Contextos
 
-- Como gestor, quero cadastrar parametros globais para definir a regra padrao de precificacao.
-- Como gestor, quero criar politicas por produto para sobrescrever o padrao quando necessario.
-- Como gestor, quero simular preco de venda para avaliar margem e viabilidade.
-- Como gestor, quero bloquear simulacoes inseguras quando a margem estiver abaixo do minimo.
-- Como gestor, quero aplicar o preco aprovado diretamente no produto.
-- Como gestor, quero consultar o historico de simulacoes para auditar a operacao.
-
-## 3. Relacao com as funcionalidades do sistema
-
-- Funcionalidade de cobrancas: atende a Epic 3.
-- Funcionalidade de engajamento: atende a Epic 4.
-- Funcionalidade de suprimentos: atende a Epic 5.
-- Funcionalidade de frete: atende a Epic 6.
-- Funcionalidade de precificacao dinamica: atende a Epic 7.
-
-## 4. Observacao
-
-Este documento complementa o `context-map.cml` e o `README.md`, consolidando a linguagem do dominio e o mapa de historias em uma unica referencia para avaliacao e manutencao do projeto.
+As funcionalidades são distribuídas nos bounded contexts descritos em
+[`context-map.cml`](../context-map.cml): Vendas, Estoque, Clientes, Suprimentos,
+Logística, Cobrança, Engajamento, Frete, Precificação, Segurança, Financeiro e
+Indicadores.

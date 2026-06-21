@@ -35,13 +35,14 @@ public class SuprimentoService {
     private final ObjectProvider<ParametroEstoqueJpaRepository> parametroRepositoryProvider;
     private final ObjectProvider<OrdemCompraJpaRepository> ordemRepositoryProvider;
     private final ObjectProvider<MovimentacaoEstoqueJpaRepository> movimentacaoRepositoryProvider;
+    private final ObjectProvider<AlertaReposicaoService> alertaReposicaoServiceProvider;
 
     public SuprimentoService() {
-        this(new SuprimentoDAO(), null, null, null, null, null);
+        this(new SuprimentoDAO(), null, null, null, null, null, null);
     }
 
     public SuprimentoService(SuprimentoDAO suprimentoDAO) {
-        this(suprimentoDAO, null, null, null, null, null);
+        this(suprimentoDAO, null, null, null, null, null, null);
     }
 
     @Autowired
@@ -49,13 +50,15 @@ public class SuprimentoService {
                              ObjectProvider<FornecedorJpaRepository> fornecedorRepositoryProvider,
                              ObjectProvider<ParametroEstoqueJpaRepository> parametroRepositoryProvider,
                              ObjectProvider<OrdemCompraJpaRepository> ordemRepositoryProvider,
-                             ObjectProvider<MovimentacaoEstoqueJpaRepository> movimentacaoRepositoryProvider) {
+                             ObjectProvider<MovimentacaoEstoqueJpaRepository> movimentacaoRepositoryProvider,
+                             ObjectProvider<AlertaReposicaoService> alertaReposicaoServiceProvider) {
         this.suprimentoDAO = null;
         this.produtoRepositoryProvider = produtoRepositoryProvider;
         this.fornecedorRepositoryProvider = fornecedorRepositoryProvider;
         this.parametroRepositoryProvider = parametroRepositoryProvider;
         this.ordemRepositoryProvider = ordemRepositoryProvider;
         this.movimentacaoRepositoryProvider = movimentacaoRepositoryProvider;
+        this.alertaReposicaoServiceProvider = alertaReposicaoServiceProvider;
     }
 
     public SuprimentoService(SuprimentoDAO suprimentoDAO,
@@ -63,13 +66,15 @@ public class SuprimentoService {
                              ObjectProvider<FornecedorJpaRepository> fornecedorRepositoryProvider,
                              ObjectProvider<ParametroEstoqueJpaRepository> parametroRepositoryProvider,
                              ObjectProvider<OrdemCompraJpaRepository> ordemRepositoryProvider,
-                             ObjectProvider<MovimentacaoEstoqueJpaRepository> movimentacaoRepositoryProvider) {
+                             ObjectProvider<MovimentacaoEstoqueJpaRepository> movimentacaoRepositoryProvider,
+                             ObjectProvider<AlertaReposicaoService> alertaReposicaoServiceProvider) {
         this.suprimentoDAO = suprimentoDAO;
         this.produtoRepositoryProvider = produtoRepositoryProvider;
         this.fornecedorRepositoryProvider = fornecedorRepositoryProvider;
         this.parametroRepositoryProvider = parametroRepositoryProvider;
         this.ordemRepositoryProvider = ordemRepositoryProvider;
         this.movimentacaoRepositoryProvider = movimentacaoRepositoryProvider;
+        this.alertaReposicaoServiceProvider = alertaReposicaoServiceProvider;
     }
 
     @Transactional(readOnly = true)
@@ -180,7 +185,15 @@ public class SuprimentoService {
     @Transactional
     public int gerarRascunhosPendentes() throws SQLException {
         int geradas = 0;
-        for (ParametroEstoque parametro : listarParametrosComMetricas()) {
+        List<ParametroEstoque> parametros = listarParametrosComMetricas();
+        AlertaReposicaoService alertaReposicaoService = alertaReposicaoServiceProvider != null
+                ? alertaReposicaoServiceProvider.getIfAvailable()
+                : null;
+        if (alertaReposicaoService != null) {
+            alertaReposicaoService.sincronizarAlertas(parametros);
+        }
+
+        for (ParametroEstoque parametro : parametros) {
             if (parametro.isReposicaoNecessaria() && gerarRascunhoSeNecessario(parametro.getProdutoId())) {
                 geradas++;
             }

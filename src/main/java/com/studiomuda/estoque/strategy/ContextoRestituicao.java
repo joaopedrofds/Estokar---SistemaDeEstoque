@@ -1,27 +1,32 @@
 package com.studiomuda.estoque.strategy;
 
 import com.studiomuda.estoque.model.Devolucao;
-import java.sql.SQLException;
 
-/**
- * Context do padrão Strategy — seleciona e executa a estratégia correta.
- * Padrão de Design: Strategy (GoF) — Context
- */
 public class ContextoRestituicao {
 
-    private final RestituicaoStrategy estrategia;
+    private final RestituicaoStrategy creditoLojaStrategy;
+    private final RestituicaoStrategy trocaProdutoStrategy;
+    private final RestituicaoStrategy estornoFinanceiroStrategy;
 
-    public ContextoRestituicao(String tipoRestituicao) {
-        switch (tipoRestituicao != null ? tipoRestituicao : "CREDITO_LOJA") {
-            case "TROCA":   this.estrategia = new TrocaProdutoStrategy(); break;
-            case "ESTORNO": this.estrategia = new EstornoFinanceiroStrategy(); break;
-            default:        this.estrategia = new CreditoLojaStrategy(); break;
+    public ContextoRestituicao(RestituicaoStrategy creditoLojaStrategy,
+                               RestituicaoStrategy trocaProdutoStrategy,
+                               RestituicaoStrategy estornoFinanceiroStrategy) {
+        this.creditoLojaStrategy = creditoLojaStrategy;
+        this.trocaProdutoStrategy = trocaProdutoStrategy;
+        this.estornoFinanceiroStrategy = estornoFinanceiroStrategy;
+    }
+
+    public RestituicaoStrategy selecionar(String tipoRestituicao) {
+        if ("TROCA".equalsIgnoreCase(tipoRestituicao)) {
+            return trocaProdutoStrategy;
         }
+        if ("ESTORNO".equalsIgnoreCase(tipoRestituicao)) {
+            return estornoFinanceiroStrategy;
+        }
+        return creditoLojaStrategy;
     }
 
-    public void executar(Devolucao devolucao) throws SQLException {
-        estrategia.executar(devolucao);
+    public void executar(Devolucao devolucao) throws java.sql.SQLException {
+        selecionar(devolucao.getTipoRestituicao()).executar(devolucao);
     }
-
-    public String descricao() { return estrategia.descricao(); }
 }

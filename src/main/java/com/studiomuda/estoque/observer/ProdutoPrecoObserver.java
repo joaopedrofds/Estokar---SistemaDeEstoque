@@ -2,7 +2,6 @@ package com.studiomuda.estoque.observer;
 
 import com.studiomuda.estoque.model.Produto;
 import com.studiomuda.estoque.repository.ProdutoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.Optional;
 
@@ -16,7 +15,11 @@ import java.util.Optional;
 @Component
 public class ProdutoPrecoObserver implements ObservadorDePreco {
 
-    @Autowired private ProdutoRepository repo;
+    private final ProdutoRepository repo;
+
+    public ProdutoPrecoObserver(ProdutoRepository repo) {
+        this.repo = repo;
+    }
 
     @Override
     public void aoAlterarPreco(PrecoDomainEvent evento) {

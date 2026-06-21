@@ -65,9 +65,9 @@ INSERT INTO perfil_acesso (nome, descricao, ativo) VALUES
 ('OPERADOR_VENDEDOR', 'Perfil de execução diária com permissões restritas.', TRUE);
 
 INSERT INTO usuario_acesso (username, nome, senha, ativo) VALUES
-('admin', 'Administrador do Sistema', '{noop}Admin@123', TRUE),
-('gerente', 'Gerente Operacional', '{noop}Gerente@123', TRUE),
-('operador', 'Operador de Vendas', '{noop}Operador@123', TRUE);
+('admin', 'Administrador do Sistema', '{bcrypt}$2y$10$g0LlknzvHwnbcxNZUqwqNe5Cf7akFs6HZLqHA8jcKf1qqZznkUQGW', TRUE),
+('gerente', 'Gerente Operacional', '{bcrypt}$2y$10$hJCAgOl0r.UG62AIDEQ8N.c5mMAr8sOU9fL6Ozm.5auqHYlvXCaD.', TRUE),
+('operador', 'Operador de Vendas', '{bcrypt}$2y$10$zboD1cTxc2.94QKCP0v9V.We12Guw.2rug5mDF0.SmKT.NmVtyMyi', TRUE);
 
 INSERT INTO usuario_perfil (usuario_id, perfil_id) VALUES
 (1, 1),

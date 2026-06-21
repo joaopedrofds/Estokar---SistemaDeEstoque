@@ -4,7 +4,8 @@ import com.studiomuda.estoque.model.Cupom;
 import com.studiomuda.estoque.model.CupomUso;
 import com.studiomuda.estoque.repository.CupomRepository;
 import com.studiomuda.estoque.repository.CupomUsoRepository;
-import com.studiomuda.estoque.util.SpringContextUtil;
+import org.springframework.stereotype.Component;
+
 import java.time.LocalDateTime;
 
 /**
@@ -12,7 +13,16 @@ import java.time.LocalDateTime;
  * Padrão de Design: Observer (GoF) — ConcreteObserver
  * Substitui o antigo CupomUsoDAO por JPA Repository.
  */
+@Component
 public class CupomUsoObserver implements ObservadorDeCupom {
+
+    private final CupomUsoRepository usoRepo;
+    private final CupomRepository cupomRepo;
+
+    public CupomUsoObserver(CupomUsoRepository usoRepo, CupomRepository cupomRepo) {
+        this.usoRepo = usoRepo;
+        this.cupomRepo = cupomRepo;
+    }
 
     @Override
     public void aoAplicarCupom(CupomDomainEvent event) {
@@ -23,12 +33,9 @@ public class CupomUsoObserver implements ObservadorDeCupom {
         uso.setValorDesconto(event.getValorDesconto());
         uso.setDataUso(LocalDateTime.now());
 
-        // Usar JPA Repository via SpringContextUtil (observer não é bean Spring)
-        CupomUsoRepository usoRepo = SpringContextUtil.getBean(CupomUsoRepository.class);
         usoRepo.save(uso);
 
         // Incrementar contador de usos no cupom
-        CupomRepository cupomRepo = SpringContextUtil.getBean(CupomRepository.class);
         cupomRepo.findById(event.getCupomId()).ifPresent(cupom -> {
             cupom.setUsosRealizados(cupom.getUsosRealizados() + 1);
             cupomRepo.save(cupom);
