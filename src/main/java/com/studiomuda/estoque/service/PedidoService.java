@@ -147,6 +147,64 @@ public class PedidoService {
         return pedidoDAO.buscarLimiteQuantidadeCancelamento();
     }
 
+    @Transactional
+    public void adicionarItemPedido(ItemPedido item) {
+        if (produtoRepository == null || itemPedidoRepository == null || movimentacaoRepository == null
+                || pedidoRepository == null) {
+            throw new IllegalStateException("Persistência JPA não disponível para adicionar item.");
+        }
+        ProdutoJpaEntity produto = produtoRepository.findById(item.getProdutoId())
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+        if (item.getQuantidade() <= 0) {
+            throw new IllegalArgumentException("A quantidade deve ser maior que zero");
+        }
+        if (item.getQuantidade() > produto.getQuantidade()) {
+            throw new IllegalStateException("Estoque insuficiente. Quantidade disponível: " + produto.getQuantidade());
+        }
+        pedidoRepository.findById(item.getPedidoId())
+                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
+        PedidoJpaEntity pedidoJpa = pedidoRepository.getReferenceById(item.getPedidoId());
+        ItemPedidoJpaEntity novoItem = new ItemPedidoJpaEntity(pedidoJpa, produto, item.getQuantidade());
+        itemPedidoRepository.save(novoItem);
+        produto.adicionarQuantidade(-item.getQuantidade());
+        produtoRepository.save(produto);
+        movimentacaoRepository.save(new MovimentacaoEstoqueJpaEntity(
+                produto.getId(), "saida", item.getQuantidade(),
+                "Venda - Pedido #" + item.getPedidoId(), Date.valueOf(LocalDate.now())));
+    }
+
+    @Transactional
+    public int removerItemPedido(int itemId) {
+        if (itemPedidoRepository == null || produtoRepository == null || movimentacaoRepository == null) {
+            throw new IllegalStateException("Persistência JPA não disponível para remover item.");
+        }
+        ItemPedidoJpaEntity item = itemPedidoRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("Item não encontrado"));
+        int pedidoId = item.getPedido().getId();
+        ProdutoJpaEntity produto = item.getProduto();
+        produto.adicionarQuantidade(item.getQuantidade());
+        produtoRepository.save(produto);
+        movimentacaoRepository.save(new MovimentacaoEstoqueJpaEntity(
+                produto.getId(), "entrada", item.getQuantidade(),
+                "Estorno - Cancelamento Item Pedido #" + pedidoId, Date.valueOf(LocalDate.now())));
+        itemPedidoRepository.deleteById(itemId);
+        return pedidoId;
+    }
+
+    public List<String> listarStatusDisponiveis() {
+        if (pedidoRepository != null) {
+            return pedidoRepository.findDistinctStatus();
+        }
+        if (pedidoDAO != null) {
+            try {
+                return pedidoDAO.listarStatusDisponiveis();
+            } catch (SQLException e) {
+                return java.util.Collections.emptyList();
+            }
+        }
+        return java.util.Collections.emptyList();
+    }
+
     private ResultadoCancelamento cancelarPedidoComJpa(int pedidoId,
                                                        UsuarioOperacao solicitante,
                                                        String justificativa,

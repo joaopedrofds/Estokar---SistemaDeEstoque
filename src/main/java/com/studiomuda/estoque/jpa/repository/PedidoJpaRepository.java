@@ -15,4 +15,7 @@ public interface PedidoJpaRepository extends JpaRepository<PedidoJpaEntity, Inte
     List<Date> listarDatasComprasConfirmadas(@Param("clienteId") Integer clienteId);
 
     long countByBeneficioAplicadoId(Integer beneficioId);
+
+    @Query("select distinct p.status from PedidoJpaEntity p where p.status is not null and p.status <> ''")
+    List<String> findDistinctStatus();
 }
