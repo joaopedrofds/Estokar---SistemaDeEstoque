@@ -37,30 +37,7 @@ public class SuprimentoService {
     private final ObjectProvider<MovimentacaoEstoqueJpaRepository> movimentacaoRepositoryProvider;
     private final ObjectProvider<AlertaReposicaoService> alertaReposicaoServiceProvider;
 
-    public SuprimentoService() {
-        this(new SuprimentoDAO(), null, null, null, null, null, null);
-    }
-
-    public SuprimentoService(SuprimentoDAO suprimentoDAO) {
-        this(suprimentoDAO, null, null, null, null, null, null);
-    }
-
     @Autowired
-    public SuprimentoService(ObjectProvider<ProdutoJpaRepository> produtoRepositoryProvider,
-                             ObjectProvider<FornecedorJpaRepository> fornecedorRepositoryProvider,
-                             ObjectProvider<ParametroEstoqueJpaRepository> parametroRepositoryProvider,
-                             ObjectProvider<OrdemCompraJpaRepository> ordemRepositoryProvider,
-                             ObjectProvider<MovimentacaoEstoqueJpaRepository> movimentacaoRepositoryProvider,
-                             ObjectProvider<AlertaReposicaoService> alertaReposicaoServiceProvider) {
-        this.suprimentoDAO = null;
-        this.produtoRepositoryProvider = produtoRepositoryProvider;
-        this.fornecedorRepositoryProvider = fornecedorRepositoryProvider;
-        this.parametroRepositoryProvider = parametroRepositoryProvider;
-        this.ordemRepositoryProvider = ordemRepositoryProvider;
-        this.movimentacaoRepositoryProvider = movimentacaoRepositoryProvider;
-        this.alertaReposicaoServiceProvider = alertaReposicaoServiceProvider;
-    }
-
     public SuprimentoService(SuprimentoDAO suprimentoDAO,
                              ObjectProvider<ProdutoJpaRepository> produtoRepositoryProvider,
                              ObjectProvider<FornecedorJpaRepository> fornecedorRepositoryProvider,
@@ -79,7 +56,7 @@ public class SuprimentoService {
 
     @Transactional(readOnly = true)
     public List<ProdutoJpaEntity> listarProdutos() {
-        if (produtoRepositoryProvider != null) {
+        if (possuiProdutoRepository()) {
             return obterProdutoRepository().findAllByOrderByNomeAsc();
         }
         return java.util.Collections.emptyList();
@@ -89,10 +66,10 @@ public class SuprimentoService {
     public void salvarParametro(int produtoId, String fornecedorNome, int leadTimeDias, int margemSeguranca) throws SQLException {
         validarParametro(produtoId, fornecedorNome, leadTimeDias, margemSeguranca);
 
-        if (parametroRepositoryProvider != null && obterParametroRepository() != null) {
+        if (usaFluxoJpaParaParametros()) {
             salvarParametroJpa(produtoId, fornecedorNome, leadTimeDias, margemSeguranca);
         } else {
-            suprimentoDAO.salvarParametro(produtoId, fornecedorNome.trim(), leadTimeDias, margemSeguranca);
+            salvarParametroLegado(produtoId, fornecedorNome, leadTimeDias, margemSeguranca);
         }
     }
 
@@ -100,11 +77,9 @@ public class SuprimentoService {
         ProdutoJpaEntity produto = obterProdutoRepository().findById(produtoId)
                 .orElseThrow(() -> new IllegalArgumentException("Produto nao encontrado."));
 
-        FornecedorJpaEntity fornecedor = new FornecedorJpaEntity();
-        fornecedor.setNome(fornecedorNome.trim());
-        fornecedor.setLeadTimeDias(leadTimeDias);
-        fornecedor.setAtivo(true);
-        fornecedor = obterFornecedorRepository().save(fornecedor);
+        FornecedorJpaEntity fornecedor = obterFornecedorRepository()
+                .findFirstByNomeIgnoreCaseAndLeadTimeDias(fornecedorNome.trim(), leadTimeDias)
+                .orElseGet(() -> criarFornecedor(fornecedorNome, leadTimeDias));
 
         ParametroEstoqueJpaEntity parametro = obterParametroRepository().buscarPorProduto(produtoId)
                 .orElseGet(ParametroEstoqueJpaEntity::new);
@@ -114,12 +89,20 @@ public class SuprimentoService {
         obterParametroRepository().save(parametro);
     }
 
+    private FornecedorJpaEntity criarFornecedor(String fornecedorNome, int leadTimeDias) {
+        FornecedorJpaEntity fornecedor = new FornecedorJpaEntity();
+        fornecedor.setNome(fornecedorNome.trim());
+        fornecedor.setLeadTimeDias(leadTimeDias);
+        fornecedor.setAtivo(true);
+        return obterFornecedorRepository().save(fornecedor);
+    }
+
     @Transactional(readOnly = true)
     public List<ParametroEstoque> listarParametrosComMetricas() throws SQLException {
-        if (parametroRepositoryProvider != null && obterParametroRepository() != null) {
+        if (usaFluxoJpaParaParametros()) {
             return listarParametrosComMetricasJpa();
         }
-        return listarParametrosComMetricasDao();
+        return listarParametrosComMetricasLegado();
     }
 
     private List<ParametroEstoque> listarParametrosComMetricasJpa() {
@@ -128,25 +111,25 @@ public class SuprimentoService {
                 .collect(Collectors.toList());
     }
 
-    private List<ParametroEstoque> listarParametrosComMetricasDao() throws SQLException {
+    private List<ParametroEstoque> listarParametrosComMetricasLegado() throws SQLException {
         List<ParametroEstoque> parametros = suprimentoDAO.listarParametros();
         for (ParametroEstoque parametro : parametros) {
-            preencherMetricas(parametro);
+            preencherMetricasLegadas(parametro);
         }
         return parametros;
     }
 
-    private void preencherMetricas(ParametroEstoque parametro) throws SQLException {
+    private void preencherMetricasLegadas(ParametroEstoque parametro) throws SQLException {
         double consumoMedioDiario = suprimentoDAO.calcularConsumoMedioDiario(parametro.getProdutoId());
         parametro.calcularPontoPedido(consumoMedioDiario);
     }
 
     @Transactional
     public boolean gerarRascunhoSeNecessario(int produtoId) throws SQLException {
-        if (parametroRepositoryProvider != null && obterParametroRepository() != null) {
+        if (usaFluxoJpaParaReposicao()) {
             return gerarRascunhoSeNecessarioJpa(produtoId);
         }
-        return gerarRascunhoSeNecessarioDao(produtoId);
+        return gerarRascunhoSeNecessarioLegado(produtoId);
     }
 
     private boolean gerarRascunhoSeNecessarioJpa(int produtoId) {
@@ -164,13 +147,13 @@ public class SuprimentoService {
         return criarOrdemRascunho(parametro, modelo.calcularQuantidadeSugerida());
     }
 
-    private boolean gerarRascunhoSeNecessarioDao(int produtoId) throws SQLException {
+    private boolean gerarRascunhoSeNecessarioLegado(int produtoId) throws SQLException {
         ParametroEstoque parametro = suprimentoDAO.buscarParametroPorProduto(produtoId);
         if (parametro == null) {
             return false;
         }
 
-        preencherMetricas(parametro);
+        preencherMetricasLegadas(parametro);
         if (!parametro.isReposicaoNecessaria() || suprimentoDAO.existeRascunhoParaProduto(produtoId)) {
             return false;
         }
@@ -203,10 +186,10 @@ public class SuprimentoService {
 
     @Transactional
     public void atualizarRascunho(int ordemId, int quantidade, double valorUnitario) throws SQLException {
-        if (ordemRepositoryProvider != null && obterOrdemRepository() != null) {
+        if (possuiOrdemRepository()) {
             atualizarRascunhoJpa(ordemId, quantidade, valorUnitario);
         } else {
-            atualizarRascunhoDao(ordemId, quantidade, valorUnitario);
+            atualizarRascunhoLegado(ordemId, quantidade, valorUnitario);
         }
     }
 
@@ -230,7 +213,7 @@ public class SuprimentoService {
         obterOrdemRepository().save(ordem);
     }
 
-    private void atualizarRascunhoDao(int ordemId, int quantidade, double valorUnitario) throws SQLException {
+    private void atualizarRascunhoLegado(int ordemId, int quantidade, double valorUnitario) throws SQLException {
         OrdemCompra ordem = suprimentoDAO.buscarOrdemPorId(ordemId);
         if (ordem == null) {
             throw new IllegalArgumentException("Ordem de compra nao encontrada.");
@@ -241,20 +224,24 @@ public class SuprimentoService {
 
     @Transactional
     public void aprovar(int ordemId) throws SQLException {
-        if (ordemRepositoryProvider != null && obterOrdemRepository() != null) {
+        if (possuiOrdemRepository()) {
             alterarStatusJpa(ordemId, OrdemCompra.STATUS_APROVADA);
         } else {
-            suprimentoDAO.alterarStatus(ordemId, OrdemCompra.STATUS_APROVADA);
+            alterarStatusLegado(ordemId, OrdemCompra.STATUS_APROVADA);
         }
     }
 
     @Transactional
     public void rejeitar(int ordemId) throws SQLException {
-        if (ordemRepositoryProvider != null && obterOrdemRepository() != null) {
+        if (possuiOrdemRepository()) {
             alterarStatusJpa(ordemId, OrdemCompra.STATUS_REJEITADA);
         } else {
-            suprimentoDAO.alterarStatus(ordemId, OrdemCompra.STATUS_REJEITADA);
+            alterarStatusLegado(ordemId, OrdemCompra.STATUS_REJEITADA);
         }
+    }
+
+    private void alterarStatusLegado(int ordemId, String status) throws SQLException {
+        suprimentoDAO.alterarStatus(ordemId, status);
     }
 
     private void alterarStatusJpa(int ordemId, String status) {
@@ -271,10 +258,10 @@ public class SuprimentoService {
 
     @Transactional(readOnly = true)
     public List<OrdemCompra> listarOrdens() throws SQLException {
-        if (ordemRepositoryProvider != null && obterOrdemRepository() != null) {
+        if (possuiOrdemRepository()) {
             return listarOrdensJpa();
         }
-        return listarOrdensDao();
+        return listarOrdensLegado();
     }
 
     private List<OrdemCompra> listarOrdensJpa() {
@@ -283,8 +270,12 @@ public class SuprimentoService {
                 .collect(Collectors.toList());
     }
 
-    private List<OrdemCompra> listarOrdensDao() throws SQLException {
+    private List<OrdemCompra> listarOrdensLegado() throws SQLException {
         return suprimentoDAO.listarOrdens();
+    }
+
+    private void salvarParametroLegado(int produtoId, String fornecedorNome, int leadTimeDias, int margemSeguranca) throws SQLException {
+        suprimentoDAO.salvarParametro(produtoId, fornecedorNome.trim(), leadTimeDias, margemSeguranca);
     }
 
     private void validarParametro(int produtoId, String fornecedorNome, int leadTimeDias, int margemSeguranca) {
@@ -413,5 +404,33 @@ public class SuprimentoService {
             throw new IllegalStateException("Repositório de movimentações indisponível.");
         }
         return repository;
+    }
+
+    private boolean possuiProdutoRepository() {
+        return produtoRepositoryProvider != null && produtoRepositoryProvider.getIfAvailable() != null;
+    }
+
+    private boolean possuiFornecedorRepository() {
+        return fornecedorRepositoryProvider != null && fornecedorRepositoryProvider.getIfAvailable() != null;
+    }
+
+    private boolean possuiParametroRepository() {
+        return parametroRepositoryProvider != null && parametroRepositoryProvider.getIfAvailable() != null;
+    }
+
+    private boolean possuiOrdemRepository() {
+        return ordemRepositoryProvider != null && ordemRepositoryProvider.getIfAvailable() != null;
+    }
+
+    private boolean possuiMovimentacaoRepository() {
+        return movimentacaoRepositoryProvider != null && movimentacaoRepositoryProvider.getIfAvailable() != null;
+    }
+
+    private boolean usaFluxoJpaParaParametros() {
+        return possuiProdutoRepository() && possuiFornecedorRepository() && possuiParametroRepository();
+    }
+
+    private boolean usaFluxoJpaParaReposicao() {
+        return usaFluxoJpaParaParametros() && possuiOrdemRepository() && possuiMovimentacaoRepository();
     }
 }

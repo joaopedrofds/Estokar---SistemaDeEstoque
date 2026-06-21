@@ -52,7 +52,7 @@ public class ParametroEstoque {
     }
 
     public int calcularQuantidadeSugerida() {
-        return Math.max(pontoPedido - estoqueAtual + margemSeguranca, 1);
+        return Math.max(pontoPedido - estoqueAtual + margemSeguranca, 0);
     }
 
     public boolean isReposicaoNecessaria() {

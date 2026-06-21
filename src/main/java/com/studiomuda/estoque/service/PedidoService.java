@@ -39,10 +39,6 @@ public class PedidoService {
     private final ParametroCancelamentoJpaRepository parametroCancelamentoRepository;
     private final FidelidadeService fidelidadeService;
 
-    public PedidoService() {
-        this(new PedidoDAO(), new ItemPedidoDAO());
-    }
-
     public PedidoService(PedidoDAO pedidoDAO, ItemPedidoDAO itemPedidoDAO) {
         this.pedidoDAO = pedidoDAO;
         this.itemPedidoDAO = itemPedidoDAO;

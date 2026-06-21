@@ -155,6 +155,19 @@ public class FuncionarioDAO {
         }
     }
 
+    public List<String> listarStatusDistintos() throws SQLException {
+        List<String> status = new ArrayList<>();
+        String sql = "SELECT DISTINCT CASE WHEN ativo=1 THEN 'ativo' ELSE 'inativo' END as status FROM funcionario";
+        try (Connection conn = Conexao.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                status.add(rs.getString("status"));
+            }
+        }
+        return status;
+    }
+
     public List<Funcionario> buscarComFiltros(String nome, String cargo, String status) throws SQLException {
         List<Funcionario> lista = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT * FROM funcionario WHERE 1=1");

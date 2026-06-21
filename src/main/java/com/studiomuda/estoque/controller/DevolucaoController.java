@@ -1,22 +1,14 @@
 package com.studiomuda.estoque.controller;
 
-import com.studiomuda.estoque.dao.PedidoDAO;
-import com.studiomuda.estoque.dao.ItemPedidoDAO;
-import com.studiomuda.estoque.dao.ClienteDAO;
 import com.studiomuda.estoque.model.Devolucao;
 import com.studiomuda.estoque.model.ItemDevolucao;
 import com.studiomuda.estoque.model.Pedido;
 import com.studiomuda.estoque.model.ItemPedido;
-import com.studiomuda.estoque.model.CreditoCliente;
-import com.studiomuda.estoque.repository.DevolucaoRepository;
-import com.studiomuda.estoque.repository.ItemDevolucaoRepository;
-import com.studiomuda.estoque.repository.CreditoClienteRepository;
 import com.studiomuda.estoque.service.DevolucaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,43 +23,9 @@ public class DevolucaoController {
     @Autowired
     private DevolucaoService devolucaoService;
 
-    @Autowired
-    private DevolucaoRepository devolucaoRepository;
-
-    @Autowired
-    private ItemDevolucaoRepository itemDevolucaoRepository;
-
-    @Autowired
-    private CreditoClienteRepository creditoRepository;
-
-    @Autowired
-    private PedidoDAO pedidoDAO;
-
-    @Autowired
-    private ItemPedidoDAO itemPedidoDAO;
-
-    @Autowired
-    private ClienteDAO clienteDAO;
-
     @GetMapping
     public String listar(@RequestParam(required = false) String status, Model model) {
-        List<Devolucao> devolucoes;
-        if (status != null && !status.isEmpty()) {
-            devolucoes = devolucaoRepository.findByStatusOrderByDataSolicitacaoDesc(status);
-        } else {
-            devolucoes = devolucaoRepository.findAll();
-        }
-
-        // Enriquecer com nome do cliente
-        for (Devolucao d : devolucoes) {
-            try {
-                d.setClienteNome(clienteDAO.buscarPorId(d.getClienteId()).getNome());
-            } catch (SQLException e) {
-                d.setClienteNome("Desconhecido");
-            }
-        }
-
-        model.addAttribute("devolucoes", devolucoes);
+        model.addAttribute("devolucoes", devolucaoService.listarComNomeCliente(status));
         model.addAttribute("statusFiltro", status);
         return "devolucoes/lista";
     }
@@ -75,9 +33,9 @@ public class DevolucaoController {
     @GetMapping("/nova/{pedidoId}")
     public String formNova(@PathVariable int pedidoId, Model model) {
         try {
-            Pedido pedido = pedidoDAO.buscarPorId(pedidoId);
+            Pedido pedido = devolucaoService.buscarPedidoParaDevolucao(pedidoId);
             if (pedido == null) return "redirect:/pedidos";
-            List<ItemPedido> itens = itemPedidoDAO.listarPorPedido(pedidoId);
+            List<ItemPedido> itens = devolucaoService.listarItensPedidoParaDevolucao(pedidoId);
             model.addAttribute("pedido", pedido);
             model.addAttribute("itensPedido", itens);
             model.addAttribute("devolucao", new Devolucao());
@@ -98,7 +56,7 @@ public class DevolucaoController {
                          @RequestParam(required = false) List<String> condicoes,
                          Model model) {
         try {
-            Pedido pedido = pedidoDAO.buscarPorId(pedidoId);
+            Pedido pedido = devolucaoService.buscarPedidoParaDevolucao(pedidoId);
             if (pedido == null) return "redirect:/pedidos";
 
             Devolucao devolucao = new Devolucao();
@@ -136,18 +94,14 @@ public class DevolucaoController {
 
     @GetMapping("/{id}")
     public String detalhe(@PathVariable int id, Model model) {
-        Devolucao devolucao = devolucaoRepository.findById(id).orElse(null);
+        Devolucao devolucao = devolucaoService.buscarPorIdComDetalhes(id);
         if (devolucao == null) return "redirect:/devolucoes";
 
-        List<ItemDevolucao> itens = itemDevolucaoRepository.findByDevolucaoId(id);
-        devolucao.setItens(itens);
-
         try {
-            Pedido pedido = pedidoDAO.buscarPorId(devolucao.getPedidoId());
-            devolucao.setClienteNome(clienteDAO.buscarPorId(devolucao.getClienteId()).getNome());
+            Pedido pedido = devolucaoService.buscarPedidoParaDevolucao(devolucao.getPedidoId());
             model.addAttribute("devolucao", devolucao);
             model.addAttribute("pedido", pedido);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             model.addAttribute("mensagemErro", "Erro: " + e.getMessage());
             return "erro";
         }
@@ -185,18 +139,7 @@ public class DevolucaoController {
 
     @GetMapping("/creditos")
     public String creditos(Model model) {
-        List<CreditoCliente> creditos = creditoRepository.findByStatus("ATIVO");
-
-        // Enriquecer com nome do cliente
-        for (CreditoCliente c : creditos) {
-            try {
-                c.setClienteNome(clienteDAO.buscarPorId(c.getClienteId()).getNome());
-            } catch (SQLException e) {
-                c.setClienteNome("Desconhecido");
-            }
-        }
-
-        model.addAttribute("creditos", creditos);
+        model.addAttribute("creditos", devolucaoService.listarCreditosAtivos());
         return "devolucoes/creditos";
     }
 }

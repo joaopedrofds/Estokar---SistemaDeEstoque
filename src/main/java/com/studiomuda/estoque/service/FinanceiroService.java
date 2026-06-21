@@ -1,7 +1,5 @@
 package com.studiomuda.estoque.service;
 
-import com.studiomuda.estoque.dao.MovimentacaoEstoqueDAO;
-import com.studiomuda.estoque.dao.PedidoDAO;
 import com.studiomuda.estoque.financeiro.application.dto.CategoriaFinanceiraDTO;
 import com.studiomuda.estoque.financeiro.application.dto.LancamentoAjusteDTO;
 import com.studiomuda.estoque.financeiro.application.dto.TemplateRelatorioDTO;
@@ -20,10 +18,11 @@ import com.studiomuda.estoque.financeiro.domain.RelatorioId;
 import com.studiomuda.estoque.financeiro.domain.RelatorioIndicadorLinha;
 import com.studiomuda.estoque.financeiro.domain.TemplateId;
 import com.studiomuda.estoque.financeiro.domain.TemplateRelatorio;
+import com.studiomuda.estoque.jpa.repository.MovimentacaoEstoqueJpaRepository;
+import com.studiomuda.estoque.jpa.repository.PedidoJpaRepository;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -33,8 +32,8 @@ import java.util.Map;
 
 /**
  * Serviço de aplicação do Relatório Financeiro (E-12). Orquestra as portas de
- * domínio do contexto (categorias, templates, ajustes, relatórios) e os DAOs de
- * leitura de outros contextos (pedido, movimentação), montando o relatório
+ * domínio do contexto (categorias, templates, ajustes, relatórios) e os repositórios
+ * JPA de leitura de outros contextos (pedido, movimentação), montando o relatório
  * consolidado. O cálculo aritmético vive em {@link CalculadoraRelatorioFinanceiro}
  * (domínio puro). Tradução domínio → apresentação via DTOs ({@code de(...)}).
  */
@@ -45,8 +44,8 @@ public class FinanceiroService {
     private final ITemplateRelatorioRepositorio templateRepo;
     private final IRelatorioGeradoRepositorio relatorioRepo;
     private final ILancamentoAjusteRepositorio lancamentoRepo;
-    private final PedidoDAO pedidoDAO;
-    private final MovimentacaoEstoqueDAO movimentacaoDAO;
+    private final PedidoJpaRepository pedidoJpaRepository;
+    private final MovimentacaoEstoqueJpaRepository movimentacaoJpaRepository;
 
     private final CalculadoraRelatorioFinanceiro calculadora = new CalculadoraRelatorioFinanceiro();
 
@@ -54,14 +53,14 @@ public class FinanceiroService {
                              ITemplateRelatorioRepositorio templateRepo,
                              IRelatorioGeradoRepositorio relatorioRepo,
                              ILancamentoAjusteRepositorio lancamentoRepo,
-                             PedidoDAO pedidoDAO,
-                             MovimentacaoEstoqueDAO movimentacaoDAO) {
+                             PedidoJpaRepository pedidoJpaRepository,
+                             MovimentacaoEstoqueJpaRepository movimentacaoJpaRepository) {
         this.categoriaRepo = categoriaRepo;
         this.templateRepo = templateRepo;
         this.relatorioRepo = relatorioRepo;
         this.lancamentoRepo = lancamentoRepo;
-        this.pedidoDAO = pedidoDAO;
-        this.movimentacaoDAO = movimentacaoDAO;
+        this.pedidoJpaRepository = pedidoJpaRepository;
+        this.movimentacaoJpaRepository = movimentacaoJpaRepository;
     }
 
     // ----- Categorias financeiras -----
@@ -142,7 +141,7 @@ public class FinanceiroService {
      * anterior de mesma duração) e persiste o snapshot resultante.
      */
     public RelatorioGerado gerarRelatorio(String templateId, LocalDate dataInicio, LocalDate dataFim,
-                                          Integer usuarioId, String username) throws SQLException {
+                                          Integer usuarioId, String username) {
         TemplateRelatorio template = templateRepo.buscarPorId(TemplateId.de(templateId)).orElse(null);
         if (template == null || !template.isAtivo()) {
             throw new IllegalStateException("Template de relatório inválido ou inativo.");
@@ -175,21 +174,21 @@ public class FinanceiroService {
             }
         }
 
-        PedidoDAO.ResumoFinanceiroPedido resumoPedidos = pedidoDAO.resumirReceitaPaga(sql(dataInicio), sql(dataFim));
-        PedidoDAO.ResumoFinanceiroPedido resumoAnterior = pedidoDAO.resumirReceitaPaga(sql(inicioAnterior), sql(fimAnterior));
+        ResumoFinanceiroPedido resumoPedidos = resumirReceitaPaga(sql(dataInicio), sql(dataFim));
+        ResumoFinanceiroPedido resumoAnterior = resumirReceitaPaga(sql(inicioAnterior), sql(fimAnterior));
         double resultadoOperacional = calculadora.calcularResultadoOperacional(receitaOperacional, custoOperacional);
         double resultadoConsolidado = calculadora.calcularResultadoConsolidado(resultadoOperacional, totalAjustesReceita, totalAjustesDespesa);
 
         List<RelatorioIndicadorLinha> linhasIndicador = calcularIndicadores(
                 template.getIndicadores(), receitaOperacional, custoOperacional, resultadoConsolidado,
-                resumoPedidos.getQuantidadePedidos(), resumoAnterior.getReceitaTotal(), resumoAnterior.getQuantidadePedidos());
+                resumoPedidos.quantidadePedidos(), resumoAnterior.receitaTotal(), resumoAnterior.quantidadePedidos());
 
         RelatorioGerado relatorio = RelatorioGerado.criar(
                 RelatorioId.gerar(), template.getId(), template.getNome(),
                 dataInicio, dataFim, inicioAnterior, fimAnterior,
                 usuarioId, username, receitaOperacional, custoOperacional, resultadoOperacional,
                 totalAjustesReceita, totalAjustesDespesa, resultadoConsolidado,
-                resumoPedidos.getQuantidadePedidos(), linhas, linhasIndicador);
+                resumoPedidos.quantidadePedidos(), linhas, linhasIndicador);
 
         return relatorioRepo.persistir(relatorio);
     }
@@ -212,6 +211,29 @@ public class FinanceiroService {
                 dataLancamento, valor, descricao, usuarioId, username));
     }
 
+    // ----- Consultas JPA para dados financeiros -----
+
+    private ResumoFinanceiroPedido resumirReceitaPaga(Date inicio, Date fim) {
+        List<Object[]> rows = pedidoJpaRepository.resumirReceitaPagaNativo(inicio, fim);
+        if (rows != null && !rows.isEmpty()) {
+            Object[] row = rows.get(0);
+            double receita = row[0] != null ? ((Number) row[0]).doubleValue() : 0.0;
+            int qtd = row[1] != null ? ((Number) row[1]).intValue() : 0;
+            return new ResumoFinanceiroPedido(receita, qtd);
+        }
+        return new ResumoFinanceiroPedido(0.0, 0);
+    }
+
+    private double somarCustoSaida(Date inicio, Date fim) {
+        Double result = movimentacaoJpaRepository.somarCustoSaidaNativo(inicio, fim);
+        return result != null ? result : 0.0;
+    }
+
+    private double somarDevolucoes(Date inicio, Date fim) {
+        Double result = movimentacaoJpaRepository.somarDevolucoeNativo(inicio, fim);
+        return result != null ? result : 0.0;
+    }
+
     // ----- Montagem do relatório -----
 
     private Map<CategoriaId, CategoriaFinanceira> carregarCategoriasObrigatorias(TemplateRelatorio template) {
@@ -227,7 +249,7 @@ public class FinanceiroService {
     }
 
     private Map<CategoriaId, ValoresCategoria> calcularValores(Map<CategoriaId, CategoriaFinanceira> categorias,
-                                                               LocalDate inicio, LocalDate fim) throws SQLException {
+                                                               LocalDate inicio, LocalDate fim) {
         Map<CategoriaId, ValoresCategoria> valores = new LinkedHashMap<>();
         for (CategoriaFinanceira categoria : categorias.values()) {
             valores.put(categoria.getId(), resolverValorCategoria(categoria, inicio, fim));
@@ -235,23 +257,24 @@ public class FinanceiroService {
         return valores;
     }
 
-    private ValoresCategoria resolverValorCategoria(CategoriaFinanceira categoria, LocalDate inicio, LocalDate fim) throws SQLException {
+    private ValoresCategoria resolverValorCategoria(CategoriaFinanceira categoria, LocalDate inicio, LocalDate fim) {
         String origem = categoria.getOrigemSistema() == null ? "" : categoria.getOrigemSistema();
         double valorAutomatico = 0;
         String rastreio = "Sem lançamentos no período";
         switch (origem) {
-            case "PEDIDO_PAGO":
-                PedidoDAO.ResumoFinanceiroPedido resumo = pedidoDAO.resumirReceitaPaga(sql(inicio), sql(fim));
-                valorAutomatico = resumo.getReceitaTotal();
-                rastreio = "PedidoDAO: " + resumo.getQuantidadePedidos() + " pedido(s) pago(s)";
+            case "PEDIDO_PAGO": {
+                ResumoFinanceiroPedido resumo = resumirReceitaPaga(sql(inicio), sql(fim));
+                valorAutomatico = resumo.receitaTotal();
+                rastreio = "PedidoJpaRepository: " + resumo.quantidadePedidos() + " pedido(s) pago(s)";
                 break;
+            }
             case "MOVIMENTACAO_SAIDA":
-                valorAutomatico = movimentacaoDAO.somarCustoSaida(sql(inicio), sql(fim));
-                rastreio = "MovimentacaoDAO: saídas de estoque";
+                valorAutomatico = somarCustoSaida(sql(inicio), sql(fim));
+                rastreio = "MovimentacaoEstoqueJpaRepository: saídas de estoque";
                 break;
             case "MOVIMENTACAO_ENTRADA_DEVOLUCAO":
-                valorAutomatico = movimentacaoDAO.somarDevolucoes(sql(inicio), sql(fim));
-                rastreio = "MovimentacaoDAO: entradas de devolução/estorno";
+                valorAutomatico = somarDevolucoes(sql(inicio), sql(fim));
+                rastreio = "MovimentacaoEstoqueJpaRepository: entradas de devolução/estorno";
                 break;
             default:
                 rastreio = "Categoria sem origem automática";
@@ -304,6 +327,11 @@ public class FinanceiroService {
     private static Date sql(LocalDate data) {
         return Date.valueOf(data);
     }
+
+    // ----- Tipos auxiliares locais -----
+
+    /** Resumo financeiro de pedidos pagos num período (substitui PedidoDAO.ResumoFinanceiroPedido). */
+    private record ResumoFinanceiroPedido(double receitaTotal, int quantidadePedidos) {}
 
     private static class ValoresCategoria {
         private final double valorAutomatico;
