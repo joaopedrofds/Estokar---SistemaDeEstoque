@@ -101,6 +101,7 @@ class SuprimentoServiceTest {
         when(ordens.buscarCompletaPorId(5)).thenReturn(Optional.of(ordem));
 
         SuprimentoService service = new SuprimentoService(
+                mock(SuprimentoDAO.class),
                 provider(mock(ProdutoJpaRepository.class)),
                 provider(mock(FornecedorJpaRepository.class)),
                 provider(mock(ParametroEstoqueJpaRepository.class)),

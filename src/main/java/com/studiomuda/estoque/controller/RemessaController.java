@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.time.LocalDate;
 
 @Controller
@@ -73,8 +72,6 @@ public class RemessaController {
         try {
             remessaService.cadastrarDoca(nome, capacidadePaletesDiaria);
             return "redirect:/remessas?mensagem=Doca cadastrada com sucesso";
-        } catch (SQLException e) {
-            return "redirect:/remessas?erro=" + e.getMessage();
         } catch (Exception e) {
             return "redirect:/remessas?erro=" + e.getMessage();
         }
@@ -86,8 +83,6 @@ public class RemessaController {
         try {
             remessaService.cadastrarDistribuidora(nome, nivelPrioridade);
             return "redirect:/remessas?mensagem=Distribuidora cadastrada com sucesso";
-        } catch (SQLException e) {
-            return "redirect:/remessas?erro=" + e.getMessage();
         } catch (Exception e) {
             return "redirect:/remessas?erro=" + e.getMessage();
         }
@@ -99,21 +94,15 @@ public class RemessaController {
         try {
             remessaService.cadastrarExcecao(Date.valueOf(data), motivo);
             return "redirect:/remessas?mensagem=Excecao de calendario cadastrada";
-        } catch (SQLException e) {
-            return "redirect:/remessas?erro=" + e.getMessage();
         } catch (Exception e) {
             return "redirect:/remessas?erro=" + e.getMessage();
         }
     }
 
     private void carregarDados(Model model) {
-        try {
-            model.addAttribute("docas", remessaService.listarDocasAtivas());
-            model.addAttribute("distribuidoras", remessaService.listarDistribuidorasAtivas());
-            model.addAttribute("agendamentos", remessaService.listarAgendamentos());
-            model.addAttribute("dataHoje", LocalDate.now().toString());
-        } catch (SQLException e) {
-            throw new RuntimeException("Erro ao carregar dados de remessas", e);
-        }
+        model.addAttribute("docas", remessaService.listarDocasAtivas());
+        model.addAttribute("distribuidoras", remessaService.listarDistribuidorasAtivas());
+        model.addAttribute("agendamentos", remessaService.listarAgendamentos());
+        model.addAttribute("dataHoje", LocalDate.now().toString());
     }
 }

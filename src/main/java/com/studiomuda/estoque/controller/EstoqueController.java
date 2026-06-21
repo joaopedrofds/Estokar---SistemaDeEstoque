@@ -2,18 +2,14 @@ package com.studiomuda.estoque.controller;
 
 import com.studiomuda.estoque.model.MovimentacaoEstoque;
 import com.studiomuda.estoque.service.EstoqueService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/estoque")
@@ -31,40 +27,31 @@ public class EstoqueController {
                                     @RequestParam(required = false) String tipo,
                                     @RequestParam(required = false) String dataInicio,
                                     @RequestParam(required = false) String dataFim) {
-        try {
-            List<MovimentacaoEstoque> movimentacoes;
+        List<MovimentacaoEstoque> movimentacoes;
 
-            if (produto != null || tipo != null || dataInicio != null || dataFim != null) {
-                movimentacoes = estoqueService.buscarMovimentacoesComFiltros(produto, tipo, dataInicio, dataFim);
-            } else {
-                movimentacoes = estoqueService.listarMovimentacoes();
-            }
-
-            model.addAttribute("movimentacoes", movimentacoes);
-            model.addAttribute("filtroProduto", produto);
-            model.addAttribute("filtroTipo", tipo);
-            model.addAttribute("filtroDataInicio", dataInicio);
-            model.addAttribute("filtroDataFim", dataFim);
-            return "estoque/lista";
-        } catch (SQLException e) {
-            return "redirect:/erro?mensagem=" + e.getMessage();
+        if (produto != null || tipo != null || dataInicio != null || dataFim != null) {
+            movimentacoes = estoqueService.buscarMovimentacoesComFiltros(produto, tipo, dataInicio, dataFim);
+        } else {
+            movimentacoes = estoqueService.listarMovimentacoes();
         }
+
+        model.addAttribute("movimentacoes", movimentacoes);
+        model.addAttribute("filtroProduto", produto);
+        model.addAttribute("filtroTipo", tipo);
+        model.addAttribute("filtroDataInicio", dataInicio);
+        model.addAttribute("filtroDataFim", dataFim);
+        return "estoque/lista";
     }
 
     @GetMapping("/nova")
     public String formNovaMovimentacao(Model model) {
-        try {
-            MovimentacaoEstoque movimentacao = new MovimentacaoEstoque();
-            movimentacao.setData(Date.valueOf(LocalDate.now()));
-            movimentacao.setTipo("entrada");
+        MovimentacaoEstoque movimentacao = new MovimentacaoEstoque();
+        movimentacao.setData(Date.valueOf(LocalDate.now()));
+        movimentacao.setTipo("entrada");
 
-            model.addAttribute("movimentacao", movimentacao);
-            model.addAttribute("produtos", estoqueService.listarProdutos());
-            return "estoque/form";
-        } catch (SQLException e) {
-            model.addAttribute("mensagemErro", "Erro ao preparar formulário: " + e.getMessage());
-            return "erro";
-        }
+        model.addAttribute("movimentacao", movimentacao);
+        model.addAttribute("produtos", estoqueService.listarProdutos());
+        return "estoque/form";
     }
 
     @PostMapping("/salvar")
@@ -96,10 +83,6 @@ public class EstoqueController {
             return "redirect:/erro?mensagem=Movimentação não encontrada";
         } catch (IllegalStateException e) {
             return "redirect:/erro?mensagem=" + e.getMessage();
-        } catch (SQLException e) {
-            System.out.println("ERRO ao excluir movimentação: " + e.getMessage());
-            e.printStackTrace();
-            return "redirect:/erro?mensagem=" + e.getMessage();
         }
     }
 }
@@ -116,13 +99,7 @@ class EstoqueApiController {
 
     @GetMapping("/count")
     public ResponseEntity<?> contarMovimentacoes() {
-        try {
-            int count = estoqueService.listarMovimentacoes().size();
-            return ResponseEntity.ok(count);
-        } catch (SQLException e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("erro", "Erro ao contar movimentações: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-        }
+        int count = estoqueService.listarMovimentacoes().size();
+        return ResponseEntity.ok(count);
     }
 }
