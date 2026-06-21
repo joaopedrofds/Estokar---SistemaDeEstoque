@@ -24,10 +24,14 @@ public class ProdutoJpaEntity {
     @Column(name = "valor")
     private BigDecimal valor;
 
+    @Column(name = "custo")
+    private BigDecimal custo;
+
     public Integer getId() { return id; }
     public String getNome() { return nome; }
     public Integer getQuantidade() { return quantidade; }
     public BigDecimal getValor() { return valor; }
+    public BigDecimal getCusto() { return custo; }
 
     public void setQuantidade(Integer quantidade) {
         this.quantidade = quantidade;
@@ -35,6 +39,10 @@ public class ProdutoJpaEntity {
 
     public void setValor(BigDecimal valor) {
         this.valor = valor;
+    }
+
+    public void setCusto(BigDecimal custo) {
+        this.custo = custo;
     }
 
     public void adicionarQuantidade(int quantidade) {

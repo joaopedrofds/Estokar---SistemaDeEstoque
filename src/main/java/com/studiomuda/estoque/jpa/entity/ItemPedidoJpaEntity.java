@@ -28,6 +28,14 @@ public class ItemPedidoJpaEntity {
     @Column(name = "quantidade")
     private Integer quantidade;
 
+    protected ItemPedidoJpaEntity() {}
+
+    public ItemPedidoJpaEntity(PedidoJpaEntity pedido, ProdutoJpaEntity produto, Integer quantidade) {
+        this.pedido = pedido;
+        this.produto = produto;
+        this.quantidade = quantidade;
+    }
+
     public Integer getId() { return id; }
     public PedidoJpaEntity getPedido() { return pedido; }
     public ProdutoJpaEntity getProduto() { return produto; }

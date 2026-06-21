@@ -2,7 +2,6 @@ package com.studiomuda.estoque.observer;
 
 import com.studiomuda.estoque.model.HistoricoPreco;
 import com.studiomuda.estoque.repository.HistoricoPrecoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,7 +12,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class HistoricoPrecosObserver implements ObservadorDePreco {
 
-    @Autowired private HistoricoPrecoRepository repository;
+    private final HistoricoPrecoRepository repository;
+
+    public HistoricoPrecosObserver(HistoricoPrecoRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public void aoAlterarPreco(PrecoDomainEvent evento) {

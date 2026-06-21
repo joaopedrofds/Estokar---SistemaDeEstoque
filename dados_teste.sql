@@ -65,9 +65,9 @@ INSERT INTO perfil_acesso (nome, descricao, ativo) VALUES
 ('OPERADOR_VENDEDOR', 'Perfil de execução diária com permissões restritas.', TRUE);
 
 INSERT INTO usuario_acesso (username, nome, senha, ativo) VALUES
-('admin', 'Administrador do Sistema', '{noop}Admin@123', TRUE),
-('gerente', 'Gerente Operacional', '{noop}Gerente@123', TRUE),
-('operador', 'Operador de Vendas', '{noop}Operador@123', TRUE);
+('admin', 'Administrador do Sistema', '{bcrypt}$2y$10$g0LlknzvHwnbcxNZUqwqNe5Cf7akFs6HZLqHA8jcKf1qqZznkUQGW', TRUE),
+('gerente', 'Gerente Operacional', '{bcrypt}$2y$10$hJCAgOl0r.UG62AIDEQ8N.c5mMAr8sOU9fL6Ozm.5auqHYlvXCaD.', TRUE),
+('operador', 'Operador de Vendas', '{bcrypt}$2y$10$zboD1cTxc2.94QKCP0v9V.We12Guw.2rug5mDF0.SmKT.NmVtyMyi', TRUE);
 
 INSERT INTO usuario_perfil (usuario_id, perfil_id) VALUES
 (1, 1),
@@ -81,12 +81,16 @@ FROM (
     SELECT 'CUPOM' UNION ALL
     SELECT 'PEDIDO' UNION ALL
     SELECT 'ESTOQUE' UNION ALL
+    SELECT 'AJUSTE_ESTOQUE' UNION ALL
     SELECT 'SUPRIMENTO' UNION ALL
     SELECT 'REMESSA' UNION ALL
     SELECT 'CLIENTE' UNION ALL
     SELECT 'FUNCIONARIO' UNION ALL
     SELECT 'DASHBOARD' UNION ALL
     SELECT 'KPI' UNION ALL
+    SELECT 'DEVOLUCAO' UNION ALL
+    SELECT 'FINANCEIRO' UNION ALL
+    SELECT 'FRETE' UNION ALL
     SELECT 'ACESSO' UNION ALL
     SELECT 'API' UNION ALL
     SELECT 'HOME'
@@ -118,6 +122,17 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (2, 'FUNCIONARIO', 'LEITURA', TRUE),
 (2, 'DASHBOARD', 'LEITURA', TRUE),
 (2, 'KPI', 'LEITURA', TRUE),
+(2, 'AJUSTE_ESTOQUE', 'LEITURA', TRUE),
+(2, 'AJUSTE_ESTOQUE', 'ESCRITA', TRUE),
+(2, 'AJUSTE_ESTOQUE', 'APROVACAO', TRUE),
+(2, 'DEVOLUCAO', 'LEITURA', TRUE),
+(2, 'DEVOLUCAO', 'ESCRITA', TRUE),
+(2, 'DEVOLUCAO', 'APROVACAO', TRUE),
+(2, 'FINANCEIRO', 'LEITURA', TRUE),
+(2, 'FINANCEIRO', 'ESCRITA', TRUE),
+(2, 'FRETE', 'LEITURA', TRUE),
+(2, 'FRETE', 'ESCRITA', TRUE),
+(2, 'FRETE', 'APROVACAO', TRUE),
 (2, 'API', 'LEITURA', TRUE),
 (2, 'API', 'ESCRITA', TRUE),
 (2, 'HOME', 'LEITURA', TRUE);
@@ -128,6 +143,12 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (3, 'PEDIDO', 'LEITURA', TRUE),
 (3, 'PEDIDO', 'ESCRITA', TRUE),
 (3, 'ESTOQUE', 'LEITURA', TRUE),
+(3, 'AJUSTE_ESTOQUE', 'LEITURA', TRUE),
+(3, 'AJUSTE_ESTOQUE', 'ESCRITA', TRUE),
+(3, 'DEVOLUCAO', 'LEITURA', TRUE),
+(3, 'DEVOLUCAO', 'ESCRITA', TRUE),
+(3, 'FRETE', 'LEITURA', TRUE),
+(3, 'FRETE', 'ESCRITA', TRUE),
 (3, 'CLIENTE', 'LEITURA', TRUE),
 (3, 'CLIENTE', 'ESCRITA', TRUE),
 (3, 'DASHBOARD', 'LEITURA', TRUE),

@@ -14,7 +14,7 @@
 	<name>EstoqueStudioMuda</name>
 	<description>Sistema de Estoque para Studio Muda</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -37,6 +37,16 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>8.0.28</version>
+		</dependency>
+
+		<!-- Flyway: versionamento de schema (versões gerenciadas pelo spring-boot-parent 2.7.9) -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-mysql</artifactId>
 		</dependency>
 
 		<!-- H2 Database for testing -->
@@ -93,6 +103,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
+					<release>17</release>
 					<!-- Evita testCompile usar .class antigos em target/ após mudanças grandes no main -->
 					<useIncrementalCompilation>false</useIncrementalCompilation>
 				</configuration>

@@ -14,13 +14,13 @@ Funcionalidade: Autenticacao e autorizacao por perfil
     Entao sou redirecionado para "/"
 
     Exemplos:
-      | usuario    | senha        |
-      | diretor    | Diretor@123  |
-      | auxiliar   | Auxiliar@123 |
-      | estoquista | Estoque@123  |
+      | usuario  | senha        |
+      | admin    | Admin@123    |
+      | gerente  | Gerente@123  |
+      | operador | Operador@123 |
 
   Cenario: Login invalido volta para a tela de login com erro
-    Quando envio login com usuario "diretor" e senha "senha-errada"
+    Quando envio login com usuario "admin" e senha "senha-errada"
     Entao sou redirecionado para "/login?error=true"
 
   Esquema do Cenario: Acesso permitido por papel
@@ -29,14 +29,15 @@ Funcionalidade: Autenticacao e autorizacao por perfil
     Entao o acesso e permitido
 
     Exemplos:
-      | papel      | rota           |
-      | DIRETOR    | /dashboard     |
-      | AUXILIAR   | /dashboard     |
-      | DIRETOR    | /funcionarios  |
-      | DIRETOR    | /cupons        |
-      | DIRETOR    | /produtos      |
-      | AUXILIAR   | /produtos      |
-      | ESTOQUISTA | /produtos      |
+      | papel               | rota                 |
+      | ADMINISTRADOR       | /dashboard           |
+      | GERENTE_OPERACIONAL | /dashboard           |
+      | OPERADOR_VENDEDOR   | /dashboard           |
+      | ADMINISTRADOR       | /funcionarios        |
+      | GERENTE_OPERACIONAL | /funcionarios        |
+      | ADMINISTRADOR       | /precificacao/simular |
+      | OPERADOR_VENDEDOR   | /pedidos             |
+      | OPERADOR_VENDEDOR   | /produtos            |
 
   Esquema do Cenario: Acesso bloqueado por papel
     Dado que estou autenticado com o papel "<papel>"
@@ -44,8 +45,8 @@ Funcionalidade: Autenticacao e autorizacao por perfil
     Entao o acesso e bloqueado
 
     Exemplos:
-      | papel      | rota          |
-      | ESTOQUISTA | /dashboard    |
-      | AUXILIAR   | /cupons       |
-      | ESTOQUISTA | /cupons       |
-      | AUXILIAR   | /estoque      |
+      | papel             | rota                  |
+      | OPERADOR_VENDEDOR | /funcionarios         |
+      | OPERADOR_VENDEDOR | /precificacao/simular |
+      | OPERADOR_VENDEDOR | /produtos/historico/1 |
+      | OPERADOR_VENDEDOR | /devolucoes/creditos  |

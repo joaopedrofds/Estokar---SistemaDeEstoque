@@ -1,9 +1,11 @@
 package com.studiomuda.estoque.controller;
 
-import com.studiomuda.estoque.dao.UsuarioAcessoDAO;
-import com.studiomuda.estoque.model.IndicadorOperacional;
-import com.studiomuda.estoque.model.MetaIndicador;
-import com.studiomuda.estoque.model.UsuarioAcesso;
+import com.studiomuda.estoque.indicadores.domain.IndicadorId;
+import com.studiomuda.estoque.indicadores.domain.IndicadorOperacional;
+import com.studiomuda.estoque.indicadores.domain.MetaIndicador;
+import com.studiomuda.estoque.indicadores.domain.MetaIndicadorId;
+import com.studiomuda.estoque.security.dominio.IUsuarioAcessoRepositorio;
+import com.studiomuda.estoque.security.dominio.UsuarioAcesso;
 import com.studiomuda.estoque.service.IndicadorService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,10 +22,12 @@ import java.util.List;
 @RequestMapping("/kpis")
 public class IndicadorController {
     private final IndicadorService indicadorService;
-    private final UsuarioAcessoDAO usuarioDAO = new UsuarioAcessoDAO();
+    private final IUsuarioAcessoRepositorio usuarioAcessoRepo;
 
-    public IndicadorController(IndicadorService indicadorService) {
+    public IndicadorController(IndicadorService indicadorService,
+                               IUsuarioAcessoRepositorio usuarioAcessoRepo) {
         this.indicadorService = indicadorService;
+        this.usuarioAcessoRepo = usuarioAcessoRepo;
     }
 
     @GetMapping
@@ -57,7 +61,7 @@ public class IndicadorController {
     }
 
     @PostMapping("/alertas/resolver")
-    public String resolverAlerta(@RequestParam int id,
+    public String resolverAlerta(@RequestParam String id,
                                  @RequestParam String observacao,
                                  RedirectAttributes redirectAttributes) {
         try {
@@ -84,7 +88,7 @@ public class IndicadorController {
     public String recalcular(RedirectAttributes redirectAttributes) {
         try {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            UsuarioAcesso usuario = usuarioDAO.buscarPorUsername(username);
+            UsuarioAcesso usuario = usuarioAcessoRepo.buscarPorUsername(username).orElse(null);
             int usuarioId = usuario != null ? usuario.getId() : 0;
 
             // Define período do mês corrente
@@ -101,20 +105,17 @@ public class IndicadorController {
     }
 
     @GetMapping("/meta/nova/{indicadorId}")
-    public String formMeta(@PathVariable int indicadorId, Model model) {
+    public String formMeta(@PathVariable String indicadorId, Model model) {
         try {
-            IndicadorOperacional ind = indicadorService.buscarIndicador(indicadorId);
+            IndicadorId id = IndicadorId.de(indicadorId);
+            IndicadorOperacional ind = indicadorService.buscarIndicador(id);
             if (ind == null) {
                 return "redirect:/kpis";
             }
 
-            MetaIndicador meta = indicadorService.buscarMetaVigente(indicadorId);
+            MetaIndicador meta = indicadorService.buscarMetaVigente(id);
             if (meta == null) {
-                meta = new MetaIndicador();
-                meta.setIndicadorId(indicadorId);
-                meta.setOperador("MAIOR_IGUAL");
-                meta.setVigenciaInicio(LocalDate.now());
-                meta.setAtivo(true);
+                meta = MetaIndicador.padraoPara(id);
             }
 
             model.addAttribute("indicador", ind);
@@ -127,7 +128,7 @@ public class IndicadorController {
     }
 
     @PostMapping("/meta/salvar")
-    public String salvarMeta(@RequestParam int indicadorId,
+    public String salvarMeta(@RequestParam String indicadorId,
                              @RequestParam double valorAlvo,
                              @RequestParam double limiteCritico,
                              @RequestParam String operador,
@@ -136,14 +137,8 @@ public class IndicadorController {
                              @RequestParam(defaultValue = "false") boolean ativo,
                              RedirectAttributes redirectAttributes) {
         try {
-            MetaIndicador meta = new MetaIndicador();
-            meta.setIndicadorId(indicadorId);
-            meta.setValorAlvo(valorAlvo);
-            meta.setLimiteCritico(limiteCritico);
-            meta.setOperador(operador);
-            meta.setVigenciaInicio(vigenciaInicio);
-            meta.setVigenciaFim(vigenciaFim);
-            meta.setAtivo(ativo);
+            MetaIndicador meta = new MetaIndicador(MetaIndicadorId.gerar(), IndicadorId.de(indicadorId), valorAlvo, limiteCritico,
+                operador, vigenciaInicio, vigenciaFim, ativo);
 
             indicadorService.salvarMeta(meta);
 

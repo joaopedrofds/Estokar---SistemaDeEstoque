@@ -8,8 +8,8 @@ Este README é, antes de tudo, um **guia para rodar e testar** cada funcionalida
 
 ## 1. Stack
 
-- **Back-end:** Java 11, Spring Boot 2.7, Spring MVC, Spring Security
-- **Persistência:** JPA/Hibernate + Spring Data (com alguns módulos legados em JDBC/DAO)
+- **Back-end:** Java 17, Spring Boot 2.7, Spring MVC, Spring Security
+- **Persistência:** JPA/Hibernate + Spring Data, com JDBC/DAO apenas em módulos legados
 - **Banco:** MySQL 8 (produção) / H2 em memória (testes)
 - **Front-end:** Thymeleaf + Bootstrap
 - **Testes:** JUnit 5, Cucumber (BDD)
@@ -20,31 +20,48 @@ Este README é, antes de tudo, um **guia para rodar e testar** cada funcionalida
 ## 2. Como rodar a aplicação
 
 ### 2.1 Pré-requisitos
-- JDK 11
+- JDK 17
 - Maven 3.6+
 - MySQL 8 rodando em `localhost:3306`
 
 ### 2.2 Subir e preparar o banco (macOS / Homebrew)
+
 ```bash
 # subir o MySQL
 brew services start mysql
-
-# criar banco + usuário (apenas na primeira vez)
-mysql -u root -p <<'SQL'
-CREATE DATABASE IF NOT EXISTS studiomuda CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS 'estokar'@'localhost' IDENTIFIED BY 'estokar123';
-GRANT ALL PRIVILEGES ON studiomuda.* TO 'estokar'@'localhost';
-FLUSH PRIVILEGES;
-SQL
-
-# carregar todas as tabelas e dados iniciais (inclui usuários e RBAC)
-mysql -u estokar -pestokar123 studiomuda < setup_database.sql
 ```
 
-> ⚠️ O `application.properties` usa `spring.jpa.hibernate.ddl-auto=none` — o Hibernate **não** cria tabelas. O schema vem inteiro do `setup_database.sql`. Se aparecer "Table doesn't exist", rode o script novamente.
+**Opção A — um comando (recomendado).** O script `load-demo-data.sh` recria o
+schema, aplica os migrations dos módulos (frete, devolução, cupom, crédito, KPIs),
+os patches de RBAC e carrega os dados de demonstração — tudo na ordem correta:
+
+```bash
+# schema + módulos + RBAC + dados de demo (idempotente: recria o banco do zero)
+MYSQL_USER=root MYSQL_PASSWORD=suaSenhaRoot ./load-demo-data.sh
+
+# apenas o schema, sem dados de demonstração
+MYSQL_USER=root MYSQL_PASSWORD=suaSenhaRoot ./load-demo-data.sh --schema-only
+```
+
+> O script roda `setup_database.sql` (que faz `DROP DATABASE`/`CREATE DATABASE` e
+> cria o usuário `estokar`), por isso precisa de um usuário com privilégio
+> administrativo (ex.: `root`). Configurável via `MYSQL_HOST`, `MYSQL_PORT`,
+> `MYSQL_USER`, `MYSQL_PASSWORD`, `DB_NAME`.
+
+**Opção B — manual.** Carregue apenas o schema-base e, se precisar dos módulos
+extras, rode os migrations correspondentes à mão:
+
+```bash
+mysql -u root -p studiomuda < setup_database.sql
+```
+
+> ⚠️ O `application.properties` usa `spring.jpa.hibernate.ddl-auto=update`: o Hibernate cria/atualiza apenas as tabelas das **entidades JPA** (ex.: `meta_indicador`, `precificacao_*`). As demais tabelas (módulos JDBC/DAO legados), além dos **seeds e do RBAC** (usuários, perfis, `permissao_perfil`), vêm do `setup_database.sql`. **Carregue o script antes do primeiro `run`** — só o `ddl-auto=update` não popula dados nem cria as tabelas JDBC. Se aparecer "Table doesn't exist", rode o script novamente.
 
 ### 2.3 Executar
 ```bash
+export DB_URL='jdbc:mysql://localhost:3306/studiomuda?useSSL=false&serverTimezone=America/Sao_Paulo'
+export DB_USERNAME='estokar'
+export DB_PASSWORD='suaSenha'
 mvn spring-boot:run
 ```
 Aplicação em **http://localhost:8081**
@@ -77,7 +94,7 @@ mvn test -Dtest=CucumberTest
 
 ## 4. Guia de teste por funcionalidade
 
-Cada integrante é responsável por 2 funcionalidades. Abaixo, a rota de cada uma, o passo a passo de teste pela interface e o `.feature` correspondente.
+Abaixo, por integrante, as funcionalidades sob sua responsabilidade — a rota de cada uma, o passo a passo de teste pela interface e o `.feature` correspondente (quando há cobertura BDD). A divisão e os padrões foram conferidos contra o histórico do Git e o desenho dos módulos.
 
 > Dica: faça login conforme o perfil indicado. Ações de aprovação geralmente exigem `gerente`; configuração de parâmetros/RBAC exige `admin`.
 
@@ -105,6 +122,12 @@ Cada integrante é responsável por 2 funcionalidades. Abaixo, a rota de cada um
 - Conflito de capacidade ou data bloqueada → o sistema bloqueia e sugere as próximas janelas livres.
 - BDD: `remessas.feature`
 
+**3. Precificação Dinâmica com Margem de Lucro** — `/precificacao/simular`
+- Selecione um produto, informe custo/margem/impostos/desconto e simule → o sistema monta o custo componente a componente e sugere o preço.
+- Regras: margem desejada abaixo da mínima global → bloqueio; desconto que derrubaria a margem → bloqueio com desconto seguro calculado. Simulação aprovada pode ser aplicada ao produto.
+- BDD: `precificacao_dinamica.feature`
+- Padrão de projeto: **Iterator** (`precificacao/domain/iterator/` — composição do custo)
+
 ### Henrique
 **1. Gestão de Cobranças e Acordos** — `/cobrancas`
 - Em `/cobrancas/politicas` ajuste o limite de dias para bloqueio.
@@ -116,16 +139,31 @@ Cada integrante é responsável por 2 funcionalidades. Abaixo, a rota de cada um
 - Verifique a mudança de categoria e a geração de ações de retenção (cupom) para "Em Risco".
 - BDD: `frequencia.feature`
 
-### Guilherme Mourão
-**1. Controle de Acesso por Perfil (RBAC)** — `/acesso` *(perfil: admin)*
-- Em `/acesso/perfis` e `/acesso/permissoes`, monte a matriz perfil × recurso × operação.
-- Logue como `operador` e tente acessar um recurso negado → bloqueio + registro em log de acesso.
-- BDD: `seguranca.feature`
-- Mecanismo: interceptor de autorização na camada DAO (`security/InterceptadorAutorizacaoDao`).
+**3. Cotação e Expedição de Fretes** — `/frete`
+- Cadastre transportadoras e faixas de contingência; faça uma cotação em `/frete/cotacao` (API → cache → contingência) e gere ordens de despacho em `/frete/despachos`.
+- Regras: cliente inativo bloqueia o despacho; rate limit por vendedor nas cotações.
+- BDD: `cotacao_frete.feature`
+- Padrão de projeto: **Proxy** (`proxy/` — `CotacaoFreteProxy` envolve `TransportadoraApiClient` com cache, contingência e controle de limite)
 
-**2. Relatório Financeiro / Indicadores Operacionais (KPIs)** — `/financeiro` e `/kpis`
-- KPIs: em `/kpis` configure uma meta (`/kpis/meta/nova/{id}`), clique em **Recalcular** → gera snapshot imutável e, se a meta for violada, **cria alerta automático**. Resolva em `/kpis/alertas`; histórico em `/kpis/snapshots`.
-- Relatório: em `/financeiro` configure categorias/templates e gere o relatório consolidado.
+### Guilherme Mourão
+
+**1. Autenticação e Segurança (Spring Security)** — `/login`
+- Base de autenticação do sistema: login/logout, proteção de rotas e papéis. Usuário anônimo em rota protegida → redirecionado para `/login`; credenciais inválidas → `/login?error=true`.
+- BDD: `seguranca.feature`
+- Arquivos: `config/SecurityConfig.java`, `security/DatabaseUserDetailsService.java`.
+
+**2. Controle de Acesso por Perfil (RBAC)** — `/acesso` *(perfil: admin)*
+- Em `/acesso/perfis` e `/acesso/permissoes`, monte a matriz perfil × recurso × operação.
+- Logue como `operador` e tente acessar um recurso negado → bloqueio (HTTP 403) + registro em `/acesso/logs`.
+- Mecanismo: interceptor de autorização na camada DAO (`security/InterceptadorAutorizacaoDao`), acionado por `Conexao.getConnection()`. Cobre o acesso via DAO/JDBC legado (não os repositórios JPA).
+- BDD: `rbac_perfil.feature`
+
+**3. Relatório Financeiro** — `/financeiro`
+- Configure categorias (`/financeiro/categorias`) e templates (`/financeiro/templates`), gere o relatório consolidado em `/financeiro/relatorios/gerar` e exporte.
+- BDD: `relatorio_financeiro.feature`
+
+**4. Indicadores Operacionais (KPIs)** — `/kpis`
+- Configure uma meta (`/kpis/meta/nova/{id}`), clique em **Recalcular** → gera snapshot imutável e, se a meta for violada, **cria alerta automático**. Resolva em `/kpis/alertas`; histórico em `/kpis/snapshots`.
 - BDD: `kpis.feature`
 - Padrão de projeto: **Decorator** (`calculo/`) na cadeia de cálculo dos indicadores.
 
@@ -134,10 +172,12 @@ Cada integrante é responsável por 2 funcionalidades. Abaixo, a rota de cada um
 - Edite o preço de um produto em `/produtos/editar/{id}` e salve.
 - Abra `/produtos/historico/{id}` → o histórico registra preço anterior, novo e variação % automaticamente (só quando o preço muda).
 - Padrão de projeto: **Observer** (`observer/`)
+- BDD: `historico_preco.feature`
 
-**2. Alerta de Reposição Automática de Estoque** — movimentações em `/estoque`
-- Registre saídas até o estoque cair abaixo do ponto de pedido → alerta de reposição é gerado automaticamente (sem duplicar para o mesmo produto).
-- Padrão de projeto: **Observer** (`observer/`)
+**2. Estratégias de Desconto e Restituição** — pacote `strategy/`
+- Algoritmos intercambiáveis selecionados em tempo de execução: desconto fixo/percentual e restituição por crédito, troca ou estorno.
+- Padrão de projeto: **Strategy** (`strategy/`)
+- BDD: `estrategias_desconto.feature`
 
 ---
 
@@ -149,12 +189,14 @@ A 2ª entrega exige **6 ou mais padrões (1 por integrante)** dentre: *Iterator,
 |---|---|---|---|
 | Decorator | ✅ | Guilherme Mourão | `calculo/` + `service/IndicadorService.java` |
 | Observer | ✅ | João Pedro Araújo | `observer/` |
-| Strategy | ✅ | (confirmar) | `strategy/` |
-| Template Method | ✅ | Claudio | `service/ajuste/AbstractAjusteEstoqueTemplate.java` (+ subclasses) |
-| Proxy | ⬜ pendente | — | *(há um interceptor de autorização em `security/InterceptadorAutorizacaoDao`, mas por inspeção de stack — não é um Proxy GoF clássico de embrulho)* |
-| Iterator | ✅ | Pibe | `precificacao/domain/iterator/` |
+| Strategy | ✅ | João Pedro Araújo | `strategy/` |
+| Template Method | ✅ | Luiz Claudio | `service/ajuste/AbstractAjusteEstoqueTemplate.java` (+ subclasses) |
+| Proxy | ✅ | Henrique Figueiredo | `proxy/` — `CotacaoFreteProxy` envolve `TransportadoraApiClient` (ambos `ServicoCotacaoFrete`) |
+| Iterator | ✅ | Luiz Felipe Nogueira | `precificacao/domain/iterator/` |
 
-> A coluna "Implementado por" reflete o histórico do Git e o desenho dos módulos; **confirme com o grupo**. O padrão **DAO** é usado em todo o projeto como decisão de arquitetura, mas **não** faz parte da lista exigida.
+> A coluna "Implementado por" reflete o histórico do Git e o desenho dos módulos. O padrão **DAO** é usado em todo o projeto como decisão de arquitetura, mas **não** faz parte da lista exigida.
+>
+> Observação: além do Proxy GoF acima, há um interceptor de autorização em `security/InterceptadorAutorizacaoDao` que age por inspeção de stack na camada DAO — é um mecanismo de RBAC, **não** um Proxy GoF clássico de embrulho.
 
 ### Detalhe — Decorator (cálculo de indicadores)
 Cadeia empilhável sobre o cálculo "cru" do indicador, mantendo a mesma interface em cada camada:
@@ -163,26 +205,45 @@ Cadeia empilhável sobre o cálculo "cru" do indicador, mantendo a mesma interfa
 - `ValidacaoPeriodoDecorator`, `LogCalculoDecorator`, `ArredondamentoDecorator` (ConcreteDecorators)
 - Montagem e uso em `service/IndicadorService.java`
 
-### Detalhe — Observer (rastreabilidade de preço / alerta de reposição)
-`observer/` com `ObservadorDePreco`, `PrecoDomainEvent`, `HistoricoPrecosObserver` (e equivalentes de cupom/devolução), disparados pelos serviços de domínio de forma desacoplada.
+### Detalhe — Observer
+`observer/` com `ObservadorDePreco`, `PrecoDomainEvent`,
+`HistoricoPrecosObserver` e observers do fluxo de devolução, injetados pelo
+Spring nos serviços que publicam os eventos.
 
 ### Detalhe — Template Method (ajuste de estoque)
 `AbstractAjusteEstoqueTemplate.processarSolicitacao()` define o esqueleto `final` do algoritmo; as subclasses (`AjustePorSobra/Perda/Avaria/Correcao`) implementam os passos `abstract`.
 
+### Detalhe — Proxy (cotação de frete)
+`ServicoCotacaoFrete` (Subject) é a interface comum; `TransportadoraApiClient` (RealSubject) faz a chamada real à transportadora; `CotacaoFreteProxy` (Proxy) implementa a mesma interface e adiciona cache por hash de parâmetros, fallback de contingência e controle de limite de cotações antes de delegar ao real.
+
+### Detalhe — Strategy (descontos / precificação / restituição)
+Famílias de algoritmos intercambiáveis sob interfaces comuns
+(`EstrategiaDesconto` e `RestituicaoStrategy`), selecionadas em tempo de
+execução conforme o tipo da operação.
+
 ---
 
-## 6. Arquitetura (camadas)
+## 6. Arquitetura
 
 ```
-controller/   → Apresentação (Spring MVC + Thymeleaf)
-service/      → Aplicação / regras de negócio
-model/        → Domínio (entidades JPA)
-repository/   → Infraestrutura (Spring Data JPA)
-dao/          → Infraestrutura (JDBC — módulos legados)
-jpa/          → Entidades/repos JPA adicionais
-observer/, strategy/, calculo/ → padrões de projeto
-security/     → autenticação e autorização (RBAC)
+<contexto>/domain ou security/dominio → domínio Java puro e portas
+<contexto>/application                → DTOs e orquestração
+<contexto>/infrastructure             → entidades JPA e adapters
+controller/                           → apresentação Spring MVC + Thymeleaf
+service/, model/, repository/, dao/   → módulos legados em migração
+observer/, strategy/, calculo/        → padrões de projeto
 ```
+
+Os slices `financeiro`, `indicadores` e `security` já separam domínio e
+infraestrutura. Os demais módulos permanecem transicionais e não devem ser
+usados como referência para código novo.
+
+Artefatos acadêmicos:
+
+- [Descrição do domínio e histórias](docs/descricao-dominio-e-mapa-historias.md)
+- [Matriz BDD](docs/bdd-cenarios-e-automacao.md)
+- [Protótipos de baixa fidelidade](docs/prototipos-baixa-fidelidade.md)
+- [Context Map CML](context-map.cml)
 
 ---
 
@@ -190,7 +251,7 @@ security/     → autenticação e autorização (RBAC)
 
 | Problema | Solução |
 |---|---|
-| `Table 'studiomuda.x' doesn't exist` | rode `mysql -u estokar -pestokar123 studiomuda < setup_database.sql` |
+| `Table 'studiomuda.x' doesn't exist` | carregue `setup_database.sql` ou execute `load-demo-data.sh` |
 | Erro de conexão com banco | confira se o MySQL está no ar e as credenciais em `application.properties` |
 | Porta 8081 em uso | `lsof -ti:8081 \| xargs kill -9` ou mude `server.port` |
 | Limpar e rodar do zero | `mvn clean spring-boot:run` |

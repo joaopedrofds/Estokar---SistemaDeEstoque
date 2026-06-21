@@ -27,6 +27,8 @@ app.log
 
 # Arquivos de Sistema Operacional
 .DS_Store
-Thumbs.dbtarget/
+Thumbs.db
 
-application.properties
+# Sessões e configurações locais
+cookies*.txt
+application-local.properties

@@ -4,8 +4,10 @@ import com.studiomuda.estoque.calculo.ArredondamentoDecorator;
 import com.studiomuda.estoque.calculo.CalculadoraIndicador;
 import com.studiomuda.estoque.calculo.LogCalculoDecorator;
 import com.studiomuda.estoque.calculo.ValidacaoPeriodoDecorator;
-import com.studiomuda.estoque.model.IndicadorOperacional;
-import com.studiomuda.estoque.model.MetaIndicador;
+import com.studiomuda.estoque.indicadores.domain.IndicadorId;
+import com.studiomuda.estoque.indicadores.domain.IndicadorOperacional;
+import com.studiomuda.estoque.indicadores.domain.MetaIndicador;
+import com.studiomuda.estoque.indicadores.domain.MetaIndicadorId;
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.E;
 import io.cucumber.java.pt.Então;
@@ -26,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class KpiStepDefinitions {
     // Cenarios de meta/alerta
     private MetaIndicador meta;
+    private double valorAlvoMeta;
+    private String operadorMeta;
     private double valorCalculado;
 
     // Cenarios da cadeia de decorators
@@ -36,18 +40,18 @@ public class KpiStepDefinitions {
 
     @Dado("^um indicador \"([^\"]+)\" com meta de valor alvo (\\S+) e operador \"([^\"]+)\"$")
     public void umIndicadorComMeta(String nome, String valorAlvo, String operador) {
-        indicador = new IndicadorOperacional();
-        indicador.setNome(nome);
+        indicador = new IndicadorOperacional(IndicadorId.gerar(), null, nome, null, null, "MES", true);
 
-        meta = new MetaIndicador();
-        meta.setValorAlvo(Double.parseDouble(valorAlvo));
-        meta.setOperador(operador);
+        valorAlvoMeta = Double.parseDouble(valorAlvo);
+        operadorMeta = operador;
+        meta = null;
         erro = null;
     }
 
     @E("^o limite critico da meta e (\\S+)$")
     public void limiteCriticoDaMeta(String limite) {
-        meta.setLimiteCritico(Double.parseDouble(limite));
+        meta = new MetaIndicador(MetaIndicadorId.de("meta-teste"), IndicadorId.de("ind-teste"), valorAlvoMeta, Double.parseDouble(limite),
+                operadorMeta, LocalDate.now(), null, true);
     }
 
     @Quando("^o valor calculado do indicador e (\\S+)$")
@@ -87,9 +91,7 @@ public class KpiStepDefinitions {
                 new ValidacaoPeriodoDecorator(
                         new ArredondamentoDecorator(base)));
 
-        indicador = new IndicadorOperacional();
-        indicador.setNome("Indicador de teste");
-        indicador.setTipoCalculo("TICKET_MEDIO");
+        indicador = new IndicadorOperacional(IndicadorId.gerar(), null, "Indicador de teste", null, "TICKET_MEDIO", "MES", true);
         erro = null;
     }
 

@@ -14,8 +14,8 @@
                 </h1>
                 <p class="page-subtitle mb-0">
                     <span th:text="${relatorio.templateNome}"></span> |
-                    Período <span th:text="${#dates.format(relatorio.dataInicio, 'dd/MM/yyyy')}"></span>
-                    a <span th:text="${#dates.format(relatorio.dataFim, 'dd/MM/yyyy')}"></span>
+                    Período <span th:text="${#temporals.format(relatorio.dataInicio, 'dd/MM/yyyy')}"></span>
+                    a <span th:text="${#temporals.format(relatorio.dataFim, 'dd/MM/yyyy')}"></span>
                 </p>
             </div>
             <div class="col-md-4 text-end">
@@ -73,10 +73,10 @@
 
     <div class="alert alert-info">
         Snapshot imutável gerado por <strong th:text="${relatorio.geradoPorUsername}"></strong>
-        em <span th:text="${#dates.format(relatorio.dataGeracao, 'dd/MM/yyyy HH:mm')}"></span>.
+        em <span th:text="${#temporals.format(relatorio.dataGeracao, 'dd/MM/yyyy HH:mm')}"></span>.
         Período anterior de referência:
-        <span th:text="${#dates.format(relatorio.dataInicioAnterior, 'dd/MM/yyyy')}"></span>
-        a <span th:text="${#dates.format(relatorio.dataFimAnterior, 'dd/MM/yyyy')}"></span>.
+        <span th:text="${#temporals.format(relatorio.dataInicioAnterior, 'dd/MM/yyyy')}"></span>
+        a <span th:text="${#temporals.format(relatorio.dataFimAnterior, 'dd/MM/yyyy')}"></span>.
     </div>
 
     <div class="card mb-4">

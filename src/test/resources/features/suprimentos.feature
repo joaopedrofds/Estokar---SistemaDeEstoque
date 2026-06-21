@@ -12,3 +12,19 @@ Funcionalidade: Gestao de Suprimentos e Reposicao Inteligente
     Quando o sistema calcula a necessidade de reposicao
     Entao o ponto de pedido deve ser 11 unidades
     E uma ordem de compra em rascunho deve ser sugerida com 9 unidades
+
+  Cenario: Estoque acima do ponto de pedido nao exige reposicao
+    Dado que um produto possui estoque atual de 20 unidades
+    E consumo medio diario de 2 unidades
+    E lead time do fornecedor de 4 dias
+    E margem de seguranca de 3 unidades
+    Quando o sistema calcula a necessidade de reposicao
+    Entao nenhuma ordem de compra deve ser sugerida
+
+  Cenario: Estoque exatamente no ponto de pedido exige reposicao
+    Dado que um produto possui estoque atual de 11 unidades
+    E consumo medio diario de 2 unidades
+    E lead time do fornecedor de 4 dias
+    E margem de seguranca de 3 unidades
+    Quando o sistema calcula a necessidade de reposicao
+    Entao uma reposicao deve ser considerada necessaria

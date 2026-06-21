@@ -5,7 +5,7 @@ import com.studiomuda.estoque.model.ItemPedido;
 import com.studiomuda.estoque.model.Produto;
 import com.studiomuda.estoque.repository.ItemPedidoRepository;
 import com.studiomuda.estoque.repository.ProdutoRepository;
-import com.studiomuda.estoque.util.SpringContextUtil;
+import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +17,17 @@ import java.util.Optional;
  * Padrão de Design: Observer (GoF) — ConcreteObserver
  * Persistência: ORM via Spring Data JPA
  */
+@Component
 public class EstoqueDevolucaoObserver implements ObservadorDeDevolucao {
+
+    private final ProdutoRepository produtoRepository;
+    private final ItemPedidoRepository itemPedidoRepository;
+
+    public EstoqueDevolucaoObserver(ProdutoRepository produtoRepository,
+                                    ItemPedidoRepository itemPedidoRepository) {
+        this.produtoRepository = produtoRepository;
+        this.itemPedidoRepository = itemPedidoRepository;
+    }
 
     @Override
     public void aoAprovarDevolucao(DevolucaoDomainEvent evento) {
@@ -26,11 +36,6 @@ public class EstoqueDevolucaoObserver implements ObservadorDeDevolucao {
             System.err.println("[EstoqueDevolucaoObserver] Nenhum item para processar.");
             return;
         }
-
-        ProdutoRepository produtoRepository =
-            SpringContextUtil.getBean(ProdutoRepository.class);
-        ItemPedidoRepository itemPedidoRepository =
-            SpringContextUtil.getBean(ItemPedidoRepository.class);
 
         int pedidoId = evento.getDevolucao().getPedidoId();
 

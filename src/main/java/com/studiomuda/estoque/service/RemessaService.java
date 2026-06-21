@@ -1,35 +1,51 @@
 package com.studiomuda.estoque.service;
 
-import com.studiomuda.estoque.dao.RemessaDAO;
+import com.studiomuda.estoque.jpa.entity.AgendamentoRemessaJpaEntity;
+import com.studiomuda.estoque.jpa.entity.CalendarioExcecaoJpaEntity;
+import com.studiomuda.estoque.jpa.entity.DistribuidoraJpaEntity;
+import com.studiomuda.estoque.jpa.entity.DocaJpaEntity;
+import com.studiomuda.estoque.jpa.repository.AgendamentoRemessaJpaRepository;
+import com.studiomuda.estoque.jpa.repository.CalendarioExcecaoJpaRepository;
+import com.studiomuda.estoque.jpa.repository.DistribuidoraJpaRepository;
+import com.studiomuda.estoque.jpa.repository.DocaJpaRepository;
 import com.studiomuda.estoque.model.*;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RemessaService {
     private static final String[] JANELAS_PADRAO = {"08:00", "10:00", "13:00", "15:00", "17:00"};
 
-    private final RemessaDAO remessaDAO;
+    private final DocaJpaRepository docaRepo;
+    private final DistribuidoraJpaRepository distribuidoraRepo;
+    private final CalendarioExcecaoJpaRepository calendarioRepo;
+    private final AgendamentoRemessaJpaRepository agendamentoRepo;
 
-    public RemessaService() {
-        this(new RemessaDAO());
+    public RemessaService(DocaJpaRepository docaRepo,
+                          DistribuidoraJpaRepository distribuidoraRepo,
+                          CalendarioExcecaoJpaRepository calendarioRepo,
+                          AgendamentoRemessaJpaRepository agendamentoRepo) {
+        this.docaRepo = docaRepo;
+        this.distribuidoraRepo = distribuidoraRepo;
+        this.calendarioRepo = calendarioRepo;
+        this.agendamentoRepo = agendamentoRepo;
     }
 
-    public RemessaService(RemessaDAO remessaDAO) {
-        this.remessaDAO = remessaDAO;
-    }
-
-    public ResultadoAgendamentoRemessa agendar(AgendamentoRemessa agendamento) throws SQLException {
+    public ResultadoAgendamentoRemessa agendar(AgendamentoRemessa agendamento) {
         validarAgendamento(agendamento);
 
-        Doca doca = remessaDAO.buscarDocaPorId(agendamento.getDocaId());
-        Distribuidora distribuidora = remessaDAO.buscarDistribuidoraPorId(agendamento.getDistribuidoraId());
+        DocaJpaEntity docaEntity = docaRepo.findById(agendamento.getDocaId()).orElse(null);
+        DistribuidoraJpaEntity distribuidoraEntity = distribuidoraRepo.findById(agendamento.getDistribuidoraId()).orElse(null);
+
+        Doca doca = docaEntity != null ? toModel(docaEntity) : null;
+        Distribuidora distribuidora = distribuidoraEntity != null ? toModel(distribuidoraEntity) : null;
+
         if (doca == null || !doca.isAtiva()) {
             return ResultadoAgendamentoRemessa.conflito("Doca indisponivel para agendamento.", sugerirJanelas(agendamento, distribuidora));
         }
@@ -42,7 +58,15 @@ public class RemessaService {
             return ResultadoAgendamentoRemessa.conflito(conflito, sugerirJanelas(agendamento, distribuidora));
         }
 
-        remessaDAO.inserirAgendamento(agendamento);
+        AgendamentoRemessaJpaEntity entity = new AgendamentoRemessaJpaEntity();
+        entity.setDoca(docaEntity);
+        entity.setDistribuidora(distribuidoraEntity);
+        entity.setData(agendamento.getData());
+        entity.setHorario(agendamento.getHorario());
+        entity.setVolumePaletes(agendamento.getVolumePaletes());
+        entity.setStatus(AgendamentoRemessa.STATUS_CONFIRMADO);
+        agendamentoRepo.save(entity);
+
         return ResultadoAgendamentoRemessa.sucesso("Remessa agendada com sucesso.");
     }
 
@@ -64,41 +88,47 @@ public class RemessaService {
         }
     }
 
-    private String identificarConflito(AgendamentoRemessa agendamento, Doca doca) throws SQLException {
-        if (remessaDAO.existeExcecaoAtiva(agendamento.getData())) {
+    private String identificarConflito(AgendamentoRemessa agendamento, Doca doca) {
+        if (calendarioRepo.existsByDataAndAtivaTrue(agendamento.getData())) {
             return "A data selecionada esta bloqueada no calendario logistico.";
         }
 
-        int volumeJaAgendado = remessaDAO.somarVolumeConfirmado(agendamento.getDocaId(), agendamento.getData());
+        int volumeJaAgendado = agendamentoRepo.somarVolumeConfirmado(
+                agendamento.getDocaId(), agendamento.getData(), AgendamentoRemessa.STATUS_CONFIRMADO);
         if (volumeJaAgendado + agendamento.getVolumePaletes() > doca.getCapacidadePaletesDiaria()) {
             return "A capacidade diaria da doca sera excedida.";
         }
 
-        if (remessaDAO.existeAgendamentoNoHorario(agendamento.getDocaId(), agendamento.getData(), agendamento.getHorario())) {
+        if (agendamentoRepo.existsByDoca_IdAndDataAndHorarioAndStatus(
+                agendamento.getDocaId(), agendamento.getData(), agendamento.getHorario(), AgendamentoRemessa.STATUS_CONFIRMADO)) {
             return "Ja existe uma remessa confirmada para esta doca no horario selecionado.";
         }
 
         return null;
     }
 
-    public List<SugestaoJanelaRemessa> sugerirJanelas(AgendamentoRemessa agendamento, Distribuidora distribuidora) throws SQLException {
+    public List<SugestaoJanelaRemessa> sugerirJanelas(AgendamentoRemessa agendamento, Distribuidora distribuidora) {
         List<SugestaoJanelaRemessa> sugestoes = new ArrayList<>();
         LocalDate dataInicial = agendamento.getData().toLocalDate();
         int diasBusca = distribuidora != null && "ALTA".equalsIgnoreCase(distribuidora.getNivelPrioridade()) ? 3 : 7;
 
+        List<Doca> docasAtivas = listarDocasAtivas();
+
         for (int dia = 0; dia <= diasBusca && sugestoes.size() < 3; dia++) {
             Date data = Date.valueOf(dataInicial.plusDays(dia));
-            if (remessaDAO.existeExcecaoAtiva(data)) {
+            if (calendarioRepo.existsByDataAndAtivaTrue(data)) {
                 continue;
             }
-            for (Doca doca : remessaDAO.listarDocasAtivas()) {
-                int volumeJaAgendado = remessaDAO.somarVolumeConfirmado(doca.getId(), data);
+            for (Doca doca : docasAtivas) {
+                int volumeJaAgendado = agendamentoRepo.somarVolumeConfirmado(
+                        doca.getId(), data, AgendamentoRemessa.STATUS_CONFIRMADO);
                 int capacidadeDisponivel = doca.getCapacidadePaletesDiaria() - volumeJaAgendado;
                 if (capacidadeDisponivel < agendamento.getVolumePaletes()) {
                     continue;
                 }
                 for (String janela : JANELAS_PADRAO) {
-                    if (!remessaDAO.existeAgendamentoNoHorario(doca.getId(), data, janela)) {
+                    if (!agendamentoRepo.existsByDoca_IdAndDataAndHorarioAndStatus(
+                            doca.getId(), data, janela, AgendamentoRemessa.STATUS_CONFIRMADO)) {
                         sugestoes.add(new SugestaoJanelaRemessa(doca.getId(), doca.getNome(), data, janela, capacidadeDisponivel));
                         break;
                     }
@@ -115,7 +145,7 @@ public class RemessaService {
         return sugestoes.size() > 3 ? sugestoes.subList(0, 3) : sugestoes;
     }
 
-    public void cadastrarDoca(String nome, int capacidadePaletesDiaria) throws SQLException {
+    public void cadastrarDoca(String nome, int capacidadePaletesDiaria) {
         if (nome == null || nome.trim().isEmpty()) {
             throw new IllegalArgumentException("Informe o nome da doca.");
         }
@@ -123,13 +153,14 @@ public class RemessaService {
             throw new IllegalArgumentException("A capacidade deve ser maior que zero.");
         }
 
-        Doca doca = new Doca();
-        doca.setNome(nome.trim());
-        doca.setCapacidadePaletesDiaria(capacidadePaletesDiaria);
-        remessaDAO.inserirDoca(doca);
+        DocaJpaEntity entity = new DocaJpaEntity();
+        entity.setNome(nome.trim());
+        entity.setCapacidadePaletesDiaria(capacidadePaletesDiaria);
+        entity.setAtiva(true);
+        docaRepo.save(entity);
     }
 
-    public void cadastrarDistribuidora(String nome, String nivelPrioridade) throws SQLException {
+    public void cadastrarDistribuidora(String nome, String nivelPrioridade) {
         if (nome == null || nome.trim().isEmpty()) {
             throw new IllegalArgumentException("Informe o nome da distribuidora.");
         }
@@ -137,13 +168,14 @@ public class RemessaService {
             throw new IllegalArgumentException("Informe a prioridade da distribuidora.");
         }
 
-        Distribuidora distribuidora = new Distribuidora();
-        distribuidora.setNome(nome.trim());
-        distribuidora.setNivelPrioridade(nivelPrioridade.trim().toUpperCase());
-        remessaDAO.inserirDistribuidora(distribuidora);
+        DistribuidoraJpaEntity entity = new DistribuidoraJpaEntity();
+        entity.setNome(nome.trim());
+        entity.setNivelPrioridade(nivelPrioridade.trim().toUpperCase());
+        entity.setAtiva(true);
+        distribuidoraRepo.save(entity);
     }
 
-    public void cadastrarExcecao(Date data, String motivo) throws SQLException {
+    public void cadastrarExcecao(Date data, String motivo) {
         if (data == null) {
             throw new IllegalArgumentException("Informe a data bloqueada.");
         }
@@ -151,21 +183,54 @@ public class RemessaService {
             throw new IllegalArgumentException("Informe o motivo da excecao.");
         }
 
-        CalendarioExcecao excecao = new CalendarioExcecao();
-        excecao.setData(data);
-        excecao.setMotivo(motivo.trim());
-        remessaDAO.inserirExcecao(excecao);
+        CalendarioExcecaoJpaEntity entity = new CalendarioExcecaoJpaEntity();
+        entity.setData(data);
+        entity.setMotivo(motivo.trim());
+        entity.setAtiva(true);
+        calendarioRepo.save(entity);
     }
 
-    public List<Doca> listarDocasAtivas() throws SQLException {
-        return remessaDAO.listarDocasAtivas();
+    public List<Doca> listarDocasAtivas() {
+        return docaRepo.findByAtivaTrueOrderByNomeAsc().stream()
+                .map(this::toModel)
+                .collect(Collectors.toList());
     }
 
-    public List<Distribuidora> listarDistribuidorasAtivas() throws SQLException {
-        return remessaDAO.listarDistribuidorasAtivas();
+    public List<Distribuidora> listarDistribuidorasAtivas() {
+        return distribuidoraRepo.findByAtivaTrueOrderByNomeAsc().stream()
+                .map(this::toModel)
+                .collect(Collectors.toList());
     }
 
-    public List<AgendamentoRemessa> listarAgendamentos() throws SQLException {
-        return remessaDAO.listarAgendamentos();
+    public List<AgendamentoRemessa> listarAgendamentos() {
+        return agendamentoRepo.listarComRelacionamentos().stream()
+                .map(this::toModel)
+                .collect(Collectors.toList());
+    }
+
+    // ---- entity → domain model mappers ----
+
+    private Doca toModel(DocaJpaEntity e) {
+        return new Doca(e.getId(), e.getNome(), e.getCapacidadePaletesDiaria(), e.isAtiva());
+    }
+
+    private Distribuidora toModel(DistribuidoraJpaEntity e) {
+        return new Distribuidora(e.getId(), e.getNome(), e.getNivelPrioridade(), e.isAtiva());
+    }
+
+    private AgendamentoRemessa toModel(AgendamentoRemessaJpaEntity e) {
+        AgendamentoRemessa a = new AgendamentoRemessa();
+        a.setId(e.getId());
+        a.setCodigoAgendamento(e.getCodigoAgendamento());
+        a.setDocaId(e.getDoca().getId());
+        a.setDistribuidoraId(e.getDistribuidora().getId());
+        a.setData(e.getData());
+        a.setHorario(e.getHorario());
+        a.setVolumePaletes(e.getVolumePaletes());
+        a.setStatus(e.getStatus());
+        a.setDocaNome(e.getDoca().getNome());
+        a.setDistribuidoraNome(e.getDistribuidora().getNome());
+        a.setPrioridadeDistribuidora(e.getDistribuidora().getNivelPrioridade());
+        return a;
     }
 }

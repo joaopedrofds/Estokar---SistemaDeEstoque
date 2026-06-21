@@ -1,6 +1,7 @@
 package com.studiomuda.estoque.security;
 
 import com.studiomuda.estoque.conexao.Conexao;
+import com.studiomuda.estoque.security.dominio.PoliticaDeAcesso;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,7 +13,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 public final class InterceptadorAutorizacaoDao {
     private static final String MENSAGEM_ACESSO_NEGADO = "Acesso insuficiente para esta operação.";
@@ -146,43 +146,8 @@ public final class InterceptadorAutorizacaoDao {
     }
 
     private static OperacaoAcesso mapearOperacao(String nomeMetodo) {
-        String metodo = nomeMetodo.toLowerCase(Locale.ROOT);
-        if (metodo.contains("aprovar")
-                || metodo.contains("rejeitar")
-                || metodo.contains("alterarstatus")) {
-            return OperacaoAcesso.APROVACAO;
-        }
-        if (metodo.startsWith("inserir")
-                || metodo.startsWith("salvar")
-                || metodo.startsWith("atualizar")
-                || metodo.startsWith("deletar")
-                || metodo.startsWith("registrar")
-                || metodo.startsWith("criar")
-                || metodo.startsWith("cadastrar")
-                || metodo.startsWith("agendar")
-                || metodo.startsWith("bloquear")
-                || metodo.startsWith("adicionar")
-                || metodo.startsWith("remover")
-                || metodo.startsWith("excluir")
-                || metodo.startsWith("gerar")) {
-            return OperacaoAcesso.ESCRITA;
-        }
-        if (metodo.startsWith("listar")
-                || metodo.startsWith("buscar")
-                || metodo.startsWith("obter")
-                || metodo.startsWith("consultar")
-                || metodo.startsWith("calcular")
-                || metodo.startsWith("somar")
-                || metodo.startsWith("existe")
-                || metodo.startsWith("verificar")
-                || metodo.startsWith("dashboard")
-                || metodo.startsWith("get")
-                || metodo.startsWith("count")
-                || metodo.startsWith("contar")
-                || metodo.startsWith("form")) {
-            return OperacaoAcesso.LEITURA;
-        }
-        return OperacaoAcesso.LEITURA;
+        // Regra de inferência centralizada no domínio (E-11), coberta por BDD.
+        return PoliticaDeAcesso.mapearOperacao(nomeMetodo);
     }
 
     private static boolean possuiPermissao(List<Integer> perfilIds, RecursoAcesso recurso, OperacaoAcesso operacao) {

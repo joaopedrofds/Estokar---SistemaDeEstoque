@@ -13,6 +13,9 @@ ContextMap EstokarMap {
     contains EngajamentoContext
     contains FreteContext
     contains PrecificacaoContext
+    contains SegurancaContext
+    contains FinanceiroContext
+    contains IndicadoresContext
 
     EstoqueContext [U] -> [D] VendasContext
     ClienteContext [U] -> [D] VendasContext
@@ -24,6 +27,11 @@ ContextMap EstokarMap {
     ClienteContext [U] -> [D] EngajamentoContext
     VendasContext [U] -> [D] FreteContext
     EstoqueContext [U] -> [D] PrecificacaoContext
+    SegurancaContext [U] -> [D] FinanceiroContext
+    SegurancaContext [U] -> [D] IndicadoresContext
+    VendasContext [U] -> [D] FinanceiroContext
+    EstoqueContext [U] -> [D] IndicadoresContext
+    VendasContext [U] -> [D] IndicadoresContext
 }
 
 BoundedContext EstoqueContext {
@@ -54,10 +62,37 @@ BoundedContext ClienteContext {
 }
 
 BoundedContext RHContext {
-    domainVisionStatement = "Subdominio Generico: Gerencia o cadastro de funcionarios, papeis e seguranca/login do sistema."
+    domainVisionStatement = "Subdominio Generico: Gerencia o cadastro de funcionarios."
 
     Aggregate FuncionarioAggregate {
         Entity Funcionario
+    }
+}
+
+BoundedContext SegurancaContext {
+    type = FEATURE
+    domainVisionStatement = "Subdominio Generico: autentica usuarios, associa perfis e decide permissoes por recurso e operacao, mantendo auditoria de acesso."
+    knowledgeLevel = CONCRETE
+
+    Aggregate UsuarioAcessoAggregate {
+        knowledgeLevel = CONCRETE
+
+        Entity UsuarioAcesso {
+            aggregateRoot
+            int id
+        }
+
+        Entity PerfilAcesso {
+            int id
+        }
+
+        Entity PermissaoPerfil {
+            int id
+        }
+
+        Entity LogAcesso {
+            int id
+        }
     }
 }
 
@@ -196,6 +231,74 @@ BoundedContext PrecificacaoContext {
 
         Entity ComponentePrecificacao {
             int id
+        }
+    }
+}
+
+BoundedContext FinanceiroContext {
+    type = FEATURE
+    domainVisionStatement = "Subdominio de Apoio: classifica receitas e custos, configura templates e gera relatorios financeiros consolidados e comparativos."
+    knowledgeLevel = CONCRETE
+
+    Aggregate CategoriaFinanceiraAggregate {
+        Entity CategoriaFinanceira {
+            aggregateRoot
+            String id
+        }
+    }
+
+    Aggregate TemplateRelatorioAggregate {
+        Entity TemplateRelatorio {
+            aggregateRoot
+            String id
+        }
+    }
+
+    Aggregate RelatorioGeradoAggregate {
+        Entity RelatorioGerado {
+            aggregateRoot
+            String id
+        }
+    }
+
+    Aggregate LancamentoAjusteAggregate {
+        Entity LancamentoAjuste {
+            aggregateRoot
+            String id
+        }
+    }
+}
+
+BoundedContext IndicadoresContext {
+    type = FEATURE
+    domainVisionStatement = "Subdominio de Apoio: configura indicadores e metas, registra snapshots imutaveis e abre alertas quando uma meta operacional e violada."
+    knowledgeLevel = CONCRETE
+
+    Aggregate IndicadorOperacionalAggregate {
+        Entity IndicadorOperacional {
+            aggregateRoot
+            String id
+        }
+    }
+
+    Aggregate MetaIndicadorAggregate {
+        Entity MetaIndicador {
+            aggregateRoot
+            String id
+        }
+    }
+
+    Aggregate SnapshotIndicadorAggregate {
+        Entity SnapshotIndicador {
+            aggregateRoot
+            String id
+        }
+    }
+
+    Aggregate AlertaIndicadorAggregate {
+        Entity AlertaIndicador {
+            aggregateRoot
+            String id
         }
     }
 }

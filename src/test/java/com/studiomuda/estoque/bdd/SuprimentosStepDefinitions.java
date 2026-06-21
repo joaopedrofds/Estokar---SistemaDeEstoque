@@ -48,4 +48,14 @@ public class SuprimentosStepDefinitions {
         assertTrue(parametro.isReposicaoNecessaria());
         assertEquals(quantidadeSugerida, parametro.calcularQuantidadeSugerida());
     }
+
+    @Então("nenhuma ordem de compra deve ser sugerida")
+    public void nenhumaOrdemDeCompraDeveSerSugerida() {
+        assertTrue(!parametro.isReposicaoNecessaria());
+    }
+
+    @Então("uma reposicao deve ser considerada necessaria")
+    public void umaReposicaoDeveSerConsideradaNecessaria() {
+        assertTrue(parametro.isReposicaoNecessaria());
+    }
 }

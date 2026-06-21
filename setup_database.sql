@@ -206,7 +206,12 @@ CREATE TABLE cupom (
     valor DECIMAL(10,2) NOT NULL,
     data_inicio DATE,
     validade DATE,
-    condicoes_uso TEXT
+    condicoes_uso TEXT,
+    tipo_desconto VARCHAR(10) NOT NULL DEFAULT 'FIXO',
+    limite_usos INT,
+    usos_realizados INT NOT NULL DEFAULT 0,
+    cliente_id INT,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE pedido (
@@ -395,14 +400,18 @@ CREATE INDEX idx_devolucao_pedido ON devolucao(pedido_id);
 CREATE INDEX idx_devolucao_cliente ON devolucao(cliente_id);
 CREATE INDEX idx_devolucao_status ON devolucao(status);
 
-CREATE TABLE devolucao_item (
+CREATE TABLE item_devolucao (
     id INT AUTO_INCREMENT PRIMARY KEY,
     devolucao_id INT NOT NULL,
     produto_id INT NOT NULL,
     quantidade INT NOT NULL,
+    valor_unitario DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    condicao VARCHAR(20) NOT NULL DEFAULT 'BOM',
     FOREIGN KEY (devolucao_id) REFERENCES devolucao(id) ON DELETE CASCADE,
     FOREIGN KEY (produto_id) REFERENCES produto(id)
 );
+
+CREATE INDEX idx_item_devolucao_devolucao ON item_devolucao(devolucao_id);
 
 CREATE TABLE perfil_acesso (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -453,7 +462,7 @@ CREATE INDEX idx_permissao_perfil_lookup ON permissao_perfil(perfil_id, recurso,
 CREATE INDEX idx_log_acesso_data ON log_acesso(data_hora, resultado);
 
 CREATE TABLE categoria_financeira (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id VARCHAR(36) PRIMARY KEY,
     nome VARCHAR(120) NOT NULL UNIQUE,
     tipo VARCHAR(10) NOT NULL,
     origem_sistema VARCHAR(40),
@@ -462,7 +471,7 @@ CREATE TABLE categoria_financeira (
 );
 
 CREATE TABLE template_relatorio (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id VARCHAR(36) PRIMARY KEY,
     nome VARCHAR(120) NOT NULL UNIQUE,
     descricao VARCHAR(255),
     periodo_padrao VARCHAR(10) NOT NULL DEFAULT 'MES',
@@ -471,23 +480,23 @@ CREATE TABLE template_relatorio (
 );
 
 CREATE TABLE template_categoria (
-    template_id INT NOT NULL,
-    categoria_id INT NOT NULL,
+    template_id VARCHAR(36) NOT NULL,
+    categoria_id VARCHAR(36) NOT NULL,
     PRIMARY KEY (template_id, categoria_id),
     FOREIGN KEY (template_id) REFERENCES template_relatorio(id),
     FOREIGN KEY (categoria_id) REFERENCES categoria_financeira(id)
 );
 
 CREATE TABLE template_indicador (
-    template_id INT NOT NULL,
+    template_id VARCHAR(36) NOT NULL,
     indicador VARCHAR(40) NOT NULL,
     PRIMARY KEY (template_id, indicador),
     FOREIGN KEY (template_id) REFERENCES template_relatorio(id)
 );
 
 CREATE TABLE relatorio_gerado (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    template_id INT NOT NULL,
+    id VARCHAR(36) PRIMARY KEY,
+    template_id VARCHAR(36) NOT NULL,
     template_nome VARCHAR(120) NOT NULL,
     data_inicio DATE NOT NULL,
     data_fim DATE NOT NULL,
@@ -509,8 +518,8 @@ CREATE TABLE relatorio_gerado (
 
 CREATE TABLE relatorio_categoria_linha (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    relatorio_id INT NOT NULL,
-    categoria_id INT NOT NULL,
+    relatorio_id VARCHAR(36) NOT NULL,
+    categoria_id VARCHAR(36) NOT NULL,
     categoria_nome VARCHAR(120) NOT NULL,
     tipo_categoria VARCHAR(10) NOT NULL,
     valor_periodo DECIMAL(14,2) NOT NULL DEFAULT 0.00,
@@ -524,7 +533,7 @@ CREATE TABLE relatorio_categoria_linha (
 
 CREATE TABLE relatorio_indicador_linha (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    relatorio_id INT NOT NULL,
+    relatorio_id VARCHAR(36) NOT NULL,
     indicador VARCHAR(40) NOT NULL,
     valor DECIMAL(14,4) NOT NULL DEFAULT 0.0000,
     valor_anterior DECIMAL(14,4) NULL,
@@ -535,7 +544,7 @@ CREATE TABLE relatorio_indicador_linha (
 
 CREATE TABLE lancamento_ajuste (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    categoria_id INT NOT NULL,
+    categoria_id VARCHAR(36) NOT NULL,
     data_lancamento DATE NOT NULL,
     valor DECIMAL(14,2) NOT NULL,
     descricao VARCHAR(255) NOT NULL,
@@ -687,9 +696,9 @@ INSERT INTO perfil_acesso (nome, descricao, ativo) VALUES
 ('OPERADOR_VENDEDOR', 'Perfil de execução diária com permissões restritas.', TRUE);
 
 INSERT INTO usuario_acesso (username, nome, senha, ativo) VALUES
-('admin', 'Administrador do Sistema', '{noop}Admin@123', TRUE),
-('gerente', 'Gerente Operacional', '{noop}Gerente@123', TRUE),
-('operador', 'Operador de Vendas', '{noop}Operador@123', TRUE);
+('admin', 'Administrador do Sistema', '{bcrypt}$2y$10$g0LlknzvHwnbcxNZUqwqNe5Cf7akFs6HZLqHA8jcKf1qqZznkUQGW', TRUE),
+('gerente', 'Gerente Operacional', '{bcrypt}$2y$10$hJCAgOl0r.UG62AIDEQ8N.c5mMAr8sOU9fL6Ozm.5auqHYlvXCaD.', TRUE),
+('operador', 'Operador de Vendas', '{bcrypt}$2y$10$zboD1cTxc2.94QKCP0v9V.We12Guw.2rug5mDF0.SmKT.NmVtyMyi', TRUE);
 
 INSERT INTO usuario_perfil (usuario_id, perfil_id) VALUES
 (1, 1),
@@ -711,7 +720,9 @@ FROM (
     SELECT 'FUNCIONARIO' UNION ALL
     SELECT 'DASHBOARD' UNION ALL
     SELECT 'KPI' UNION ALL
+    SELECT 'DEVOLUCAO' UNION ALL
     SELECT 'FINANCEIRO' UNION ALL
+    SELECT 'FRETE' UNION ALL
     SELECT 'ACESSO' UNION ALL
     SELECT 'API' UNION ALL
     SELECT 'HOME'
@@ -751,6 +762,12 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (2, 'KPI', 'LEITURA', TRUE),
 (2, 'FINANCEIRO', 'LEITURA', TRUE),
 (2, 'FINANCEIRO', 'ESCRITA', TRUE),
+(2, 'DEVOLUCAO', 'LEITURA', TRUE),
+(2, 'DEVOLUCAO', 'ESCRITA', TRUE),
+(2, 'DEVOLUCAO', 'APROVACAO', TRUE),
+(2, 'FRETE', 'LEITURA', TRUE),
+(2, 'FRETE', 'ESCRITA', TRUE),
+(2, 'FRETE', 'APROVACAO', TRUE),
 (2, 'API', 'LEITURA', TRUE),
 (2, 'API', 'ESCRITA', TRUE),
 (2, 'HOME', 'LEITURA', TRUE);
@@ -766,6 +783,10 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (3, 'AJUSTE_ESTOQUE', 'ESCRITA', TRUE),
 (3, 'INVENTARIO', 'LEITURA', TRUE),
 (3, 'INVENTARIO', 'ESCRITA', TRUE),
+(3, 'DEVOLUCAO', 'LEITURA', TRUE),
+(3, 'DEVOLUCAO', 'ESCRITA', TRUE),
+(3, 'FRETE', 'LEITURA', TRUE),
+(3, 'FRETE', 'ESCRITA', TRUE),
 (3, 'CLIENTE', 'LEITURA', TRUE),
 (3, 'CLIENTE', 'ESCRITA', TRUE),
 (3, 'FUNCIONARIO', 'LEITURA', TRUE),
@@ -773,15 +794,15 @@ INSERT INTO permissao_perfil (perfil_id, recurso, operacao, permitido) VALUES
 (3, 'API', 'LEITURA', TRUE),
 (3, 'HOME', 'LEITURA', TRUE);
 
-INSERT INTO categoria_financeira (nome, tipo, origem_sistema, descricao, ativo) VALUES
-('Venda de Produto', 'RECEITA', 'PEDIDO_PAGO', 'Receita consolidada de pedidos pagos no período.', TRUE),
-('Devolução', 'DESPESA', 'MOVIMENTACAO_ENTRADA_DEVOLUCAO', 'Estornos e devoluções registradas via movimentação de entrada.', TRUE),
-('Custo de Reposição', 'DESPESA', 'MOVIMENTACAO_SAIDA', 'Custo estimado de saídas de estoque no período.', TRUE),
-('Ajuste Manual', 'RECEITA', 'LANCAMENTO_AJUSTE', 'Lançamentos manuais de correção vinculados ao plano de contas.', TRUE);
+INSERT INTO categoria_financeira (id, nome, tipo, origem_sistema, descricao, ativo) VALUES
+(UUID(), 'Venda de Produto', 'RECEITA', 'PEDIDO_PAGO', 'Receita consolidada de pedidos pagos no período.', TRUE),
+(UUID(), 'Devolução', 'DESPESA', 'MOVIMENTACAO_ENTRADA_DEVOLUCAO', 'Estornos e devoluções registradas via movimentação de entrada.', TRUE),
+(UUID(), 'Custo de Reposição', 'DESPESA', 'MOVIMENTACAO_SAIDA', 'Custo estimado de saídas de estoque no período.', TRUE),
+(UUID(), 'Ajuste Manual', 'RECEITA', 'LANCAMENTO_AJUSTE', 'Lançamentos manuais de correção vinculados ao plano de contas.', TRUE);
 
-INSERT INTO template_relatorio (nome, descricao, periodo_padrao, agrupamento, ativo) VALUES
-('Demonstrativo Mensal', 'Consolidação padrão mensal com margem e ticket médio.', 'MES', 'MES', TRUE),
-('Fechamento Semanal', 'Visão semanal para acompanhamento operacional.', 'SEMANA', 'SEMANA', TRUE);
+INSERT INTO template_relatorio (id, nome, descricao, periodo_padrao, agrupamento, ativo) VALUES
+(UUID(), 'Demonstrativo Mensal', 'Consolidação padrão mensal com margem e ticket médio.', 'MES', 'MES', TRUE),
+(UUID(), 'Fechamento Semanal', 'Visão semanal para acompanhamento operacional.', 'SEMANA', 'SEMANA', TRUE);
 
 INSERT INTO template_categoria (template_id, categoria_id)
 SELECT t.id, c.id
@@ -807,7 +828,7 @@ UNION ALL
 SELECT id, 'TICKET_MEDIO' FROM template_relatorio WHERE nome = 'Fechamento Semanal';
 
 CREATE TABLE IF NOT EXISTS indicador_operacional (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id VARCHAR(36) PRIMARY KEY,
     codigo VARCHAR(40) NOT NULL UNIQUE,
     nome VARCHAR(120) NOT NULL,
     descricao VARCHAR(255),
@@ -817,8 +838,8 @@ CREATE TABLE IF NOT EXISTS indicador_operacional (
 );
 
 CREATE TABLE IF NOT EXISTS meta_indicador (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    indicador_id INT NOT NULL,
+    id VARCHAR(36) PRIMARY KEY,
+    indicador_id VARCHAR(36) NOT NULL,
     valor_alvo DECIMAL(14,4) NOT NULL,
     limite_critico DECIMAL(14,4) NOT NULL,
     operador VARCHAR(20) NOT NULL DEFAULT 'MAIOR_IGUAL',
@@ -829,8 +850,8 @@ CREATE TABLE IF NOT EXISTS meta_indicador (
 );
 
 CREATE TABLE IF NOT EXISTS snapshot_indicador (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    indicador_id INT NOT NULL,
+    id VARCHAR(36) PRIMARY KEY,
+    indicador_id VARCHAR(36) NOT NULL,
     valor_calculado DECIMAL(14,4) NOT NULL,
     periodo_inicio DATE NOT NULL,
     periodo_fim DATE NOT NULL,
@@ -843,9 +864,9 @@ CREATE TABLE IF NOT EXISTS snapshot_indicador (
 );
 
 CREATE TABLE IF NOT EXISTS alerta_indicador (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    indicador_id INT NOT NULL,
-    snapshot_id INT NOT NULL,
+    id VARCHAR(36) PRIMARY KEY,
+    indicador_id VARCHAR(36) NOT NULL,
+    snapshot_id VARCHAR(36) NOT NULL,
     tipo_violacao VARCHAR(20) NOT NULL,
     valor_esperado DECIMAL(14,4) NOT NULL,
     valor_encontrado DECIMAL(14,4) NOT NULL,
@@ -862,17 +883,81 @@ CREATE TABLE IF NOT EXISTS alerta_indicador (
 CREATE INDEX idx_snapshot_indicador_periodo ON snapshot_indicador(indicador_id, periodo_inicio, periodo_fim);
 CREATE INDEX idx_alerta_indicador_status ON alerta_indicador(status, data_alerta);
 
-INSERT IGNORE INTO indicador_operacional (codigo, nome, descricao, tipo_calculo, periodo_padrao, ativo) VALUES
-('TICKET_MEDIO', 'Ticket Médio de Vendas', 'Média de faturamento por pedido finalizado.', 'TICKET_MEDIO', 'MES', TRUE),
-('PRODUTOS_CRITICOS', 'Produtos em Estoque Crítico', 'Quantidade de produtos com estoque igual ou abaixo do ponto de pedido.', 'ESTOQUE_CRITICO', 'MES', TRUE),
-('TAXA_CANCELAMENTO', 'Taxa de Cancelamento', 'Percentual de pedidos cancelados em relação ao total de pedidos.', 'TAXA_CANCELAMENTO', 'MES', TRUE),
-('PRODUTOS_SEM_ESTOQUE', 'Produtos Sem Estoque', 'Quantidade de produtos ativos com saldo zerado no estoque.', 'SEM_ESTOQUE', 'MES', TRUE);
+INSERT INTO indicador_operacional (id, codigo, nome, descricao, tipo_calculo, periodo_padrao, ativo) VALUES
+(UUID(), 'TICKET_MEDIO', 'Ticket Médio de Vendas', 'Média de faturamento por pedido finalizado.', 'TICKET_MEDIO', 'MES', TRUE),
+(UUID(), 'PRODUTOS_CRITICOS', 'Produtos em Estoque Crítico', 'Quantidade de produtos com estoque igual ou abaixo do ponto de pedido.', 'ESTOQUE_CRITICO', 'MES', TRUE),
+(UUID(), 'TAXA_CANCELAMENTO', 'Taxa de Cancelamento', 'Percentual de pedidos cancelados em relação ao total de pedidos.', 'TAXA_CANCELAMENTO', 'MES', TRUE),
+(UUID(), 'PRODUTOS_SEM_ESTOQUE', 'Produtos Sem Estoque', 'Quantidade de produtos ativos com saldo zerado no estoque.', 'SEM_ESTOQUE', 'MES', TRUE);
 
-INSERT IGNORE INTO meta_indicador (indicador_id, valor_alvo, limite_critico, operador, vigencia_inicio, vigencia_fim, ativo)
+INSERT INTO meta_indicador (id, indicador_id, valor_alvo, limite_critico, operador, vigencia_inicio, vigencia_fim, ativo)
 VALUES
-((SELECT id FROM indicador_operacional WHERE codigo = 'TICKET_MEDIO'), 150.0000, 100.0000, 'MAIOR_IGUAL', '2026-01-01', NULL, TRUE),
-((SELECT id FROM indicador_operacional WHERE codigo = 'PRODUTOS_CRITICOS'), 0.0000, 3.0000, 'MENOR_IGUAL', '2026-01-01', NULL, TRUE),
-((SELECT id FROM indicador_operacional WHERE codigo = 'TAXA_CANCELAMENTO'), 5.0000, 10.0000, 'MENOR_IGUAL', '2026-01-01', NULL, TRUE),
-((SELECT id FROM indicador_operacional WHERE codigo = 'PRODUTOS_SEM_ESTOQUE'), 0.0000, 2.0000, 'MENOR_IGUAL', '2026-01-01', NULL, TRUE);
+(UUID(), (SELECT id FROM indicador_operacional WHERE codigo = 'TICKET_MEDIO'), 150.0000, 100.0000, 'MAIOR_IGUAL', '2026-01-01', NULL, TRUE),
+(UUID(), (SELECT id FROM indicador_operacional WHERE codigo = 'PRODUTOS_CRITICOS'), 0.0000, 3.0000, 'MENOR_IGUAL', '2026-01-01', NULL, TRUE),
+(UUID(), (SELECT id FROM indicador_operacional WHERE codigo = 'TAXA_CANCELAMENTO'), 5.0000, 10.0000, 'MENOR_IGUAL', '2026-01-01', NULL, TRUE),
+(UUID(), (SELECT id FROM indicador_operacional WHERE codigo = 'PRODUTOS_SEM_ESTOQUE'), 0.0000, 2.0000, 'MENOR_IGUAL', '2026-01-01', NULL, TRUE);
 
+-- =====================================================================
+-- Módulo de Cobranças / Inadimplência (Funcionalidade 1).
+--
+-- Estas tabelas têm SOMENTE entidades JPA (PoliticaCreditoJpaEntity,
+-- AcordoPagamentoJpaEntity, FaturaJpaEntity, HistoricoCobrancaJpaEntity) e
+-- antes só nasciam quando a app subia com hibernate.ddl-auto=update. Por isso
+-- o dados_teste_cobranca.sql (passo 4 do load) falhava com "Table
+-- 'studiomuda.politica_credito' doesn't exist" em banco recém-criado.
+-- Declaramos o DDL aqui (compatível com as entidades) para o load ser
+-- self-contained; o ddl-auto=update apenas reconcilia (no-op) no boot.
+-- =====================================================================
+CREATE TABLE politica_credito (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255),
+    limite_dias_atraso INT,
+    limite_credito DECIMAL(14,2),
+    data_inicio DATE,
+    data_fim DATE,
+    ativa BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE acordo_pagamento (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    data_acordo DATE,
+    data_inicio DATE,
+    data_fim DATE,
+    valor_total DECIMAL(14,2),
+    status VARCHAR(255) DEFAULT 'ATIVO',
+    FOREIGN KEY (cliente_id) REFERENCES cliente(id)
+);
+
+CREATE TABLE fatura (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    acordo_pagamento_id INT NULL,
+    pedido_id INT NULL,
+    numero VARCHAR(255),
+    data_emissao DATE,
+    data_vencimento DATE,
+    data_pagamento DATE,
+    valor DECIMAL(14,2),
+    status VARCHAR(255) DEFAULT 'PENDENTE',
+    FOREIGN KEY (cliente_id) REFERENCES cliente(id),
+    FOREIGN KEY (acordo_pagamento_id) REFERENCES acordo_pagamento(id)
+);
+
+CREATE TABLE historico_cobranca (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id INT NOT NULL,
+    fatura_id INT NULL,
+    registro_original_id INT NULL,
+    data_contato DATETIME,
+    tipo_contato VARCHAR(255),
+    responsavel VARCHAR(255),
+    descricao VARCHAR(1000),
+    FOREIGN KEY (cliente_id) REFERENCES cliente(id),
+    FOREIGN KEY (fatura_id) REFERENCES fatura(id),
+    FOREIGN KEY (registro_original_id) REFERENCES historico_cobranca(id)
+);
+
+CREATE INDEX idx_fatura_cliente_status ON fatura(cliente_id, status, data_vencimento);
+CREATE INDEX idx_acordo_pagamento_cliente ON acordo_pagamento(cliente_id, status);
+CREATE INDEX idx_historico_cobranca_cliente ON historico_cobranca(cliente_id, data_contato);
 

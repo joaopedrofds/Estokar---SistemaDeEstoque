@@ -40,4 +40,18 @@ public class MovimentacaoEstoqueJpaEntity {
         this.motivo = motivo;
         this.data = data;
     }
+
+    public Integer getId() { return id; }
+    public Integer getProdutoId() { return produtoId; }
+    public String getTipo() { return tipo; }
+    public Integer getQuantidade() { return quantidade; }
+    public String getMotivo() { return motivo; }
+    public Date getData() { return data; }
+
+    public void setId(Integer id) { this.id = id; }
+    public void setProdutoId(Integer produtoId) { this.produtoId = produtoId; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+    public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
+    public void setMotivo(String motivo) { this.motivo = motivo; }
+    public void setData(Date data) { this.data = data; }
 }

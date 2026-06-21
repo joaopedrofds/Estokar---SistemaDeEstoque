@@ -19,7 +19,7 @@
         <div class="col-lg-5">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0" th:text="${templateForm.id == 0 ? 'Novo Template' : 'Editar Template'}"></h5>
+                    <h5 class="mb-0" th:text="${templateForm.id == null ? 'Novo Template' : 'Editar Template'}"></h5>
                 </div>
                 <div class="card-body">
                     <form th:action="@{/financeiro/templates/salvar}" method="post">

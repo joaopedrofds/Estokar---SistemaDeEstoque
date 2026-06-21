@@ -2,7 +2,6 @@ package com.studiomuda.estoque.controller;
 
 import com.studiomuda.estoque.model.Produto;
 import com.studiomuda.estoque.service.ProdutoService;
-import com.studiomuda.estoque.observer.HistoricoPrecosObserver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -53,7 +52,6 @@ public class ProdutoController {
     public String salvarProduto(@ModelAttribute Produto produto, Authentication authentication) {
         try {
             String usuario = (authentication != null) ? authentication.getName() : "sistema";
-            produtoService.registrarObservador(new HistoricoPrecosObserver());
 
             if (produto.getId() == 0) {
                 produtoService.salvar(produto);

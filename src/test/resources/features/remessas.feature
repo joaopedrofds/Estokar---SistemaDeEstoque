@@ -11,3 +11,16 @@ Funcionalidade: Roteirizacao de Remessas com Conflitos de Docas
     Quando solicito uma remessa de 4 paletes para a doca principal
     Entao o agendamento da remessa deve ser bloqueado
     E o sistema deve sugerir uma janela alternativa na doca "Doca Sul"
+
+  Cenario: Agendamento dentro da capacidade e confirmado
+    Dado que a doca "Doca Norte" suporta 10 paletes por dia
+    E ja existem 3 paletes agendados para essa doca
+    Quando solicito uma remessa de 4 paletes para a doca principal
+    Entao o agendamento da remessa deve ser confirmado
+
+  Cenario: Choque de horario bloqueia o agendamento
+    Dado que a doca "Doca Norte" suporta 10 paletes por dia
+    E ja existem 2 paletes agendados para essa doca
+    E o horario solicitado ja esta ocupado
+    Quando solicito uma remessa de 2 paletes para a doca principal
+    Entao o agendamento da remessa deve ser bloqueado

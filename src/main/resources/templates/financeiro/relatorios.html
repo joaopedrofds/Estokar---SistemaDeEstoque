@@ -71,9 +71,9 @@
                             <tr th:each="rel : ${historico}">
                                 <td th:text="${rel.id}"></td>
                                 <td th:text="${rel.templateNome}"></td>
-                                <td th:text="${#dates.format(rel.dataInicio, 'dd/MM/yyyy') + ' - ' + #dates.format(rel.dataFim, 'dd/MM/yyyy')}"></td>
+                                <td th:text="${#temporals.format(rel.dataInicio, 'dd/MM/yyyy') + ' - ' + #temporals.format(rel.dataFim, 'dd/MM/yyyy')}"></td>
                                 <td th:text="${rel.geradoPorUsername}"></td>
-                                <td th:text="${#dates.format(rel.dataGeracao, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${#temporals.format(rel.dataGeracao, 'dd/MM/yyyy HH:mm')}"></td>
                                 <td th:text="${'R$ ' + #numbers.formatDecimal(rel.resultadoConsolidado, 1, 'POINT', 2, 'COMMA')}"></td>
                                 <td class="text-center">
                                     <a th:href="@{/financeiro/relatorios/{id}(id=${rel.id})}" class="btn btn-sm btn-outline-primary">

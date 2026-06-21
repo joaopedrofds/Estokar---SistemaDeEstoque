@@ -83,10 +83,22 @@ public class Conexao {
 
         String propertyFileValue = properties.getProperty(propertyKey);
         if (propertyFileValue != null) {
-            return propertyFileValue.trim();
+            return resolverPlaceholder(propertyFileValue.trim());
         }
 
         return fallbackValue;
+    }
+
+    private static String resolverPlaceholder(String valor) {
+        if (!valor.startsWith("${") || !valor.endsWith("}")) {
+            return valor;
+        }
+        String conteudo = valor.substring(2, valor.length() - 1);
+        int separador = conteudo.indexOf(':');
+        String chave = separador >= 0 ? conteudo.substring(0, separador) : conteudo;
+        String padrao = separador >= 0 ? conteudo.substring(separador + 1) : "";
+        String ambiente = System.getenv(chave);
+        return ambiente != null ? ambiente : padrao;
     }
 
     private static class ConfiguracaoBanco {

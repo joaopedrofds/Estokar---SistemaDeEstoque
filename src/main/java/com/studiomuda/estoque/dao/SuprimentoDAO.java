@@ -2,7 +2,6 @@ package com.studiomuda.estoque.dao;
 import org.springframework.stereotype.Repository;
 
 import com.studiomuda.estoque.conexao.Conexao;
-import com.studiomuda.estoque.model.Fornecedor;
 import com.studiomuda.estoque.model.OrdemCompra;
 import com.studiomuda.estoque.model.ParametroEstoque;
 
@@ -14,25 +13,6 @@ import java.util.List;
 
 @Repository
 public class SuprimentoDAO {
-
-    public List<Fornecedor> listarFornecedoresAtivos() throws SQLException {
-        List<Fornecedor> fornecedores = new ArrayList<>();
-        String sql = "SELECT * FROM fornecedor WHERE ativo = TRUE ORDER BY lead_time_dias ASC, nome ASC";
-
-        try (Connection conn = Conexao.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                fornecedores.add(new Fornecedor(
-                        rs.getInt("id"),
-                        rs.getString("nome"),
-                        rs.getInt("lead_time_dias"),
-                        rs.getBoolean("ativo")
-                ));
-            }
-        }
-        return fornecedores;
-    }
 
     public void salvarParametro(int produtoId, String fornecedorNome, int leadTimeDias, int margemSeguranca) throws SQLException {
         int fornecedorId = inserirFornecedor(fornecedorNome, leadTimeDias);

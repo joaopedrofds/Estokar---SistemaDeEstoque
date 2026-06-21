@@ -10,12 +10,18 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 @EntityScan(basePackages = {
         "com.studiomuda.estoque.model",
         "com.studiomuda.estoque.jpa.entity",
-        "com.studiomuda.estoque.precificacao.infrastructure.persistence.entity"
+        "com.studiomuda.estoque.precificacao.infrastructure.persistence.entity",
+        "com.studiomuda.estoque.indicadores.infrastructure.persistence",
+        "com.studiomuda.estoque.financeiro.infrastructure.persistence",
+        "com.studiomuda.estoque.security.infrastructure.persistence"
 })
 @EnableJpaRepositories(basePackages = {
         "com.studiomuda.estoque.repository",
         "com.studiomuda.estoque.jpa.repository",
-        "com.studiomuda.estoque.precificacao.infrastructure.persistence.repository"
+        "com.studiomuda.estoque.precificacao.infrastructure.persistence.repository",
+        "com.studiomuda.estoque.indicadores.infrastructure.persistence",
+        "com.studiomuda.estoque.financeiro.infrastructure.persistence",
+        "com.studiomuda.estoque.security.infrastructure.persistence"
 })
 @ComponentScan(basePackages = {
         "com.studiomuda.estoque.repository",
@@ -27,7 +33,9 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
         "com.studiomuda.estoque.observer",
         "com.studiomuda.estoque.strategy",
         "com.studiomuda.estoque.proxy",
-        "com.studiomuda.estoque.precificacao"
+        "com.studiomuda.estoque.precificacao",
+        "com.studiomuda.estoque.indicadores",
+        "com.studiomuda.estoque.financeiro"
 })
 public class EstoqueApplication {
 

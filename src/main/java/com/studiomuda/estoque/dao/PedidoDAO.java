@@ -145,6 +145,19 @@ public class PedidoDAO {
         return 0;
     }
 
+    public List<String> listarStatusDisponiveis() throws SQLException {
+        List<String> status = new ArrayList<>();
+        String sql = "SELECT DISTINCT status FROM pedido WHERE status IS NOT NULL AND status <> '' ORDER BY status";
+        try (Connection conn = Conexao.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                status.add(rs.getString("status"));
+            }
+        }
+        return status;
+    }
+
     /**
      * Busca pedidos com múltiplos filtros reais (cliente, status, datas, funcionário, cupom).
      * Parâmetros podem ser nulos para não filtrar por eles.

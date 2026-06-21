@@ -5,15 +5,22 @@ import com.studiomuda.estoque.calculo.CalculadoraBase;
 import com.studiomuda.estoque.calculo.CalculadoraIndicador;
 import com.studiomuda.estoque.calculo.LogCalculoDecorator;
 import com.studiomuda.estoque.calculo.ValidacaoPeriodoDecorator;
-import com.studiomuda.estoque.model.AlertaIndicador;
-import com.studiomuda.estoque.model.IndicadorOperacional;
-import com.studiomuda.estoque.model.MetaIndicador;
-import com.studiomuda.estoque.model.SnapshotIndicador;
-import com.studiomuda.estoque.repository.AlertaIndicadorRepository;
+import com.studiomuda.estoque.indicadores.application.dto.AlertaIndicadorView;
+import com.studiomuda.estoque.indicadores.application.dto.SnapshotIndicadorView;
+import com.studiomuda.estoque.indicadores.domain.AlertaId;
+import com.studiomuda.estoque.indicadores.domain.AlertaIndicador;
+import com.studiomuda.estoque.indicadores.domain.IAlertaIndicadorRepositorio;
+import com.studiomuda.estoque.indicadores.domain.IIndicadorOperacionalRepositorio;
+import com.studiomuda.estoque.indicadores.domain.IMetaIndicadorRepositorio;
+import com.studiomuda.estoque.indicadores.domain.ISnapshotIndicadorRepositorio;
+import com.studiomuda.estoque.indicadores.domain.IndicadorId;
+import com.studiomuda.estoque.indicadores.domain.IndicadorOperacional;
+import com.studiomuda.estoque.indicadores.domain.MetaIndicador;
+import com.studiomuda.estoque.indicadores.domain.SnapshotIndicador;
+import com.studiomuda.estoque.indicadores.domain.SnapshotIndicadorId;
+import com.studiomuda.estoque.indicadores.domain.StatusAlerta;
+import com.studiomuda.estoque.indicadores.domain.TipoViolacao;
 import com.studiomuda.estoque.repository.CalculoIndicadorRepository;
-import com.studiomuda.estoque.repository.IndicadorOperacionalRepository;
-import com.studiomuda.estoque.repository.MetaIndicadorRepository;
-import com.studiomuda.estoque.repository.SnapshotIndicadorRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,10 +33,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class IndicadorService {
-    private final IndicadorOperacionalRepository indicadorRepo;
-    private final MetaIndicadorRepository metaRepo;
-    private final SnapshotIndicadorRepository snapshotRepo;
-    private final AlertaIndicadorRepository alertaRepo;
+    private final IIndicadorOperacionalRepositorio indicadorRepo;
+    private final IMetaIndicadorRepositorio metaRepo;
+    private final ISnapshotIndicadorRepositorio snapshotRepo;
+    private final IAlertaIndicadorRepositorio alertaRepo;
 
     /**
      * Cadeia de decorators usada para calcular o valor de um indicador.
@@ -37,10 +44,10 @@ public class IndicadorService {
      */
     private final CalculadoraIndicador calculadora;
 
-    public IndicadorService(IndicadorOperacionalRepository indicadorRepo,
-                            MetaIndicadorRepository metaRepo,
-                            SnapshotIndicadorRepository snapshotRepo,
-                            AlertaIndicadorRepository alertaRepo,
+    public IndicadorService(IIndicadorOperacionalRepositorio indicadorRepo,
+                            IMetaIndicadorRepositorio metaRepo,
+                            ISnapshotIndicadorRepositorio snapshotRepo,
+                            IAlertaIndicadorRepositorio alertaRepo,
                             CalculoIndicadorRepository calculoRepo) {
         this.indicadorRepo = indicadorRepo;
         this.metaRepo = metaRepo;
@@ -55,7 +62,7 @@ public class IndicadorService {
 
     @Transactional
     public int recalcularTodos(LocalDate inicio, LocalDate fim, int usuarioId, String username) {
-        List<IndicadorOperacional> ativos = indicadorRepo.findByAtivoTrueOrderByNomeAsc();
+        List<IndicadorOperacional> ativos = indicadorRepo.listarAtivosOrdenadoPorNome();
         int recalculados = 0;
         for (IndicadorOperacional ind : ativos) {
             recalcular(ind.getId(), inicio, fim, usuarioId, username);
@@ -65,8 +72,8 @@ public class IndicadorService {
     }
 
     @Transactional
-    public SnapshotIndicador recalcular(int indicadorId, LocalDate inicio, LocalDate fim, int usuarioId, String username) {
-        IndicadorOperacional ind = indicadorRepo.findById(indicadorId)
+    public SnapshotIndicador recalcular(IndicadorId indicadorId, LocalDate inicio, LocalDate fim, int usuarioId, String username) {
+        IndicadorOperacional ind = indicadorRepo.buscarPorId(indicadorId)
                 .orElseThrow(() -> new IllegalArgumentException("Indicador operacional não encontrado com ID: " + indicadorId));
 
         double valorCalculado;
@@ -78,17 +85,18 @@ public class IndicadorService {
             throw new IllegalStateException("Falha ao calcular indicador", e);
         }
 
-        // Criar e salvar snapshot imutável
-        SnapshotIndicador snap = new SnapshotIndicador();
-        snap.setIndicadorId(indicadorId);
-        snap.setValorCalculado(valorCalculado);
-        snap.setPeriodoInicio(inicio);
-        snap.setPeriodoFim(fim);
-        snap.setExecutadoPorId(usuarioId > 0 ? usuarioId : null);
-        snap.setExecutadoPor(username);
-        snap.setDetalheRastreio("Cálculo periódico de " + ind.getNome());
+        // Criar e salvar snapshot imutável (identidade gerada no domínio)
+        SnapshotIndicador snap = new SnapshotIndicador(
+                SnapshotIndicadorId.gerar(),
+                indicadorId,
+                valorCalculado,
+                inicio,
+                fim,
+                usuarioId > 0 ? usuarioId : null,
+                username,
+                "Cálculo periódico de " + ind.getNome());
 
-        snapshotRepo.save(snap);
+        snapshotRepo.salvar(snap);
 
         // Validar contra a meta vigente
         MetaIndicador meta = metaRepo.buscarVigentesPorIndicador(indicadorId)
@@ -98,36 +106,28 @@ public class IndicadorService {
             boolean critico = meta.isCritico(valorCalculado);
 
             AlertaIndicador alertaExistente =
-                    alertaRepo.findFirstByIndicadorIdAndStatusOrderByDataAlertaDesc(indicadorId, "ATIVO");
+                    alertaRepo.buscarAtivoPorIndicador(indicadorId).orElse(null);
 
             if (violada || critico) {
-                String tipoViolacao = critico ? "ACIMA_CRITICO" : "ABAIXO_META";
+                TipoViolacao tipoViolacao = critico ? TipoViolacao.ACIMA_CRITICO : TipoViolacao.ABAIXO_META;
                 String mensagem = gerarMensagemAlerta(ind.getNome(), valorCalculado, meta, critico);
 
                 if (alertaExistente != null) {
-                    // Atualiza o alerta ativo existente
-                    alertaExistente.setSnapshotId(snap.getId());
-                    alertaExistente.setValorEncontrado(valorCalculado);
-                    alertaExistente.setTipoViolacao(tipoViolacao);
-                    alertaExistente.setMensagem(mensagem);
-                    alertaRepo.save(alertaExistente);
+                    // Reatualiza o alerta ativo existente com a violação mais recente.
+                    alertaExistente.registrarNovaOcorrencia(snap.getId(), tipoViolacao, valorCalculado, mensagem);
+                    alertaRepo.salvar(alertaExistente);
                 } else {
-                    // Cria novo alerta
-                    AlertaIndicador novoAlerta = new AlertaIndicador();
-                    novoAlerta.setIndicadorId(indicadorId);
-                    novoAlerta.setSnapshotId(snap.getId());
-                    novoAlerta.setTipoViolacao(tipoViolacao);
-                    novoAlerta.setValorEsperado(meta.getValorAlvo());
-                    novoAlerta.setValorEncontrado(valorCalculado);
-                    novoAlerta.setMensagem(mensagem);
-                    novoAlerta.setStatus("ATIVO");
-                    alertaRepo.save(novoAlerta);
+                    // Cria novo alerta ATIVO (identidade gerada no domínio).
+                    AlertaIndicador novoAlerta = AlertaIndicador.criar(
+                            AlertaId.gerar(), indicadorId, snap.getId(), tipoViolacao,
+                            meta.getValorAlvo(), valorCalculado, mensagem);
+                    alertaRepo.salvar(novoAlerta);
                 }
             } else if (alertaExistente != null) {
                 // Meta atingida com sucesso e havia alerta ativo: resolvemos automaticamente.
-                aplicarResolucao(alertaExistente, "SISTEMA_AUTO_RESOLVE",
+                alertaExistente.resolver("SISTEMA_AUTO_RESOLVE",
                         "Meta recuperada automaticamente após recálculo. Valor atual: " + valorCalculado);
-                alertaRepo.save(alertaExistente);
+                alertaRepo.salvar(alertaExistente);
             }
         }
 
@@ -137,7 +137,7 @@ public class IndicadorService {
     /** Salva uma meta e, se ela for ativa, desativa as demais metas do indicador. */
     @Transactional
     public void salvarMeta(MetaIndicador meta) {
-        metaRepo.save(meta);
+        metaRepo.salvar(meta);
         if (meta.isAtivo()) {
             metaRepo.desativarOutrasMetas(meta.getIndicadorId(), meta.getId());
         }
@@ -145,70 +145,51 @@ public class IndicadorService {
 
     /** Resolve manualmente um alerta (ação do gerente). */
     @Transactional
-    public void resolverAlerta(int alertaId, String resolvidoPor, String observacao) {
-        AlertaIndicador alerta = alertaRepo.findById(alertaId)
+    public void resolverAlerta(String alertaId, String resolvidoPor, String observacao) {
+        AlertaIndicador alerta = alertaRepo.buscarPorId(AlertaId.de(alertaId))
                 .orElseThrow(() -> new IllegalArgumentException("Alerta não encontrado com ID: " + alertaId));
-        aplicarResolucao(alerta, resolvidoPor, observacao);
-        alertaRepo.save(alerta);
+        alerta.resolver(resolvidoPor, observacao);
+        alertaRepo.salvar(alerta);
     }
 
     public List<IndicadorOperacional> listarIndicadores() {
-        return indicadorRepo.findAllByOrderByNomeAsc();
+        return indicadorRepo.listarTodosOrdenadoPorNome();
     }
 
-    public IndicadorOperacional buscarIndicador(int id) {
-        return indicadorRepo.findById(id).orElse(null);
+    public IndicadorOperacional buscarIndicador(IndicadorId id) {
+        return indicadorRepo.buscarPorId(id).orElse(null);
     }
 
-    public MetaIndicador buscarMetaVigente(int indicadorId) {
+    public MetaIndicador buscarMetaVigente(IndicadorId indicadorId) {
         return metaRepo.buscarVigentesPorIndicador(indicadorId).stream().findFirst().orElse(null);
     }
 
-    public SnapshotIndicador buscarUltimoSnapshot(int indicadorId) {
-        return snapshotRepo.findFirstByIndicadorIdOrderByDataExecucaoDesc(indicadorId);
+    public SnapshotIndicador buscarUltimoSnapshot(IndicadorId indicadorId) {
+        return snapshotRepo.buscarUltimoPorIndicador(indicadorId).orElse(null);
     }
 
-    public List<SnapshotIndicador> listarSnapshots() {
-        List<SnapshotIndicador> snaps = snapshotRepo.findAllByOrderByDataExecucaoDesc();
-        Map<Integer, IndicadorOperacional> indicadores = mapaIndicadores();
-        for (SnapshotIndicador s : snaps) {
-            IndicadorOperacional ind = indicadores.get(s.getIndicadorId());
-            if (ind != null) {
-                s.setIndicadorNome(ind.getNome());
-                s.setIndicadorCodigo(ind.getCodigo());
-            }
-        }
-        return snaps;
+    public List<SnapshotIndicadorView> listarSnapshots() {
+        Map<IndicadorId, IndicadorOperacional> indicadores = mapaIndicadores();
+        return snapshotRepo.listarTodosOrdenadoPorExecucao().stream()
+                .map(s -> SnapshotIndicadorView.de(s, indicadores.get(s.getIndicadorId())))
+                .toList();
     }
 
-    public List<AlertaIndicador> listarAlertas(String status) {
-        List<AlertaIndicador> alertas = alertaRepo.findByStatusOrderByDataAlertaDesc(status);
-        Map<Integer, IndicadorOperacional> indicadores = mapaIndicadores();
-        for (AlertaIndicador a : alertas) {
-            IndicadorOperacional ind = indicadores.get(a.getIndicadorId());
-            if (ind != null) {
-                a.setIndicadorNome(ind.getNome());
-                a.setIndicadorCodigo(ind.getCodigo());
-            }
-        }
-        return alertas;
+    public List<AlertaIndicadorView> listarAlertas(String status) {
+        Map<IndicadorId, IndicadorOperacional> indicadores = mapaIndicadores();
+        return alertaRepo.listarPorStatus(StatusAlerta.de(status)).stream()
+                .map(a -> AlertaIndicadorView.de(a, indicadores.get(a.getIndicadorId())))
+                .toList();
     }
 
-    private Map<Integer, IndicadorOperacional> mapaIndicadores() {
-        return indicadorRepo.findAll().stream()
+    private Map<IndicadorId, IndicadorOperacional> mapaIndicadores() {
+        return indicadorRepo.listarTodosOrdenadoPorNome().stream()
                 .collect(Collectors.toMap(IndicadorOperacional::getId, Function.identity()));
-    }
-
-    private void aplicarResolucao(AlertaIndicador alerta, String resolvidoPor, String observacao) {
-        alerta.setStatus("RESOLVIDO");
-        alerta.setResolvidoPor(resolvidoPor);
-        alerta.setObservacao(observacao);
-        alerta.setDataResolucao(LocalDateTime.now());
     }
 
     private String gerarMensagemAlerta(String nomeIndicador, double valor, MetaIndicador meta, boolean critico) {
         String statusText = critico ? "ATINGIU LIMITE CRÍTICO" : "VIOLOU META MÍNIMA";
-        String operadorSinal = "MAIOR_IGUAL".equals(meta.getOperador()) ? "≥" : "≤";
+        String operadorSinal = meta.getSinal();
         double limite = critico ? meta.getLimiteCritico() : meta.getValorAlvo();
 
         return String.format("O indicador '%s' %s. Encontrado: %.2f (Esperado %s %.2f)",

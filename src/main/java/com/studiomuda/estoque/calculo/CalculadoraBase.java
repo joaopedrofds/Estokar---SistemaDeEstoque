@@ -1,6 +1,6 @@
 package com.studiomuda.estoque.calculo;
 
-import com.studiomuda.estoque.model.IndicadorOperacional;
+import com.studiomuda.estoque.indicadores.domain.IndicadorOperacional;
 import com.studiomuda.estoque.repository.CalculoIndicadorRepository;
 
 import java.time.LocalDate;
